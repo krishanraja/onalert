@@ -39,11 +39,20 @@ export type Monitor = {
     location_ids: number[]
     service_type: 'GE' | 'TSA' | 'NEXUS' | 'SENTRI'
     last_known_slots?: Record<string, string[]>
+    deadline_date?: string
   }
   active: boolean
   created_at: string
   last_checked_at: string | null
   last_alert_at: string | null
+}
+
+export type AlertSlot = {
+  location_id: number
+  location_name: string
+  slot_timestamp: string
+  book_url: string
+  narrative?: string
 }
 
 export type Alert = {
@@ -57,6 +66,7 @@ export type Alert = {
     book_url: string
     service_type: string
     narrative?: string
+    slots?: AlertSlot[]
   }
   channel: 'email' | 'sms'
   delivered_at: string | null

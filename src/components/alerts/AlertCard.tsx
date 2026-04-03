@@ -1,4 +1,4 @@
-import { MapPin, Clock, Flame } from 'lucide-react'
+import { MapPin, Clock, Flame, Layers } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { type Alert } from '@/lib/supabase'
 import { SERVICE_TYPES } from '@/lib/locations'
@@ -23,6 +23,7 @@ export function AlertCard({ alert, isSelected }: Props) {
   const serviceType = alert.payload.service_type as keyof typeof SERVICE_TYPES
   const service = SERVICE_TYPES[serviceType] ?? { abbr: serviceType, label: serviceType }
   const urgency = getUrgencyLevel(alert)
+  const isDigest = alert.payload.slots && alert.payload.slots.length > 1
 
   return (
     <button
@@ -56,19 +57,43 @@ export function AlertCard({ alert, isSelected }: Props) {
             <span className="text-[10px] font-mono font-medium bg-primary/10 text-primary px-2 py-0.5 rounded">
               {service.abbr}
             </span>
-            <span className="text-xs text-foreground-muted truncate flex items-center gap-1">
-              <MapPin size={10} />
-              {alert.payload.location_name}
-            </span>
+            {isDigest ? (
+              <span className="text-xs text-foreground-muted truncate flex items-center gap-1">
+                <Layers size={10} />
+                {alert.payload.slots!.length} slots available
+              </span>
+            ) : (
+              <span className="text-xs text-foreground-muted truncate flex items-center gap-1">
+                <MapPin size={10} />
+                {alert.payload.location_name}
+              </span>
+            )}
           </div>
 
-          {/* Slot time */}
-          <p className="font-mono text-sm font-medium text-foreground">
-            {formatSlotDate(alert.payload.slot_timestamp)}
-          </p>
-          <p className="font-mono text-xs text-foreground-secondary">
-            {formatSlotTime(alert.payload.slot_timestamp)}
-          </p>
+          {/* Slot time(s) */}
+          {isDigest ? (
+            <div className="space-y-0.5">
+              {alert.payload.slots!.slice(0, 2).map((slot, i) => (
+                <p key={i} className="font-mono text-xs text-foreground-secondary truncate">
+                  {slot.location_name} · {formatSlotDate(slot.slot_timestamp)}
+                </p>
+              ))}
+              {alert.payload.slots!.length > 2 && (
+                <p className="text-[10px] text-foreground-muted">
+                  +{alert.payload.slots!.length - 2} more
+                </p>
+              )}
+            </div>
+          ) : (
+            <>
+              <p className="font-mono text-sm font-medium text-foreground">
+                {formatSlotDate(alert.payload.slot_timestamp)}
+              </p>
+              <p className="font-mono text-xs text-foreground-secondary">
+                {formatSlotTime(alert.payload.slot_timestamp)}
+              </p>
+            </>
+          )}
         </div>
 
         {/* Time ago */}

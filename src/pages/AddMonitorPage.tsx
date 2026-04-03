@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, Check, Search, MapPin, Zap, Star, Navigation } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Search, MapPin, Zap, Star, Navigation, CalendarClock, Lock } from 'lucide-react'
 import { useProfile } from '@/hooks/useProfile'
 import { useMonitors } from '@/hooks/useMonitors'
 import { SERVICE_TYPES, TOP_LOCATIONS, searchLocations, type ServiceType } from '@/lib/locations'
@@ -21,6 +21,7 @@ export function AddMonitorPage() {
   const [serviceType, setServiceType] = useState<ServiceType | null>('GE') // Smart default: GE
   const [selectedLocations, setSelectedLocations] = useState<number[]>([])
   const [locationSearch, setLocationSearch] = useState('')
+  const [deadlineDate, setDeadlineDate] = useState<string>('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [nearestLocations, setNearestLocations] = useState<number[]>([])
@@ -147,11 +148,15 @@ export function AddMonitorPage() {
     setLoading(true)
     setError('')
     try {
-      const monitor = await createMonitor({
+      const config: Parameters<typeof createMonitor>[0] = {
         location_ids: selectedLocations,
         service_type: serviceType,
-        last_known_slots: {}
-      })
+        last_known_slots: {},
+      }
+      if (isPaid && deadlineDate) {
+        config.deadline_date = deadlineDate
+      }
+      const monitor = await createMonitor(config)
 
       if (monitor) {
         haptic('monitorCreated')
@@ -506,6 +511,33 @@ export function AddMonitorPage() {
                 <p className="text-sm text-foreground-secondary">
                   Email{isPaid ? ' + SMS' : ' only'}
                 </p>
+              </div>
+
+              {/* Deadline date filter */}
+              <div className="pt-2 border-t border-border">
+                <div className="flex items-center gap-2 mb-2">
+                  <CalendarClock size={14} className={isPaid ? 'text-primary' : 'text-foreground-muted'} />
+                  <h3 className="font-medium text-foreground">Date deadline</h3>
+                  {!isPaid && <Lock size={12} className="text-foreground-muted" />}
+                </div>
+                {isPaid ? (
+                  <div>
+                    <p className="text-xs text-foreground-secondary mb-2">
+                      Only get alerts for slots before this date. Leave blank to see all slots.
+                    </p>
+                    <input
+                      type="date"
+                      value={deadlineDate}
+                      onChange={(e) => setDeadlineDate(e.target.value)}
+                      min={new Date().toISOString().split('T')[0]}
+                      className="w-full bg-input border border-border rounded-lg px-3 py-2.5 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                  </div>
+                ) : (
+                  <p className="text-xs text-foreground-muted">
+                    <button onClick={() => navigate('/app/settings')} className="text-primary hover:text-primary/80">Upgrade to Pro</button> to filter alerts by date — only get notified about slots you can actually use.
+                  </p>
+                )}
               </div>
             </div>
           </div>

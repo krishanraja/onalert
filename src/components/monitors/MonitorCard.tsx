@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Pause, Play, Trash2, MapPin, Clock } from 'lucide-react'
+import { Pause, Play, Trash2, MapPin, Clock, CalendarClock } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { type Monitor } from '@/lib/supabase'
 import { TOP_LOCATIONS, SERVICE_TYPES } from '@/lib/locations'
@@ -131,6 +131,16 @@ export function MonitorCard({ monitor, onToggle, onDelete }: Props) {
           )}
         </div>
       </div>
+
+      {/* Deadline badge */}
+      {monitor.config.deadline_date && (
+        <div className="flex items-center gap-1.5 text-xs text-warning mb-2">
+          <CalendarClock size={11} />
+          <span className="font-mono">
+            Need by {new Date(monitor.config.deadline_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+          </span>
+        </div>
+      )}
 
       {/* Footer */}
       <div className="flex items-center gap-3 pt-2 border-t border-border">

@@ -4,9 +4,10 @@ import { Plus, Crown, Users, Zap, Bell, ArrowRight } from 'lucide-react'
 import { useProfile } from '@/hooks/useProfile'
 import { useMonitors } from '@/hooks/useMonitors'
 import { useAlerts } from '@/hooks/useAlerts'
-import { useInsights } from '@/hooks/useInsights'
+import { useInsights, useProInsights } from '@/hooks/useInsights'
 import { MonitorCard } from '@/components/monitors/MonitorCard'
 import { InsightsCard } from '@/components/dashboard/InsightsCard'
+import { ProInsightsCard } from '@/components/dashboard/ProInsightsCard'
 import { QuickStats } from '@/components/dashboard/QuickStats'
 import { ActivityFeed } from '@/components/dashboard/ActivityFeed'
 import { DashboardSkeleton } from '@/components/ui/Skeleton'
@@ -22,6 +23,7 @@ export function DashboardPage() {
   // Get all location IDs across monitors for insights
   const allLocationIds = monitors.flatMap((m) => m.config.location_ids || [])
   const { insights } = useInsights(allLocationIds)
+  const { proInsights } = useProInsights(allLocationIds, isPaid)
 
   // First-time user: redirect to add monitor
   useEffect(() => {
@@ -200,7 +202,7 @@ export function DashboardPage() {
                         onClick={() => navigate('/app/settings')}
                         className="text-sm text-primary hover:text-primary/80 transition-colors font-medium inline-flex items-center gap-1"
                       >
-                        Upgrade for $29 (one-time) <ArrowRight size={14} />
+                        Upgrade for $39 (one-time) <ArrowRight size={14} />
                       </button>
                     </div>
                   </div>
@@ -216,7 +218,11 @@ export function DashboardPage() {
               </div>
 
               {/* Insights */}
-              <InsightsCard insights={insights} />
+              {isPaid && proInsights ? (
+                <ProInsightsCard proInsights={proInsights} />
+              ) : (
+                <InsightsCard insights={insights} />
+              )}
 
               {/* Activity Feed (desktop) */}
               <div className="hidden lg:block">
