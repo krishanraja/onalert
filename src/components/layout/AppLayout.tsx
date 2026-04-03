@@ -9,6 +9,8 @@ export function AppLayout() {
   const { unreadCount } = useAlerts()
 
   useEffect(() => {
+    if (!supabase) { setAuthed(false); return }
+
     supabase.auth.getSession().then(({ data }) => {
       setAuthed(!!data.session)
     })

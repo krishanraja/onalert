@@ -15,6 +15,7 @@ export function AddMonitorPage() {
   const [selectedLocations, setSelectedLocations] = useState<number[]>([])
   const [locationSearch, setLocationSearch] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const filteredLocations = searchLocations(locationSearch)
   const maxLocations = isPremium ? Infinity : 3
@@ -67,6 +68,7 @@ export function AddMonitorPage() {
     if (!serviceType || selectedLocations.length === 0) return
 
     setLoading(true)
+    setError('')
     try {
       const monitor = await createMonitor({
         location_ids: selectedLocations,
@@ -75,12 +77,13 @@ export function AddMonitorPage() {
       })
 
       if (monitor) {
-        // Haptic feedback
         if ('vibrate' in navigator) navigator.vibrate([50, 30, 50])
         navigate('/app')
+      } else {
+        setError('Failed to create monitor. Please try again.')
       }
-    } catch (error) {
-      console.error('Failed to create monitor:', error)
+    } catch (err: any) {
+      setError(err.message || 'Failed to create monitor. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -173,6 +176,7 @@ export function AddMonitorPage() {
               <input
                 type="text"
                 placeholder="Search locations..."
+                aria-label="Search enrollment centers"
                 value={locationSearch}
                 onChange={(e) => setLocationSearch(e.target.value)}
                 className="w-full bg-input border border-border rounded-lg pl-10 pr-4 py-3 text-foreground placeholder-foreground-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -191,6 +195,11 @@ export function AddMonitorPage() {
 
             {/* Location list */}
             <div className="space-y-2 max-h-96 overflow-y-auto">
+              {filteredLocations.length === 0 && locationSearch && (
+                <p className="text-sm text-foreground-secondary text-center py-4">
+                  No locations found for "{locationSearch}". Try a different search.
+                </p>
+              )}
               {filteredLocations.map((location) => {
                 const isSelected = selectedLocations.includes(location.id)
                 const canSelect = isSelected || selectedLocations.length < maxLocations
@@ -283,6 +292,13 @@ export function AddMonitorPage() {
                 </p>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Error message */}
+        {error && (
+          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
+            <p className="text-sm text-destructive">{error}</p>
           </div>
         )}
 

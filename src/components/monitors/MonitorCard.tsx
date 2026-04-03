@@ -13,6 +13,8 @@ interface Props {
 
 export function MonitorCard({ monitor, onToggle, onDelete }: Props) {
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [toggling, setToggling] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const locations = monitor.config.location_ids
     .map((id) => TOP_LOCATIONS.find((l) => l.id === id))
     .filter(Boolean)
@@ -55,18 +57,27 @@ export function MonitorCard({ monitor, onToggle, onDelete }: Props) {
         {/* Actions */}
         <div className="flex items-center gap-1">
           <button
-            onClick={() => onToggle(monitor.id, !monitor.active)}
-            className="p-2 rounded-md text-foreground-muted hover:text-foreground hover:bg-surface-muted transition-colors"
+            onClick={async () => {
+              setToggling(true)
+              try { await onToggle(monitor.id, !monitor.active) } catch {}
+              setToggling(false)
+            }}
+            disabled={toggling}
+            className="p-2 rounded-md text-foreground-muted hover:text-foreground hover:bg-surface-muted transition-colors disabled:opacity-50"
           >
             {monitor.active ? <Pause size={15} /> : <Play size={15} />}
           </button>
           {confirmDelete ? (
             <div className="flex items-center gap-1">
               <button
-                onClick={() => onDelete(monitor.id)}
-                className="px-2 py-1 text-[10px] font-medium text-white bg-destructive rounded"
+                onClick={async () => {
+                  setDeleting(true)
+                  try { await onDelete(monitor.id) } catch { setDeleting(false); setConfirmDelete(false) }
+                }}
+                disabled={deleting}
+                className="px-2 py-1 text-[10px] font-medium text-white bg-destructive rounded disabled:opacity-50"
               >
-                Delete
+                {deleting ? '...' : 'Delete'}
               </button>
               <button
                 onClick={() => setConfirmDelete(false)}

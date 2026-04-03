@@ -9,6 +9,8 @@ export function useMonitors() {
     let mounted = true
 
     async function load() {
+      if (!supabase) { setLoading(false); return }
+
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { setLoading(false); return }
 
@@ -26,6 +28,8 @@ export function useMonitors() {
 
     load()
 
+    if (!supabase) return
+
     const channel = supabase
       .channel('monitors')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'monitors' }, load)
@@ -38,16 +42,34 @@ export function useMonitors() {
   }, [])
 
   async function toggleMonitor(id: string, active: boolean) {
-    await supabase.from('monitors').update({ active }).eq('id', id)
+    if (!supabase) return
+
+    const previous = monitors
     setMonitors((prev) => prev.map((m) => m.id === id ? { ...m, active } : m))
+
+    const { error } = await supabase.from('monitors').update({ active }).eq('id', id)
+    if (error) {
+      setMonitors(previous)
+      throw error
+    }
   }
 
   async function deleteMonitor(id: string) {
-    await supabase.from('monitors').delete().eq('id', id)
+    if (!supabase) return
+
+    const previous = monitors
     setMonitors((prev) => prev.filter((m) => m.id !== id))
+
+    const { error } = await supabase.from('monitors').delete().eq('id', id)
+    if (error) {
+      setMonitors(previous)
+      throw error
+    }
   }
 
   async function createMonitor(config: Monitor['config']): Promise<Monitor | null> {
+    if (!supabase) return null
+
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return null
 
@@ -57,7 +79,9 @@ export function useMonitors() {
       .select()
       .single()
 
-    if (error || !data) return null
+    if (error) throw error
+    if (!data) return null
+
     setMonitors((prev) => [data, ...prev])
     return data
   }

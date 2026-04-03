@@ -11,11 +11,12 @@ export function BottomNav({ unreadCount = 0 }: Props) {
 
   return (
     <nav
+      aria-label="Main navigation"
       className="fixed bottom-0 left-0 right-0 bg-background-elevated border-t border-border z-50"
       style={{ height: 'calc(var(--bottom-nav-height) + var(--safe-area-bottom))', paddingBottom: 'var(--safe-area-bottom)' }}
     >
       <div className="flex items-center justify-around h-[var(--bottom-nav-height)] px-2">
-        <NavLink to="/app" end className={({ isActive }) => cn(
+        <NavLink to="/app" end aria-label="Home" className={({ isActive }) => cn(
           'flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors min-w-[56px]',
           isActive ? 'text-primary' : 'text-foreground-muted hover:text-foreground-secondary'
         )}>
@@ -23,7 +24,7 @@ export function BottomNav({ unreadCount = 0 }: Props) {
           <span className="text-[10px] font-medium">Home</span>
         </NavLink>
 
-        <NavLink to="/app/alerts" className={({ isActive }) => cn(
+        <NavLink to="/app/alerts" aria-label={unreadCount > 0 ? `Alerts (${unreadCount} unread)` : 'Alerts'} className={({ isActive }) => cn(
           'flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors min-w-[56px] relative',
           isActive ? 'text-primary' : 'text-foreground-muted hover:text-foreground-secondary'
         )}>
@@ -50,7 +51,7 @@ export function BottomNav({ unreadCount = 0 }: Props) {
           </div>
         </button>
 
-        <NavLink to="/app/settings" className={({ isActive }) => cn(
+        <NavLink to="/app/settings" aria-label="Settings" className={({ isActive }) => cn(
           'flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors min-w-[56px]',
           isActive ? 'text-primary' : 'text-foreground-muted hover:text-foreground-secondary'
         )}>
