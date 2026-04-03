@@ -198,7 +198,7 @@ export function useProInsights(monitorLocationIds: number[] = [], isPaid: boolea
         hourCounts[hour] = (hourCounts[hour] || 0) + 1
 
         if (locId && monitorLocationIds.includes(locId)) {
-          const existing = locMap.get(locId) || { name: locName, count: 0, hours: [] as number[] }
+          const existing = locMap.get(locId) || { name: locName, count: 0, hours: [] }
           existing.count++
           existing.hours.push(hour)
           locMap.set(locId, existing)
