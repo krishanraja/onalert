@@ -40,7 +40,7 @@ export function DashboardPage() {
       <div className="min-h-full bg-background">
         <header className="bg-background-elevated border-b border-border safe-top lg:hidden">
           <div className="px-4 py-4 flex items-center justify-between">
-            <img src="/brand/nav-icon.svg" alt="OnAlert" className="h-8 w-8" />
+            <img src="/brand/icon-light.svg" alt="OnAlert" className="h-8 w-8" />
             <div className="h-6 w-16 bg-surface-muted rounded-full animate-pulse" />
           </div>
         </header>
@@ -64,7 +64,7 @@ export function DashboardPage() {
       <header className="bg-background-elevated border-b border-border safe-top lg:hidden">
         <div className="px-4 py-4 flex items-center justify-between">
           <img
-            src="/brand/nav-icon.svg"
+            src="/brand/icon-light.svg"
             alt="OnAlert"
             className="h-8 w-8"
           />
@@ -192,9 +192,9 @@ export function DashboardPage() {
                   <div className="flex items-start gap-3">
                     <Crown className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                     <div className="flex-1">
-                      <h3 className="font-medium text-foreground mb-1">Get alerts 12x faster</h3>
+                      <h3 className="font-medium text-foreground mb-1">Stop missing slots</h3>
                       <p className="text-sm text-foreground-secondary mb-3">
-                        Pro checks every 5 minutes with SMS alerts and unlimited locations. One-time payment, no subscription.
+                        Free alerts are delayed 15 min and slots fill in under 10. Pro delivers instant alerts with 5-minute checks.
                       </p>
                       <button
                         onClick={() => navigate('/app/settings')}

@@ -23,7 +23,7 @@ export function Sidebar({ unreadCount = 0 }: Props) {
       <div className="px-5 py-5 border-b border-border">
         <div className="flex items-center gap-3">
           <img
-            src="/brand/nav-icon.svg"
+            src="/brand/icon-light.svg"
             alt="OnAlert"
             className="h-9 w-9"
           />

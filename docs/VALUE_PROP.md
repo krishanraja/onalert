@@ -33,13 +33,14 @@ OnAlert turns months of anxious refreshing into a single 2-minute setup:
 | Active monitors | 1 | 1 | Up to 5 |
 | Locations per monitor | 3 | Unlimited | Unlimited |
 | Check frequency | Every 60 min | Every 5 min (12x faster) | Every 5 min (12x faster) |
-| Email alerts | Yes | Yes | Yes |
+| Email delivery | Delayed 15 min | Instant | Instant |
 | SMS alerts | No | Yes | Yes |
 | Real-time in-app alerts | Yes | Yes | Yes |
 | Direct booking links | Yes | Yes | Yes |
+| Monitoring window | 7 days | Never expires | Never expires |
 | Payment model | Free forever | One-time | One-time |
 
-**The math is simple**: A single caught appointment saves weeks or months of waiting. The average Global Entry applicant waits 6+ months at popular locations. $29 once to cut that to days is an obvious win -- and there's no subscription to cancel.
+**The math is simple**: Slots fill in 5-15 minutes. Free checks every 60 minutes and delays alerts 15 more. By the time a free user sees an alert, the slot is gone. $29 once gets you instant 5-minute monitoring that actually catches slots before they fill.
 
 ## Competitive Landscape
 
