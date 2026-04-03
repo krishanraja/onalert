@@ -1,0 +1,116 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* OnAlert Design System — Dark-first, Bloomberg Terminal energy
+   Crimson accent (#9F0506), black backgrounds, Inter + Fira Code
+*/
+
+@layer base {
+  :root {
+    /* Backgrounds */
+    --background: 0 0% 4%;              /* #0A0A0A */
+    --background-elevated: 0 0% 7%;    /* #111111 */
+    --surface: 0 0% 10%;               /* #1A1A1A */
+    --surface-muted: 0 0% 8%;          /* #141414 */
+
+    /* Text */
+    --foreground: 0 0% 96%;            /* #F5F5F5 */
+    --foreground-secondary: 0 0% 53%; /* #888888 */
+    --foreground-muted: 0 0% 27%;     /* #444444 */
+
+    /* Borders & Inputs */
+    --border: 0 0% 16%;               /* #2A2A2A */
+    --input: 0 0% 12%;                /* #1F1F1F */
+    --ring: 0 94% 32%;
+
+    /* Primary — Crimson */
+    --primary: 0 94% 32%;             /* #9F0506 */
+    --primary-foreground: 0 0% 96%;
+
+    /* Alert (same crimson — reserved for time-sensitive) */
+    --alert: 0 94% 32%;
+    --alert-muted: 0 60% 12%;
+
+    /* Semantic */
+    --success: 142 71% 45%;
+    --success-muted: 142 50% 15%;
+    --warning: 38 92% 50%;
+    --destructive: 0 72% 51%;
+    --destructive-muted: 0 50% 15%;
+
+    /* Legacy shadcn mappings */
+    --card: 0 0% 7%;
+    --card-foreground: 0 0% 96%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 96%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 96%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 53%;
+    --accent: 0 94% 32%;
+    --accent-foreground: 0 0% 96%;
+
+    /* Radii */
+    --radius: 0.75rem;
+    --radius-lg: 1rem;
+    --radius-xl: 1.25rem;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.4);
+    --shadow-md: 0 4px 12px -2px hsl(0 0% 0% / 0.5);
+    --shadow-lg: 0 12px 24px -4px hsl(0 0% 0% / 0.6);
+
+    /* Transitions */
+    --transition-fast: 150ms;
+    --transition-normal: 250ms;
+
+    /* Layout */
+    --header-height: 3.5rem;
+    --bottom-nav-height: 5rem;
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-top: env(safe-area-inset-top, 0px);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  .font-mono, code, pre {
+    font-family: 'Fira Code', 'Fira Mono', monospace;
+  }
+
+  /* Safe area padding */
+  .safe-top {
+    padding-top: var(--safe-area-top);
+  }
+  .safe-bottom {
+    padding-bottom: var(--safe-area-bottom);
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 2px; }
+}
+
+@layer utilities {
+  .text-primary { color: hsl(var(--primary)); }
+  .text-alert { color: hsl(var(--alert)); }
+  .text-success { color: hsl(var(--success)); }
+  .text-foreground-secondary { color: hsl(var(--foreground-secondary)); }
+  .text-foreground-muted { color: hsl(var(--foreground-muted)); }
+  .bg-surface { background-color: hsl(var(--surface)); }
+  .bg-surface-muted { background-color: hsl(var(--surface-muted)); }
+  .border-border { border-color: hsl(var(--border)); }
+}
