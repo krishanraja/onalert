@@ -185,6 +185,21 @@
   }
 }
 
+/* Hide scrollbar for chip containers */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* No-scroll mobile viewport fit */
+.viewport-fit {
+  height: 100dvh;
+  overflow: hidden;
+}
+
 /* Desktop sidebar layout - prevent bottom nav padding on large screens */
 @media (min-width: 1024px) {
   main {

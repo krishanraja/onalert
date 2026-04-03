@@ -1,6 +1,8 @@
-import { Outlet, Navigate } from 'react-router-dom'
+import { Outlet, Navigate, useLocation } from 'react-router-dom'
+import { AnimatePresence } from 'framer-motion'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
-import { useEffect, useState } from 'react'
+import { PageTransition } from './PageTransition'
+import { useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { BottomNav } from './BottomNav'
 import { Sidebar } from './Sidebar'
@@ -8,10 +10,41 @@ import { Toaster } from '@/components/ui/Toaster'
 import { useAlerts } from '@/hooks/useAlerts'
 import { useKeyboardShortcuts, SHORTCUTS } from '@/hooks/useKeyboardShortcuts'
 
+const TAB_INDEX: Record<string, number> = {
+  '/app': 0,
+  '/app/alerts': 1,
+  '/app/add': 2,
+  '/app/settings': 3,
+}
+
+function getDirection(from: string, to: string): 'left' | 'right' | 'up' | 'fade' {
+  // Add monitor gets scale-up (it's the FAB)
+  if (to === '/app/add') return 'up'
+  if (from === '/app/add') return 'up'
+
+  const fromIdx = TAB_INDEX[from] ?? -1
+  const toIdx = TAB_INDEX[to] ?? -1
+
+  // Alert detail pages slide from the right
+  if (to.startsWith('/app/alerts/')) return 'left'
+  if (from.startsWith('/app/alerts/')) return 'right'
+
+  if (fromIdx < 0 || toIdx < 0) return 'fade'
+  return toIdx > fromIdx ? 'left' : 'right'
+}
+
 export function AppLayout() {
   const [authed, setAuthed] = useState<boolean | null>(null)
   const { unreadCount } = useAlerts()
   const { showHelp, setShowHelp } = useKeyboardShortcuts()
+  const location = useLocation()
+  const [direction, setDirection] = useState<'left' | 'right' | 'up' | 'fade'>('fade')
+  const prevPath = useRef(location.pathname)
+
+  useEffect(() => {
+    setDirection(getDirection(prevPath.current, location.pathname))
+    prevPath.current = location.pathname
+  }, [location.pathname])
 
   useEffect(() => {
     if (!supabase) {
@@ -41,14 +74,18 @@ export function AppLayout() {
 
       {/* Main content */}
       <div
-        className="flex-1 flex flex-col min-h-screen"
+        className="flex-1 flex flex-col min-h-screen overflow-hidden"
         style={{ paddingTop: 'var(--safe-area-top)' }}
       >
         <main
           className="flex-1 overflow-y-auto"
           style={{ paddingBottom: 'calc(var(--bottom-nav-height) + var(--safe-area-bottom))' }}
         >
-          <Outlet />
+          <AnimatePresence mode="wait" initial={false}>
+            <PageTransition key={location.pathname} direction={direction}>
+              <Outlet />
+            </PageTransition>
+          </AnimatePresence>
         </main>
 
         {/* Mobile bottom nav - hidden on desktop */}
