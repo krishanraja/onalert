@@ -11,7 +11,7 @@ export function LandingPage() {
       <header className="border-b border-border bg-background-elevated safe-top">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <img
-            src="/brand/nav-icon.svg"
+            src="/brand/icon-light.svg"
             alt="OnAlert"
             className="h-9 w-9"
           />
@@ -53,12 +53,12 @@ export function LandingPage() {
           <div className="text-center">
             <Clock className="w-8 h-8 text-primary mx-auto mb-3" />
             <h3 className="font-semibold text-foreground mb-2">Checks every 5 minutes</h3>
-            <p className="text-sm text-foreground-secondary">Faster than manual checking. Paid users get 12x faster monitoring.</p>
+            <p className="text-sm text-foreground-secondary">Slots fill in under 10 minutes. Pro catches them before they're gone.</p>
           </div>
           <div className="text-center">
             <Smartphone className="w-8 h-8 text-primary mx-auto mb-3" />
-            <h3 className="font-semibold text-foreground mb-2">Email + SMS alerts</h3>
-            <p className="text-sm text-foreground-secondary">Instant notifications wherever you are. Never miss an opening.</p>
+            <h3 className="font-semibold text-foreground mb-2">Instant email + SMS</h3>
+            <p className="text-sm text-foreground-secondary">Alerts delivered the moment a slot opens. Not 15 minutes later.</p>
           </div>
           <div className="text-center">
             <Shield className="w-8 h-8 text-primary mx-auto mb-3" />

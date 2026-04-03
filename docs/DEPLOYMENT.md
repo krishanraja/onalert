@@ -85,13 +85,23 @@ supabase functions deploy send-alert
 supabase functions deploy create-checkout
 supabase functions deploy customer-portal
 supabase functions deploy stripe-webhook
+supabase functions deploy process-delayed-alerts
 ```
 
 ### CRON Setup
-Set up a CRON job to invoke `poll-appointments` every 10 minutes:
-- Use Supabase CRON (pg_cron) or external service (e.g., cron-job.org, Vercel Cron)
+Set up two CRON jobs:
+
+**1. poll-appointments** -- runs every 5 minutes
+- The function itself enforces per-plan check intervals (free: 60min, pro/family: 5min)
+- Also auto-pauses free monitors older than 7 days
 - Method: POST
 - URL: `https://<project-id>.supabase.co/functions/v1/poll-appointments`
+- Headers: `Authorization: Bearer <service_role_key>`
+
+**2. process-delayed-alerts** -- runs every 5 minutes
+- Sends email alerts for free users that have passed their 15-min delay window
+- Method: POST
+- URL: `https://<project-id>.supabase.co/functions/v1/process-delayed-alerts`
 - Headers: `Authorization: Bearer <service_role_key>`
 
 ### Realtime

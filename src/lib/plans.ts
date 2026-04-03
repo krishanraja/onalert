@@ -7,9 +7,10 @@ export const PLANS = {
     checkInterval: 60,
     channels: ['email'],
     features: [
-      '1 active monitor',
-      'Email alerts',
+      '1 monitor, 3 locations',
       'Checked every 60 minutes',
+      'Email alerts delayed 15 min',
+      '7-day monitoring window',
     ],
   },
   pro: {
@@ -20,10 +21,10 @@ export const PLANS = {
     checkInterval: 5,
     channels: ['email', 'sms'],
     features: [
-      '1 active monitor',
-      'Email + SMS alerts',
+      '1 monitor, unlimited locations',
       'Checked every 5 minutes',
-      'Unlimited locations',
+      'Instant email + SMS alerts',
+      'Monitors never expire',
     ],
   },
   family: {
@@ -35,9 +36,9 @@ export const PLANS = {
     channels: ['email', 'sms'],
     features: [
       'Up to 5 monitors',
-      'Email + SMS alerts',
       'Checked every 5 minutes',
-      'Unlimited locations',
+      'Instant email + SMS alerts',
+      'Monitors never expire',
     ],
   },
 }

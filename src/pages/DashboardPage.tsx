@@ -44,7 +44,7 @@ export function DashboardPage() {
       <div className="min-h-full bg-background">
         <header className="bg-background-elevated border-b border-border safe-top lg:hidden">
           <div className="px-4 py-4 flex items-center justify-between">
-            <img src="/brand/nav-icon.svg" alt="OnAlert" className="h-8 w-8" />
+            <img src="/brand/icon-light.svg" alt="OnAlert" className="h-8 w-8" />
             <div className="h-6 w-16 bg-surface-muted rounded-full animate-pulse" />
           </div>
         </header>
@@ -83,7 +83,7 @@ export function DashboardPage() {
         <header className="bg-background-elevated border-b border-border safe-top shrink-0">
           <div className="px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <img src="/brand/nav-icon.svg" alt="OnAlert" className="h-7 w-7" />
+              <img src="/brand/icon-light.svg" alt="OnAlert" className="h-7 w-7" />
               {/* Connection status dot */}
               <div className={`w-2 h-2 rounded-full ${connected ? 'bg-success' : 'bg-warning'}`} />
             </div>
@@ -191,7 +191,7 @@ export function DashboardPage() {
               >
                 <Crown className="w-4 h-4 text-primary shrink-0" />
                 <span className="text-xs text-foreground-secondary flex-1 text-left">
-                  Get alerts <span className="text-primary font-semibold">12x faster</span> — $29 one-time
+                  <span className="text-primary font-semibold">Stop missing slots</span> — instant alerts, $29 one-time
                 </span>
                 <ArrowRight size={14} className="text-primary shrink-0" />
               </motion.button>
@@ -294,9 +294,9 @@ export function DashboardPage() {
                     <div className="flex items-start gap-3">
                       <Crown className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                       <div className="flex-1">
-                        <h3 className="font-medium text-foreground mb-1">Get alerts 12x faster</h3>
+                        <h3 className="font-medium text-foreground mb-1">Stop missing slots</h3>
                         <p className="text-sm text-foreground-secondary mb-3">
-                          Pro checks every 5 minutes with SMS alerts and unlimited locations. One-time payment, no subscription.
+                          Free alerts are delayed 15 min and slots fill in under 10. Pro delivers instant alerts with 5-minute checks.
                         </p>
                         <button
                           onClick={() => navigate('/app/settings')}

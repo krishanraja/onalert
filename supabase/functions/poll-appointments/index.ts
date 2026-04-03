@@ -199,6 +199,16 @@ async function generateSmartNarrative(
   return parts.join(' ')
 }
 
+// Check intervals per plan (in minutes)
+const CHECK_INTERVALS: Record<string, number> = {
+  free: 60,
+  pro: 5,
+  family: 5,
+}
+
+// Free monitoring window (in days)
+const FREE_WINDOW_DAYS = 7
+
 Deno.serve(async (req) => {
   if (req.method !== 'POST') {
     return new Response('Method not allowed', { status: 405 })
@@ -207,10 +217,11 @@ Deno.serve(async (req) => {
   const startTime = Date.now()
   let checked = 0
   let newAlerts = 0
+  let skipped = 0
 
   try {
     // Get all active appointment monitors
-    const { data: monitors, error: monitorError } = await supabase
+    const { data: allMonitors, error: monitorError } = await supabase
       .from('monitors')
       .select('*')
       .eq('type', 'appointment')
@@ -218,13 +229,66 @@ Deno.serve(async (req) => {
 
     if (monitorError) throw monitorError
 
-    if (!monitors || monitors.length === 0) {
-      return new Response(JSON.stringify({ checked: 0, new_alerts: 0 }), {
+    if (!allMonitors || allMonitors.length === 0) {
+      return new Response(JSON.stringify({ checked: 0, new_alerts: 0, skipped: 0 }), {
         headers: { 'Content-Type': 'application/json' }
       })
     }
 
-    // Deduplicate location IDs across all monitors
+    // Fetch user plans for all monitor owners
+    const userIds = [...new Set(allMonitors.map((m: Monitor) => m.user_id))]
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, plan')
+      .in('id', userIds)
+
+    const planMap = new Map<string, string>()
+    for (const p of profiles || []) {
+      planMap.set(p.id, p.plan || 'free')
+    }
+
+    // Filter monitors based on plan check interval and free window
+    const now = Date.now()
+    const monitors = allMonitors.filter((m: Monitor & { last_checked_at: string | null; created_at: string }) => {
+      const plan = planMap.get(m.user_id) || 'free'
+      const intervalMin = CHECK_INTERVALS[plan] || 60
+
+      // Skip if checked too recently for this plan's interval
+      if (m.last_checked_at) {
+        const lastChecked = new Date(m.last_checked_at).getTime()
+        const elapsedMin = (now - lastChecked) / (1000 * 60)
+        if (elapsedMin < intervalMin) {
+          skipped++
+          return false
+        }
+      }
+
+      // Free users: auto-pause monitors older than 7 days
+      if (plan === 'free' && m.created_at) {
+        const createdAt = new Date(m.created_at).getTime()
+        const ageDays = (now - createdAt) / (1000 * 60 * 60 * 24)
+        if (ageDays > FREE_WINDOW_DAYS) {
+          // Auto-pause expired free monitors (fire and forget)
+          supabase
+            .from('monitors')
+            .update({ active: false })
+            .eq('id', m.id)
+            .then(() => {})
+          skipped++
+          return false
+        }
+      }
+
+      return true
+    })
+
+    if (monitors.length === 0) {
+      return new Response(JSON.stringify({ checked: 0, new_alerts: 0, skipped }), {
+        headers: { 'Content-Type': 'application/json' }
+      })
+    }
+
+    // Deduplicate location IDs across eligible monitors
     const locationIds = new Set<number>()
     monitors.forEach((m: Monitor) => {
       m.config.location_ids.forEach(id => locationIds.add(id))
@@ -277,7 +341,13 @@ Deno.serve(async (req) => {
               locationId
             )
 
-            // Insert alert  - this is picked up by the send-alert function
+            // Determine if this alert should be delayed (free users get 15-min delay)
+            const userPlan = planMap.get(monitor.user_id) || 'free'
+            const delayUntil = userPlan === 'free'
+              ? new Date(Date.now() + 15 * 60 * 1000).toISOString()
+              : null
+
+            // Insert alert
             const { data: alertRecord, error: alertError } = await supabase
               .from('alerts')
               .insert({
@@ -291,7 +361,8 @@ Deno.serve(async (req) => {
                   service_type: monitor.config.service_type,
                   narrative
                 },
-                channel: 'email'
+                channel: 'email',
+                delay_until: delayUntil
               })
               .select()
               .single()
@@ -301,14 +372,15 @@ Deno.serve(async (req) => {
               continue
             }
 
-            // Immediately invoke send-alert to deliver notification
-            try {
-              await supabase.functions.invoke('send-alert', {
-                body: { record: alertRecord }
-              })
-            } catch (sendErr) {
-              console.error(`Failed to send alert ${alertRecord.id}:`, sendErr)
-              // Alert is still in DB; can be retried later
+            // Send immediately for paid users; delayed alerts handled by process-delayed-alerts CRON
+            if (!delayUntil) {
+              try {
+                await supabase.functions.invoke('send-alert', {
+                  body: { record: alertRecord }
+                })
+              } catch (sendErr) {
+                console.error(`Failed to send alert ${alertRecord.id}:`, sendErr)
+              }
             }
 
             newAlerts++
@@ -349,6 +421,7 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({
       checked,
       new_alerts: newAlerts,
+      skipped,
       duration_ms: Date.now() - startTime
     }), {
       headers: { 'Content-Type': 'application/json' }
