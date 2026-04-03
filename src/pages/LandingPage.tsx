@@ -31,7 +31,7 @@ export function LandingPage() {
           <img
             src="/brand/logo-wordmark-dark.png"
             alt="OnAlert"
-            className="h-12 md:h-16 mx-auto mb-4"
+            className="h-36 md:h-48 mx-auto mb-4"
           />
           <p className="text-lg md:text-xl text-foreground-secondary max-w-md mx-auto mb-6">
             Be first in line for a US Govt appointment

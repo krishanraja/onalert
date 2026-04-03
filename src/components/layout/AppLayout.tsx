@@ -32,6 +32,16 @@ export function AppLayout() {
       className="min-h-screen bg-background flex flex-col"
       style={{ paddingTop: 'var(--safe-area-top)' }}
     >
+      {/* Desktop top nav with logo */}
+      <header className="hidden md:block border-b border-border bg-background-elevated">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center">
+          <img
+            src="/brand/icon-192.png"
+            alt="OnAlert"
+            className="h-8 w-8 rounded-lg"
+          />
+        </div>
+      </header>
       <main
         className="flex-1 overflow-y-auto"
         style={{ paddingBottom: 'calc(var(--bottom-nav-height) + var(--safe-area-bottom))' }}
