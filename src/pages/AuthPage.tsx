@@ -49,8 +49,8 @@ export function AuthPage() {
       })
 
       if (error) throw error
-    } catch (err: any) {
-      setError(err.message || 'Google sign-in failed')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Google sign-in failed')
       setLoading(false)
     }
   }
@@ -83,8 +83,8 @@ export function AuthPage() {
         if (error) throw error
         // onAuthStateChange will handle navigation
       }
-    } catch (err: any) {
-      setError(err.message || 'Something went wrong')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {
       setLoading(false)
     }
@@ -109,8 +109,8 @@ export function AuthPage() {
 
       if (error) throw error
       setSent(true)
-    } catch (err: any) {
-      setError(err.message || 'Something went wrong')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {
       setLoading(false)
     }
@@ -164,7 +164,7 @@ export function AuthPage() {
         <div className="w-full max-w-sm">
           <div className="text-center mb-8">
             <img
-              src="/brand/icon-192.png"
+              src="/brand/nav-icon.svg"
               alt="OnAlert"
               className="w-16 h-16 mx-auto mb-4"
             />

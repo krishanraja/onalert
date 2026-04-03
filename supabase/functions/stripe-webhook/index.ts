@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
           break
         }
 
-        // Upgrade user plan (permanent — one-time purchase)
+        // Upgrade user plan (permanent -- one-time purchase)
         await supabase
           .from('profiles')
           .update({ plan })

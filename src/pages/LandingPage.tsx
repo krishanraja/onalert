@@ -11,9 +11,9 @@ export function LandingPage() {
       <header className="border-b border-border bg-background-elevated safe-top">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <img
-            src="/brand/icon-192.png"
+            src="/brand/nav-icon.svg"
             alt="OnAlert"
-            className="h-8 w-8 rounded-lg"
+            className="h-9 w-9"
           />
           <button
             onClick={() => navigate('/auth')}

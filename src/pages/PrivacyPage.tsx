@@ -39,7 +39,7 @@ export function PrivacyPage() {
         <section className="space-y-3">
           <h2 className="text-lg font-semibold text-foreground">Data storage</h2>
           <p className="text-foreground-secondary leading-relaxed">
-            Your data is stored securely using Supabase (hosted on AWS). Payment information is processed and stored by Stripe — we never see or store your full card details.
+            Your data is stored securely using Supabase (hosted on AWS). Payment information is processed and stored by Stripe - we never see or store your full card details.
           </p>
         </section>
 

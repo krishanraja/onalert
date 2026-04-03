@@ -39,7 +39,7 @@ export function TermsPage() {
         <section className="space-y-3">
           <h2 className="text-lg font-semibold text-foreground">Payments and refunds</h2>
           <p className="text-foreground-secondary leading-relaxed">
-            Pro and Family plans are one-time purchases processed through Stripe. Once purchased, your plan access is permanent — no recurring charges. Refunds are handled on a case-by-case basis within 30 days of purchase.
+            Pro and Family plans are one-time purchases processed through Stripe. Once purchased, your plan access is permanent -- no recurring charges. Refunds are handled on a case-by-case basis within 30 days of purchase.
           </p>
         </section>
 
