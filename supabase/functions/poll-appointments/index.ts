@@ -21,6 +21,7 @@ interface Monitor {
     location_ids: number[]
     service_type: string
     last_known_slots?: Record<string, string[]>
+    deadline_date?: string
   }
 }
 
@@ -320,6 +321,15 @@ Deno.serve(async (req) => {
     for (const monitor of monitors as Monitor[]) {
       const lastKnownSlots = monitor.config.last_known_slots || {}
       const newKnownSlots: Record<string, string[]> = {}
+      const allNewSlotsForMonitor: Array<{
+        location_id: number
+        location_name: string
+        slot_timestamp: string
+        book_url: string
+        service_type: string
+        narrative: string
+        delay_until: string | null
+      }> = []
 
       for (const locationId of monitor.config.location_ids) {
         const slots = locationSlots.get(locationId) || []
@@ -327,12 +337,22 @@ Deno.serve(async (req) => {
         const lastSlotTimestamps = lastKnownSlots[locationId.toString()] || []
 
         // Find new slots (slots that weren't there before)
-        const newSlots = slotTimestamps.filter(ts => !lastSlotTimestamps.includes(ts))
+        let newSlots = slotTimestamps.filter(ts => !lastSlotTimestamps.includes(ts))
+
+        // Apply deadline filter: skip slots past the user's deadline date
+        if (monitor.config.deadline_date && newSlots.length > 0) {
+          const deadline = new Date(monitor.config.deadline_date + 'T23:59:59Z').getTime()
+          newSlots = newSlots.filter(ts => new Date(ts).getTime() <= deadline)
+        }
 
         if (newSlots.length > 0) {
           const locationName = getLocationName(locationId)
+          const userPlan = planMap.get(monitor.user_id) || 'free'
+          const delayUntil = userPlan === 'free'
+            ? new Date(Date.now() + 15 * 60 * 1000).toISOString()
+            : null
 
-          // Create alert records and trigger notifications for each new slot
+          // Collect slot data for potential digest
           for (const slotTimestamp of newSlots) {
             const narrative = await generateSmartNarrative(
               locationName,
@@ -341,60 +361,124 @@ Deno.serve(async (req) => {
               locationId
             )
 
-            // Determine if this alert should be delayed (free users get 15-min delay)
-            const userPlan = planMap.get(monitor.user_id) || 'free'
-            const delayUntil = userPlan === 'free'
-              ? new Date(Date.now() + 15 * 60 * 1000).toISOString()
-              : null
-
-            // Insert alert
-            const { data: alertRecord, error: alertError } = await supabase
-              .from('alerts')
-              .insert({
-                monitor_id: monitor.id,
-                user_id: monitor.user_id,
-                payload: {
-                  location_id: locationId,
-                  location_name: locationName,
-                  slot_timestamp: slotTimestamp,
-                  book_url: 'https://ttp.cbp.dhs.gov/',
-                  service_type: monitor.config.service_type,
-                  narrative
-                },
-                channel: 'email',
-                delay_until: delayUntil
-              })
-              .select()
-              .single()
-
-            if (alertError) {
-              console.error(`Failed to insert alert for monitor ${monitor.id}:`, alertError)
-              continue
-            }
-
-            // Send immediately for paid users; delayed alerts handled by process-delayed-alerts CRON
-            if (!delayUntil) {
-              try {
-                await supabase.functions.invoke('send-alert', {
-                  body: { record: alertRecord }
-                })
-              } catch (sendErr) {
-                console.error(`Failed to send alert ${alertRecord.id}:`, sendErr)
-              }
-            }
-
-            newAlerts++
+            allNewSlotsForMonitor.push({
+              location_id: locationId,
+              location_name: locationName,
+              slot_timestamp: slotTimestamp,
+              book_url: 'https://ttp.cbp.dhs.gov/',
+              service_type: monitor.config.service_type,
+              narrative,
+              delay_until: delayUntil,
+            })
           }
-
-          // Update last_alert_at
-          await supabase
-            .from('monitors')
-            .update({ last_alert_at: new Date().toISOString() })
-            .eq('id', monitor.id)
         }
 
         // Update known slots for this location
         newKnownSlots[locationId.toString()] = slotTimestamps
+      }
+
+      // Process collected new slots: digest (2+) or individual alerts
+      const userPlan = planMap.get(monitor.user_id) || 'free'
+      const isPaidUser = userPlan === 'pro' || userPlan === 'family'
+
+      if (allNewSlotsForMonitor.length > 1 && isPaidUser) {
+        // Digest alert: batch multiple slots into a single alert
+        const sortedSlots = [...allNewSlotsForMonitor].sort(
+          (a, b) => new Date(a.slot_timestamp).getTime() - new Date(b.slot_timestamp).getTime()
+        )
+        const firstSlot = sortedSlots[0]
+        const digestPayload = {
+          location_id: firstSlot.location_id,
+          location_name: `${sortedSlots.length} slots across ${new Set(sortedSlots.map(s => s.location_id)).size} location(s)`,
+          slot_timestamp: firstSlot.slot_timestamp,
+          book_url: 'https://ttp.cbp.dhs.gov/',
+          service_type: monitor.config.service_type,
+          narrative: `${sortedSlots.length} appointment slots just opened. Soonest: ${firstSlot.location_name} on ${new Date(firstSlot.slot_timestamp).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'America/New_York' })}.`,
+          slots: sortedSlots.map(s => ({
+            location_id: s.location_id,
+            location_name: s.location_name,
+            slot_timestamp: s.slot_timestamp,
+            book_url: s.book_url,
+            narrative: s.narrative,
+          })),
+        }
+
+        const { data: alertRecord, error: alertError } = await supabase
+          .from('alerts')
+          .insert({
+            monitor_id: monitor.id,
+            user_id: monitor.user_id,
+            payload: digestPayload,
+            channel: 'email',
+            delay_until: null,
+          })
+          .select()
+          .single()
+
+        if (!alertError && alertRecord) {
+          try {
+            await supabase.functions.invoke('send-digest-alert', {
+              body: { record: alertRecord }
+            })
+          } catch (sendErr) {
+            // Fall back to regular send-alert if digest function doesn't exist yet
+            try {
+              await supabase.functions.invoke('send-alert', {
+                body: { record: alertRecord }
+              })
+            } catch (fallbackErr) {
+              console.error(`Failed to send digest alert ${alertRecord.id}:`, fallbackErr)
+            }
+          }
+          newAlerts += sortedSlots.length
+        }
+      } else {
+        // Individual alerts (single slot or free user)
+        for (const slot of allNewSlotsForMonitor) {
+          const { data: alertRecord, error: alertError } = await supabase
+            .from('alerts')
+            .insert({
+              monitor_id: monitor.id,
+              user_id: monitor.user_id,
+              payload: {
+                location_id: slot.location_id,
+                location_name: slot.location_name,
+                slot_timestamp: slot.slot_timestamp,
+                book_url: slot.book_url,
+                service_type: slot.service_type,
+                narrative: slot.narrative,
+              },
+              channel: 'email',
+              delay_until: slot.delay_until,
+            })
+            .select()
+            .single()
+
+          if (alertError) {
+            console.error(`Failed to insert alert for monitor ${monitor.id}:`, alertError)
+            continue
+          }
+
+          if (!slot.delay_until) {
+            try {
+              await supabase.functions.invoke('send-alert', {
+                body: { record: alertRecord }
+              })
+            } catch (sendErr) {
+              console.error(`Failed to send alert ${alertRecord.id}:`, sendErr)
+            }
+          }
+
+          newAlerts++
+        }
+      }
+
+      // Update last_alert_at if any new slots were found
+      if (allNewSlotsForMonitor.length > 0) {
+        await supabase
+          .from('monitors')
+          .update({ last_alert_at: new Date().toISOString() })
+          .eq('id', monitor.id)
       }
 
       // Update monitor with new known slots and last_checked_at

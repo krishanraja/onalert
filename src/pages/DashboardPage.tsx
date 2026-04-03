@@ -5,12 +5,13 @@ import { motion } from 'framer-motion'
 import { useProfile } from '@/hooks/useProfile'
 import { useMonitors } from '@/hooks/useMonitors'
 import { useAlerts } from '@/hooks/useAlerts'
-import { useInsights } from '@/hooks/useInsights'
+import { useInsights, useProInsights } from '@/hooks/useInsights'
 import { MonitorCard } from '@/components/monitors/MonitorCard'
 import { MonitorChip } from '@/components/dashboard/MonitorChip'
 import { HeroAlertCard } from '@/components/dashboard/HeroAlertCard'
 import { AllClearCard } from '@/components/dashboard/AllClearCard'
 import { InsightsCard } from '@/components/dashboard/InsightsCard'
+import { ProInsightsCard } from '@/components/dashboard/ProInsightsCard'
 import { QuickStats } from '@/components/dashboard/QuickStats'
 import { ActivityFeed } from '@/components/dashboard/ActivityFeed'
 import { DashboardSkeleton } from '@/components/ui/Skeleton'
@@ -27,6 +28,7 @@ export function DashboardPage() {
   // Get all location IDs across monitors for insights
   const allLocationIds = monitors.flatMap((m) => m.config.location_ids || [])
   const { insights } = useInsights(allLocationIds)
+  const { proInsights } = useProInsights(allLocationIds, isPaid)
 
   // First-time user: redirect to add monitor
   useEffect(() => {
@@ -191,7 +193,7 @@ export function DashboardPage() {
               >
                 <Crown className="w-4 h-4 text-primary shrink-0" />
                 <span className="text-xs text-foreground-secondary flex-1 text-left">
-                  <span className="text-primary font-semibold">Stop missing slots</span> — instant alerts, $29 one-time
+                  <span className="text-primary font-semibold">Stop missing slots</span> — instant alerts, $39 one-time
                 </span>
                 <ArrowRight size={14} className="text-primary shrink-0" />
               </motion.button>
@@ -200,7 +202,7 @@ export function DashboardPage() {
         )}
       </div>
 
-      {/* ============ DESKTOP LAYOUT - Unchanged ============ */}
+      {/* ============ DESKTOP LAYOUT ============ */}
       <div className="hidden lg:block">
         <div className="px-4 lg:px-6 py-6 lg:py-8 max-w-6xl mx-auto">
           {/* Desktop page title */}
@@ -302,7 +304,7 @@ export function DashboardPage() {
                           onClick={() => navigate('/app/settings')}
                           className="text-sm text-primary hover:text-primary/80 transition-colors font-medium inline-flex items-center gap-1"
                         >
-                          Upgrade for $29 (one-time) <ArrowRight size={14} />
+                          Upgrade for $39 (one-time) <ArrowRight size={14} />
                         </button>
                       </div>
                     </div>
@@ -311,7 +313,12 @@ export function DashboardPage() {
               </div>
 
               <div className="lg:col-span-2 space-y-4">
-                <InsightsCard insights={insights} />
+                {/* Insights */}
+                {isPaid && proInsights ? (
+                  <ProInsightsCard proInsights={proInsights} />
+                ) : (
+                  <InsightsCard insights={insights} />
+                )}
                 <ActivityFeed alerts={alerts} />
               </div>
             </div>
