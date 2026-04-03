@@ -25,9 +25,9 @@ export function DashboardPage() {
       <header className="bg-background-elevated border-b border-border safe-top">
         <div className="px-4 py-4 flex items-center justify-between">
           <img
-            src="/brand/icon-192.png"
+            src="/brand/nav-icon.svg"
             alt="OnAlert"
-            className="h-7 w-7 rounded"
+            className="h-8 w-8"
           />
           <div className="flex items-center gap-2">
             {isPremium ? (
