@@ -7,9 +7,10 @@ Step-by-step instructions to set up OnAlert from scratch.
 - Node.js 18+
 - npm 9+
 - Supabase account (free tier works)
-- Stripe account
+- Stripe account (test mode for development)
 - Resend account (for email delivery)
 - Vercel account (or any static hosting)
+- Google Cloud Console project (for OAuth -- optional but recommended)
 
 ## Step 1: Clone and Install
 
@@ -22,45 +23,58 @@ npm install
 ## Step 2: Supabase Setup
 
 ### 2a. Create Project
-1. Go to [supabase.com](https://supabase.com) → New Project
-2. Note your **Project URL** and **Anon Key** (Settings → API)
-3. Note your **Service Role Key** (Settings → API → service_role)
+1. Go to [supabase.com](https://supabase.com) -> New Project
+2. Note your **Project URL** (Settings -> API)
+3. Note your **Anon Key** (Settings -> API -> anon/public)
+4. Note your **Service Role Key** (Settings -> API -> service_role) -- keep this secret
 
 ### 2b. Run Database Migration
 1. Go to SQL Editor in Supabase Dashboard
-2. Paste contents of `supabase/migrations/001_initial_schema.sql`
+2. Paste the full contents of `supabase/migrations/001_initial_schema.sql`
 3. Run the query
 
 This creates:
 - `profiles`, `monitors`, `alerts`, `scrape_logs` tables
-- Row Level Security policies
-- Auto-create profile trigger on signup
+- Row Level Security (RLS) policies for user-scoped access
+- Auto-create profile trigger on auth signup
 - Updated_at trigger for profiles
+- Performance indexes on all key columns
 
 ### 2c. Enable Realtime
-1. Go to Database → Realtime
+1. Go to Database -> Realtime
 2. Enable for `alerts` table (INSERT events)
-3. Enable for `monitors` table (all events)
+3. Enable for `monitors` table (all events: INSERT, UPDATE, DELETE)
 
-### 2d. Configure Auth
-1. Go to Authentication → Providers
-2. Ensure Email is enabled with Magic Link
+### 2d. Configure Auth Providers
+
+**Email (required)**:
+1. Go to Authentication -> Providers -> Email
+2. Enable Email with Magic Link
 3. Set Site URL: `http://localhost:5173` (dev) or your production URL
 4. Add Redirect URLs: `http://localhost:5173/app`, `https://yourdomain.com/app`
+
+**Google OAuth (recommended)**:
+1. Go to [Google Cloud Console](https://console.cloud.google.com) -> APIs & Services -> Credentials
+2. Create an OAuth 2.0 Client ID (Web application)
+3. Add authorized redirect URI: `https://<your-supabase-project>.supabase.co/auth/v1/callback`
+4. In Supabase Dashboard: Authentication -> Providers -> Google
+5. Enter your Google Client ID and Client Secret
+6. Enable the provider
 
 ## Step 3: Stripe Setup
 
 ### 3a. Get API Keys
-1. Go to [stripe.com](https://stripe.com) → Developers → API Keys
+1. Go to [stripe.com](https://stripe.com) -> Developers -> API Keys
 2. Note your **Publishable Key** (`pk_test_...`)
 3. Note your **Secret Key** (`sk_test_...`)
 
 ### 3b. Configure Customer Portal
-1. Go to Settings → Billing → Customer portal
+1. Go to Settings -> Billing -> Customer portal
 2. Enable the portal with default settings
+3. This allows users to manage their subscriptions
 
 ### 3c. Webhook (for production)
-1. Go to Developers → Webhooks → Add endpoint
+1. Go to Developers -> Webhooks -> Add endpoint
 2. URL: `https://<your-supabase-project>.supabase.co/functions/v1/stripe-webhook`
 3. Select events:
    - `customer.subscription.created`
@@ -88,7 +102,7 @@ VITE_APP_URL=http://localhost:5173
 ```
 
 ### Supabase Edge Functions
-Set secrets via CLI or Dashboard (Settings → Edge Functions → Secrets):
+Set secrets via CLI or Dashboard (Settings -> Edge Functions -> Secrets):
 ```bash
 supabase secrets set RESEND_API_KEY=re_...
 supabase secrets set STRIPE_SECRET_KEY=sk_test_...
@@ -118,7 +132,7 @@ supabase functions deploy stripe-webhook
 
 ## Step 7: Set Up Polling CRON
 
-The `poll-appointments` function needs to be called periodically.
+The `poll-appointments` function needs to be called periodically to detect new slots.
 
 ### Option A: Supabase pg_cron
 ```sql
@@ -147,7 +161,12 @@ Use cron-job.org, Vercel Cron, or similar:
 npm run dev
 ```
 
-Open `http://localhost:5173`  - you should see the landing page.
+Open `http://localhost:5173` -- you should see the landing page.
+
+Test the auth flow:
+1. Click "Get started" or "Sign in"
+2. Try Google OAuth (if configured) or email sign-up
+3. Verify redirect to `/app` dashboard
 
 ## Step 9: Deploy to Vercel
 
@@ -168,14 +187,18 @@ vercel env add VITE_APP_URL
 
 ## Verification Checklist
 
-- [ ] Landing page loads at `/`
-- [ ] Magic link email is received
+- [ ] Landing page loads at `/` with hero, features, and pricing
+- [ ] Google OAuth sign-in works (if configured)
+- [ ] Email/password sign-up and sign-in works
+- [ ] Magic link email is received and opens `/app`
 - [ ] Auth redirect works to `/app`
-- [ ] Can create a monitor (3-step wizard)
-- [ ] Monitor appears on dashboard
+- [ ] Can create a monitor via 3-step wizard
+- [ ] Monitor appears on dashboard with correct status
 - [ ] CRON triggers poll-appointments successfully
-- [ ] Alert appears when new slot detected
-- [ ] Email notification is delivered
-- [ ] Stripe checkout works
+- [ ] scrape_logs table shows successful runs
+- [ ] Alert appears when new slot is detected
+- [ ] Email notification is delivered with booking link
+- [ ] Stripe checkout works (test mode)
 - [ ] Webhook updates plan to premium
-- [ ] Customer portal opens
+- [ ] Customer portal opens and loads
+- [ ] PWA is installable on mobile
