@@ -1,9 +1,11 @@
 import { MapPin, Clock, Flame } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { type Alert } from '@/lib/supabase'
 import { SERVICE_TYPES } from '@/lib/locations'
 import { formatDistanceToNow, formatSlotDate, formatSlotTime, minutesSince } from '@/lib/time'
 import { useNavigate } from 'react-router-dom'
+import { haptic } from '@/lib/haptics'
 
 interface Props {
   alert: Alert
@@ -25,10 +27,14 @@ export function AlertCard({ alert, isSelected }: Props) {
   const urgency = getUrgencyLevel(alert)
 
   return (
-    <button
-      onClick={() => navigate(`/app/alerts/${alert.id}`)}
+    <motion.button
+      whileTap={{ scale: 0.97 }}
+      onClick={() => {
+        haptic('tap')
+        navigate(`/app/alerts/${alert.id}`)
+      }}
       className={cn(
-        'w-full text-left bg-surface border rounded-lg p-4 transition-all hover:border-primary/30 hover:bg-surface-muted active:scale-[0.98]',
+        'w-full text-left bg-surface border rounded-lg p-4 transition-all hover:border-primary/30 hover:bg-surface-muted',
         isUnread && 'border-primary/20 bg-alert-muted/30',
         !isUnread && 'border-border',
         isSelected && 'border-primary bg-primary/5 ring-1 ring-primary/30',
@@ -77,6 +83,6 @@ export function AlertCard({ alert, isSelected }: Props) {
           <span className="text-[10px] font-mono">{formatDistanceToNow(alert.created_at)}</span>
         </div>
       </div>
-    </button>
+    </motion.button>
   )
 }
