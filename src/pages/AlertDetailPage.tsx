@@ -18,11 +18,17 @@ export function AlertDetailPage() {
     if (!id) return
 
     async function load() {
-      const { data } = await supabase
+      if (!supabase) { setLoading(false); return }
+
+      const { data, error } = await supabase
         .from('alerts')
         .select('*')
         .eq('id', id)
         .single()
+
+      if (error) {
+        console.error('Failed to load alert:', error)
+      }
 
       setAlert(data)
       setLoading(false)

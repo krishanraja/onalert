@@ -24,7 +24,7 @@ async function sendEmail(to: string, subject: string, html: string) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'OnAlert <alerts@themindmaker.ai>', // Use verified domain
+      from: 'OnAlert <alerts@themindmaker.ai>',
       to: [to],
       subject,
       html,
@@ -33,28 +33,30 @@ async function sendEmail(to: string, subject: string, html: string) {
 
   if (!res.ok) {
     const error = await res.text()
-    throw new Error(`Email send failed: ${error}`)
+    throw new Error(`Email send failed (${res.status}): ${error}`)
   }
 
   return res.json()
 }
 
-function generateEmailHTML(payload: AlertPayload, userEmail: string): string {
+function generateEmailHTML(payload: AlertPayload): string {
   const date = new Date(payload.slot_timestamp).toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
-    year: 'numeric'
+    year: 'numeric',
+    timeZone: 'America/New_York',
   })
-  
+
   const time = new Date(payload.slot_timestamp).toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
-    timeZoneName: 'short'
+    timeZone: 'America/New_York',
+    timeZoneName: 'short',
   })
 
-  const serviceEmoji = payload.service_type === 'GE' ? '✈️' : 
-                       payload.service_type === 'TSA' ? '🛂' : 
+  const serviceEmoji = payload.service_type === 'GE' ? '✈️' :
+                       payload.service_type === 'TSA' ? '🛂' :
                        payload.service_type === 'NEXUS' ? '🇨🇦' : '🇲🇽'
 
   return `
@@ -63,7 +65,7 @@ function generateEmailHTML(payload: AlertPayload, userEmail: string): string {
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>🚨 Appointment Slot Available</title>
+      <title>Appointment Slot Available</title>
       <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; padding: 20px; background: #0A0A0A; color: #F5F5F5; }
         .container { max-width: 600px; margin: 0 auto; background: #111111; border-radius: 12px; overflow: hidden; }
@@ -86,7 +88,7 @@ function generateEmailHTML(payload: AlertPayload, userEmail: string): string {
           <h1>${serviceEmoji} Appointment Slot Available</h1>
           <div class="urgency">Time-sensitive alert</div>
         </div>
-        
+
         <div class="content">
           <div class="slot-info">
             <div class="location">${payload.location_name}</div>
@@ -101,14 +103,14 @@ function generateEmailHTML(payload: AlertPayload, userEmail: string): string {
           </div>
 
           <div style="margin-top: 24px; padding: 16px; background: #1A1A1A; border-radius: 8px; font-size: 13px; color: #888888;">
-            <strong>Action required:</strong> Appointment slots typically fill within 5-15 minutes. 
+            <strong>Action required:</strong> Appointment slots typically fill within 5–15 minutes.
             Book immediately if this time works for you.
           </div>
         </div>
 
         <div class="footer">
           <p>You're receiving this because you have an active monitor for ${payload.service_type} appointments.</p>
-          <p><a href="https://onalert.app/app/settings" style="color: #9F0506;">Manage notifications</a> | 
+          <p><a href="https://onalert.app/app/settings" style="color: #9F0506;">Manage notifications</a> |
              <a href="https://onalert.app" style="color: #9F0506;">OnAlert</a></p>
         </div>
       </div>
@@ -128,7 +130,7 @@ Deno.serve(async (req) => {
     const userId = record.user_id
     const payload: AlertPayload = record.payload
 
-    // Get user profile
+    // Get user profile for email and plan info
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('email, plan')
@@ -136,23 +138,44 @@ Deno.serve(async (req) => {
       .single()
 
     if (profileError || !profile) {
-      throw new Error('User not found')
+      throw new Error(`User not found: ${profileError?.message || 'no profile'}`)
     }
 
-    // Generate email
+    const channels: string[] = []
+
+    // 1. Always send email first (fastest delivery)
     const subject = `🚨 ${payload.service_type} slot available — ${payload.location_name}`
-    const html = generateEmailHTML(payload, profile.email)
+    const html = generateEmailHTML(payload)
 
-    // Send email
     await sendEmail(profile.email, subject, html)
+    channels.push('email')
 
-    // Mark alert as delivered
+    // 2. Send SMS for premium users (if SMS env is configured)
+    // SMS integration point — add Twilio/SNS here when ready
+    // if (profile.plan === 'premium') {
+    //   const TWILIO_SID = Deno.env.get('TWILIO_ACCOUNT_SID')
+    //   const TWILIO_TOKEN = Deno.env.get('TWILIO_AUTH_TOKEN')
+    //   const TWILIO_FROM = Deno.env.get('TWILIO_FROM_NUMBER')
+    //   if (TWILIO_SID && TWILIO_TOKEN && TWILIO_FROM && profile.phone) {
+    //     await sendSMS(profile.phone, smsBody)
+    //     channels.push('sms')
+    //   }
+    // }
+
+    // 3. Mark alert as delivered with channel info
     await supabase
       .from('alerts')
-      .update({ delivered_at: new Date().toISOString() })
+      .update({
+        delivered_at: new Date().toISOString(),
+        channel: channels.join(',')
+      })
       .eq('id', alertId)
 
-    return new Response(JSON.stringify({ success: true }), {
+    return new Response(JSON.stringify({
+      success: true,
+      channels,
+      alert_id: alertId,
+    }), {
       headers: { 'Content-Type': 'application/json' }
     })
 

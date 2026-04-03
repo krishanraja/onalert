@@ -12,6 +12,8 @@ export function AuthPage() {
   const [searchParams] = useSearchParams()
 
   useEffect(() => {
+    if (!supabase) return
+
     // Check if already authenticated
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) navigate('/app')
@@ -35,6 +37,8 @@ export function AuthPage() {
     setError('')
 
     try {
+      if (!supabase) throw new Error('Service unavailable. Please try again later.')
+
       const { error } = await supabase.auth.signInWithOtp({
         email: email.trim(),
         options: {

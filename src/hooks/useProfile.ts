@@ -9,6 +9,8 @@ export function useProfile() {
     let mounted = true
 
     async function load() {
+      if (!supabase) { setLoading(false); return }
+
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { setLoading(false); return }
 

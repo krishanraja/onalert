@@ -3,21 +3,28 @@ import { useNavigate } from 'react-router-dom'
 import { Crown, Mail, Smartphone, ExternalLink, LogOut } from 'lucide-react'
 import { useProfile } from '@/hooks/useProfile'
 import { supabase } from '@/lib/supabase'
-import { createCheckoutSession, openCustomerPortal, PLANS } from '@/lib/stripe'
+import { createCheckoutSession, openCustomerPortal } from '@/lib/stripe'
+import { PLANS } from '@/lib/plans'
 import { cn } from '@/lib/utils'
 
 export function SettingsPage() {
   const navigate = useNavigate()
   const { profile, isPremium } = useProfile()
   const [loading, setLoading] = useState('')
+  const [error, setError] = useState('')
 
   const handleUpgrade = async (plan: 'premium_monthly' | 'premium_annual') => {
     setLoading(plan)
+    setError('')
     try {
       const url = await createCheckoutSession(plan)
-      if (url) window.location.href = url
-    } catch (error) {
-      console.error('Upgrade failed:', error)
+      if (url) {
+        window.location.href = url
+      } else {
+        setError('Could not create checkout session. Please try again.')
+      }
+    } catch (err: any) {
+      setError(err.message || 'Upgrade failed. Please try again.')
     } finally {
       setLoading('')
     }
@@ -25,16 +32,18 @@ export function SettingsPage() {
 
   const handleBilling = async () => {
     setLoading('billing')
+    setError('')
     try {
       await openCustomerPortal()
-    } catch (error) {
-      console.error('Portal failed:', error)
+    } catch (err: any) {
+      setError(err.message || 'Could not open billing portal. Please try again.')
     } finally {
       setLoading('')
     }
   }
 
   const handleSignOut = async () => {
+    if (!supabase) { navigate('/'); return }
     await supabase.auth.signOut()
     navigate('/')
   }
@@ -49,6 +58,13 @@ export function SettingsPage() {
       </header>
 
       <div className="px-4 py-6 space-y-6">
+        {/* Error */}
+        {error && (
+          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
+            <p className="text-sm text-destructive">{error}</p>
+          </div>
+        )}
+
         {/* Account */}
         <div className="space-y-3">
           <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">Account</h2>

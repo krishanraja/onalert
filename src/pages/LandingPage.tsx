@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { Check, Clock, Smartphone, Shield } from 'lucide-react'
-import { PLANS } from '@/lib/stripe'
+import { PLANS } from '@/lib/plans'
 
 export function LandingPage() {
   const navigate = useNavigate()
