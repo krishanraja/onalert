@@ -164,7 +164,7 @@ export function AuthPage() {
         <div className="w-full max-w-sm">
           <div className="text-center mb-8">
             <img
-              src="/brand/icon-192.png"
+              src="/brand/nav-icon.svg"
               alt="OnAlert"
               className="w-16 h-16 mx-auto mb-4"
             />

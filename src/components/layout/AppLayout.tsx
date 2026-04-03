@@ -36,9 +36,9 @@ export function AppLayout() {
       <header className="hidden md:block border-b border-border bg-background-elevated">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center">
           <img
-            src="/brand/icon-192.png"
+            src="/brand/nav-icon.svg"
             alt="OnAlert"
-            className="h-8 w-8 rounded-lg"
+            className="h-9 w-9"
           />
         </div>
       </header>
