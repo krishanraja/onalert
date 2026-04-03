@@ -21,23 +21,25 @@ This is the reality for millions of Trusted Traveler Program applicants:
 OnAlert turns months of anxious refreshing into a single 2-minute setup:
 
 1. **Set it and forget it**: Pick your program and locations, and your monitor runs 24/7
-2. **6x faster than free**: Premium checks every 10 minutes across all your locations
+2. **12x faster than free**: Paid plans check every 5 minutes across all your locations
 3. **Instant delivery**: Email alert within seconds of slot detection
 4. **One-tap booking**: Direct link to the CBP scheduler -- no extra steps
 5. **Real-time in-app feed**: See alerts the moment they happen, with haptic feedback on mobile
 
 ## Why Users Pay
 
-| | Free | Premium ($19/mo) |
-|---|------|------------------|
-| Active monitors | 1 | Unlimited |
-| Check frequency | Every 60 min | Every 10 min (6x faster) |
-| Email alerts | Yes | Yes |
-| SMS alerts | No | Yes |
-| Locations per monitor | 3 | Unlimited |
-| Real-time in-app alerts | Yes | Yes |
+| | Free | Pro ($29) | Family ($49) |
+|---|------|-----------|--------------|
+| Active monitors | 1 | 1 | Up to 5 |
+| Locations per monitor | 3 | Unlimited | Unlimited |
+| Check frequency | Every 60 min | Every 5 min (12x faster) | Every 5 min (12x faster) |
+| Email alerts | Yes | Yes | Yes |
+| SMS alerts | No | Yes | Yes |
+| Real-time in-app alerts | Yes | Yes | Yes |
+| Direct booking links | Yes | Yes | Yes |
+| Payment model | Free forever | One-time | One-time |
 
-**The math is simple**: A single caught appointment saves weeks or months of waiting. The average Global Entry applicant waits 6+ months at popular locations. $19/month to cut that to days is an obvious win.
+**The math is simple**: A single caught appointment saves weeks or months of waiting. The average Global Entry applicant waits 6+ months at popular locations. $29 once to cut that to days is an obvious win -- and there's no subscription to cancel.
 
 ## Competitive Landscape
 
@@ -45,7 +47,7 @@ OnAlert turns months of anxious refreshing into a single 2-minute setup:
 |-------------|----------|
 | Manual checking | Time-consuming, unreliable, easy to miss slots |
 | Reddit / Twitter monitoring | Delayed, noisy, no personalization, no direct links |
-| Other monitoring services | Most are abandoned, overpriced, or lack real-time alerts |
+| Other monitoring services | Most are abandoned, overpriced, or lock you into subscriptions |
 | Browser extensions | Require your computer to be on, no mobile support |
 | Hiring someone to check | Expensive, unreliable, not scalable |
 
@@ -54,7 +56,7 @@ OnAlert turns months of anxious refreshing into a single 2-minute setup:
 1. **Purpose-built**: Focused exclusively on CBP Trusted Traveler Programs -- not a generic monitoring tool
 2. **Real-time API polling**: Direct integration with the CBP scheduler API, not scraping or aggregating
 3. **Mobile-first PWA**: Install on your home screen, receive alerts anywhere, book in one tap
-4. **Transparent pricing**: Simple free + premium tiers with clear feature differences, no hidden fees
+4. **Honest pricing**: One-time payment aligned with how you actually use the product. No subscription trap.
 5. **Privacy-first**: Minimal data collection, row-level security, no data selling
 6. **Production-grade reliability**: Parallel API fetching, optimistic updates, error boundaries, and automated scrape logging
 7. **Multiple sign-in options**: Google OAuth, email/password, or magic link -- zero friction to start

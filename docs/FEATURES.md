@@ -8,10 +8,10 @@
 - **50+ enrollment centers**: Searchable by name, city, or state
 - **Pause/resume**: Toggle monitor active state without deleting configuration
 - **Delete**: Confirmation dialog before permanent removal
-- **Plan-based limits**: Free = 1 monitor (3 locations), Premium = unlimited
+- **Plan-based limits**: Free = 1 monitor (3 locations), Pro = 1 monitor (unlimited locations), Family = 5 monitors (unlimited locations)
 
 ### Alert System
-- **Real-time detection**: Polls CBP API every 10min (premium) or 60min (free)
+- **Real-time detection**: Polls CBP API every 5min (paid) or 60min (free)
 - **Intelligent comparison**: Detects new slots by comparing current state against last-known slots
 - **Alert feed**: Reverse-chronological list with unread indicators and badge count
 - **Alert detail view**: Full slot info, location, date/time, time-sensitive warning, and direct booking link
@@ -24,7 +24,7 @@
 - **Branded HTML email**: Dark-themed email with slot time, location, service badge, and booking CTA
 - **Delivery tracking**: `delivered_at` timestamp per alert for monitoring delivery health
 - **Urgency messaging**: "Slots typically fill within 5-15 minutes" prominently displayed
-- **SMS ready**: Infrastructure in place for Twilio/SNS integration (premium feature)
+- **SMS ready**: Infrastructure in place for Twilio/SNS integration (paid feature)
 
 ### Authentication
 - **Google OAuth**: One-tap sign-in via Google account
@@ -34,11 +34,10 @@
 - **Auth guard**: Protected `/app` routes redirect unauthenticated users to `/auth`
 
 ### Payments & Billing
-- **Stripe Checkout**: Hosted payment page for frictionless subscription signup
-- **Two plans**: Monthly ($19/mo) and Annual ($149/yr, saves $79)
-- **Customer portal**: Self-service billing management (update payment, cancel, view invoices)
-- **Webhook-driven sync**: Auto-upgrade on payment, auto-downgrade on cancellation
-- **Payment failure logging**: Failed invoices tracked for monitoring
+- **Stripe Checkout**: Hosted payment page for one-time purchase
+- **Three plans**: Free, Pro ($29 one-time), Family ($49 one-time)
+- **Webhook-driven sync**: Auto-upgrade on successful payment
+- **No subscription management needed**: One-time purchase model eliminates cancellation friction
 
 ### Progressive Web App (PWA)
 - **Installable**: Add to home screen on iOS, Android, and desktop
@@ -49,27 +48,26 @@
 ### Landing Page
 - **Hero section**: Clear value proposition with program badges
 - **Feature highlights**: Three key benefits with icons
-- **Pricing display**: Side-by-side free vs premium comparison
+- **Pricing display**: Three-tier comparison (Free, Pro, Family) with one-time pricing
 - **Social proof ready**: Infrastructure for testimonials and metrics
 
 ## Feature Matrix
 
-| Feature | Free | Premium |
-|---------|------|---------|
-| Active monitors | 1 | Unlimited |
-| Locations per monitor | 3 | Unlimited |
-| Check interval | 60 min | 10 min (6x faster) |
-| Email alerts | Yes | Yes |
-| SMS alerts | -- | Yes (planned) |
-| Real-time in-app alerts | Yes | Yes |
-| Direct booking links | Yes | Yes |
-| Haptic feedback | Yes | Yes |
-| Customer portal | -- | Yes |
-| Priority support | -- | Yes |
+| Feature | Free | Pro ($29) | Family ($49) |
+|---------|------|-----------|--------------|
+| Active monitors | 1 | 1 | Up to 5 |
+| Locations per monitor | 3 | Unlimited | Unlimited |
+| Check interval | 60 min | 5 min (12x faster) | 5 min (12x faster) |
+| Email alerts | Yes | Yes | Yes |
+| SMS alerts | -- | Yes (planned) | Yes (planned) |
+| Real-time in-app alerts | Yes | Yes | Yes |
+| Direct booking links | Yes | Yes | Yes |
+| Haptic feedback | Yes | Yes | Yes |
+| Payment model | Free forever | One-time | One-time |
 
 ## Planned Features
 
-- [ ] SMS notifications via Twilio (premium)
+- [ ] SMS notifications via Twilio (paid)
 - [ ] Push notifications via Web Push API
 - [ ] Slack/Discord webhook integration
 - [ ] Custom check intervals
@@ -77,3 +75,4 @@
 - [ ] Multi-language support (Spanish, French)
 - [ ] Email delivery status tracking via Resend webhooks
 - [ ] Alert retry mechanism for failed deliveries
+- [ ] Referral program (share success, earn credits)

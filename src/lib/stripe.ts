@@ -13,7 +13,7 @@ export function getStripe() {
 }
 
 export async function createCheckoutSession(
-  plan: 'premium_monthly' | 'premium_annual'
+  plan: 'pro' | 'family'
 ): Promise<string | null> {
   if (!supabase) return null
   const { data, error } = await supabase.functions.invoke('create-checkout', {
@@ -24,14 +24,4 @@ export async function createCheckoutSession(
     return null
   }
   return data.url
-}
-
-export async function openCustomerPortal(): Promise<void> {
-  if (!supabase) return
-  const { data, error } = await supabase.functions.invoke('customer-portal', {})
-  if (error || !data?.url) {
-    console.error('Portal error:', error)
-    return
-  }
-  window.location.href = data.url
 }

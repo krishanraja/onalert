@@ -30,5 +30,8 @@ export function useProfile() {
     return () => { mounted = false }
   }, [])
 
-  return { profile, loading, isPremium: profile?.plan === 'premium' }
+  const isPaid = profile?.plan === 'pro' || profile?.plan === 'family'
+  const isFamily = profile?.plan === 'family'
+
+  return { profile, loading, isPaid, isFamily }
 }

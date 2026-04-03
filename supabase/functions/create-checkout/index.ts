@@ -11,13 +11,15 @@ const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
 })
 
 const PLANS = {
-  premium_monthly: {
-    price: 1900, // $19.00 in cents
-    interval: 'month' as const,
+  pro: {
+    price: 2900, // $29.00 one-time
+    name: 'OnAlert Pro',
+    description: '1 monitor, SMS alerts, 5-minute checks, unlimited locations',
   },
-  premium_annual: {
-    price: 14900, // $149.00 in cents
-    interval: 'year' as const,
+  family: {
+    price: 4900, // $49.00 one-time
+    name: 'OnAlert Family',
+    description: 'Up to 5 monitors, SMS alerts, 5-minute checks, unlimited locations',
   },
 }
 
@@ -28,7 +30,7 @@ Deno.serve(async (req) => {
 
   try {
     const { plan } = await req.json()
-    
+
     if (!plan || !PLANS[plan as keyof typeof PLANS]) {
       throw new Error('Invalid plan')
     }
@@ -37,7 +39,7 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get('Authorization')!
     const token = authHeader.replace('Bearer ', '')
     const { data: { user }, error: userError } = await supabase.auth.getUser(token)
-    
+
     if (userError || !user) {
       throw new Error('Unauthorized')
     }
@@ -65,24 +67,21 @@ Deno.serve(async (req) => {
         .eq('id', user.id)
     }
 
-    // Create checkout session
+    // Create one-time payment checkout session
     const planConfig = PLANS[plan as keyof typeof PLANS]
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['card'],
-      mode: 'subscription',
+      mode: 'payment',
       line_items: [
         {
           price_data: {
             currency: 'usd',
             product_data: {
-              name: `OnAlert Premium (${planConfig.interval === 'month' ? 'Monthly' : 'Annual'})`,
-              description: 'Unlimited monitors, SMS alerts, 10-minute checks',
+              name: planConfig.name,
+              description: planConfig.description,
             },
             unit_amount: planConfig.price,
-            recurring: {
-              interval: planConfig.interval,
-            },
           },
           quantity: 1,
         },

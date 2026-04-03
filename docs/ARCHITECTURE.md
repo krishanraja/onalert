@@ -136,7 +136,7 @@ monitors   (1) --> (N) alerts
 ### State Management
 
 - **No global store** -- React hooks + Supabase Realtime
-- `useProfile()` -- Current user profile + plan status (isPremium)
+- `useProfile()` -- Current user profile + plan status (isPaid, isFamily)
 - `useMonitors()` -- Monitor CRUD + realtime sync + optimistic updates
 - `useAlerts()` -- Alert feed + realtime inserts + mark-read + unread count
 - All hooks include null Supabase guards for graceful degradation
@@ -161,9 +161,8 @@ main.tsx
 |----------|---------|---------|
 | `poll-appointments` | CRON (every 10min) | Poll CBP API, detect new slots, create alerts |
 | `send-alert` | Invoked by poll-appointments | Deliver branded HTML email via Resend |
-| `create-checkout` | User action (upgrade button) | Create Stripe Checkout session (monthly or annual) |
-| `customer-portal` | User action (manage billing) | Create Stripe billing portal session |
-| `stripe-webhook` | Stripe events | Handle subscription lifecycle (create/update/delete) |
+| `create-checkout` | User action (upgrade button) | Create Stripe Checkout session (one-time payment for Pro or Family) |
+| `stripe-webhook` | Stripe events | Handle one-time payment completion, upgrade user plan |
 
 ## Security
 

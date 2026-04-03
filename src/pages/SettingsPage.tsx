@@ -1,23 +1,23 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Crown, Mail, Smartphone, ExternalLink, LogOut } from 'lucide-react'
+import { Crown, Mail, Smartphone, LogOut, Users } from 'lucide-react'
 import { useProfile } from '@/hooks/useProfile'
 import { supabase } from '@/lib/supabase'
-import { createCheckoutSession, openCustomerPortal } from '@/lib/stripe'
+import { createCheckoutSession } from '@/lib/stripe'
 import { PLANS } from '@/lib/plans'
 import { Switch } from '@/components/ui/switch'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 
 export function SettingsPage() {
   const navigate = useNavigate()
-  const { profile, isPremium } = useProfile()
+  const { profile, isPaid, isFamily } = useProfile()
   const [loading, setLoading] = useState('')
   const [error, setError] = useState('')
   const [emailAlerts, setEmailAlerts] = useState(true)
-  const [smsAlerts, setSmsAlerts] = useState(isPremium)
+  const [smsAlerts, setSmsAlerts] = useState(isPaid)
   const [showSignOutDialog, setShowSignOutDialog] = useState(false)
 
-  const handleUpgrade = async (plan: 'premium_monthly' | 'premium_annual') => {
+  const handleUpgrade = async (plan: 'pro' | 'family') => {
     setLoading(plan)
     setError('')
     try {
@@ -34,23 +34,13 @@ export function SettingsPage() {
     }
   }
 
-  const handleBilling = async () => {
-    setLoading('billing')
-    setError('')
-    try {
-      await openCustomerPortal()
-    } catch (err: any) {
-      setError(err.message || 'Could not open billing portal. Please try again.')
-    } finally {
-      setLoading('')
-    }
-  }
-
   const handleSignOut = async () => {
     if (!supabase) { navigate('/'); return }
     await supabase.auth.signOut()
     navigate('/')
   }
+
+  const planLabel = isFamily ? 'FAMILY' : isPaid ? 'PRO' : 'FREE'
 
   return (
     <div className="min-h-full bg-background">
@@ -77,10 +67,10 @@ export function SettingsPage() {
               <div>
                 <p className="font-medium text-foreground">{profile?.email}</p>
                 <div className="flex items-center gap-2 mt-1">
-                  {isPremium ? (
+                  {isPaid ? (
                     <div className="flex items-center gap-1.5 bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                      <Crown size={10} />
-                      <span className="text-xs font-medium">PREMIUM</span>
+                      {isFamily ? <Users size={10} /> : <Crown size={10} />}
+                      <span className="text-xs font-medium">{planLabel}</span>
                     </div>
                   ) : (
                     <span className="text-xs text-foreground-muted bg-surface-muted px-2 py-0.5 rounded-full">
@@ -90,18 +80,6 @@ export function SettingsPage() {
                 </div>
               </div>
             </div>
-
-            {isPremium && (
-              <button
-                onClick={handleBilling}
-                disabled={loading === 'billing'}
-                className="flex items-center gap-2 text-sm text-foreground-secondary hover:text-foreground transition-colors disabled:opacity-50"
-              >
-                <ExternalLink size={14} />
-                Manage billing
-                {loading === 'billing' && <span className="text-xs">(Loading...)</span>}
-              </button>
-            )}
           </div>
         </div>
 
@@ -130,14 +108,14 @@ export function SettingsPage() {
                 <div>
                   <p className="font-medium text-foreground">SMS alerts</p>
                   <p className="text-xs text-foreground-secondary">
-                    {isPremium ? 'Get notified via text message' : 'Premium feature'}
+                    {isPaid ? 'Get notified via text message' : 'Paid feature'}
                   </p>
                 </div>
               </div>
               <Switch
                 checked={smsAlerts}
                 onCheckedChange={setSmsAlerts}
-                disabled={!isPremium}
+                disabled={!isPaid}
                 aria-label="Toggle SMS alerts"
               />
             </div>
@@ -145,30 +123,33 @@ export function SettingsPage() {
         </div>
 
         {/* Upgrade */}
-        {!isPremium && (
+        {!isPaid && (
           <div className="space-y-3">
             <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">Upgrade</h2>
             <div className="space-y-3">
-              {/* Monthly */}
-              <div className="bg-surface border border-border rounded-lg p-4">
+              {/* Pro */}
+              <div className="bg-surface border border-primary rounded-lg p-4 relative">
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                  <span className="bg-primary text-white px-3 py-1 rounded-full text-xs font-medium">Most popular</span>
+                </div>
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <h3 className="font-semibold text-foreground">Premium</h3>
+                    <h3 className="font-semibold text-foreground">Pro</h3>
                     <p className="text-2xl font-bold text-foreground">
-                      ${PLANS.premium_monthly.price}
-                      <span className="text-sm font-normal text-foreground-secondary">/month</span>
+                      ${PLANS.pro.price}
+                      <span className="text-sm font-normal text-foreground-secondary"> one-time</span>
                     </p>
                   </div>
                   <button
-                    onClick={() => handleUpgrade('premium_monthly')}
-                    disabled={loading === 'premium_monthly'}
+                    onClick={() => handleUpgrade('pro')}
+                    disabled={loading === 'pro'}
                     className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
                   >
-                    {loading === 'premium_monthly' ? 'Loading...' : 'Upgrade'}
+                    {loading === 'pro' ? 'Loading...' : 'Buy Pro'}
                   </button>
                 </div>
                 <ul className="space-y-1">
-                  {PLANS.premium_monthly.features.map((feature) => (
+                  {PLANS.pro.features.map((feature) => (
                     <li key={feature} className="text-sm text-foreground-secondary">
                       • {feature}
                     </li>
@@ -176,36 +157,66 @@ export function SettingsPage() {
                 </ul>
               </div>
 
-              {/* Annual */}
+              {/* Family */}
               <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-4 relative">
                 <div className="absolute -top-2 left-4">
                   <span className="bg-primary text-white px-2 py-0.5 rounded-full text-xs font-medium">
-                    Save $79
+                    Best for families
                   </span>
                 </div>
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <h3 className="font-semibold text-foreground">Premium Annual</h3>
+                    <h3 className="font-semibold text-foreground">Family</h3>
                     <p className="text-2xl font-bold text-foreground">
-                      ${PLANS.premium_annual.price}
-                      <span className="text-sm font-normal text-foreground-secondary">/year</span>
+                      ${PLANS.family.price}
+                      <span className="text-sm font-normal text-foreground-secondary"> one-time</span>
                     </p>
                   </div>
                   <button
-                    onClick={() => handleUpgrade('premium_annual')}
-                    disabled={loading === 'premium_annual'}
+                    onClick={() => handleUpgrade('family')}
+                    disabled={loading === 'family'}
                     className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
                   >
-                    {loading === 'premium_annual' ? 'Loading...' : 'Upgrade'}
+                    {loading === 'family' ? 'Loading...' : 'Buy Family'}
                   </button>
                 </div>
                 <ul className="space-y-1">
-                  {PLANS.premium_annual.features.map((feature) => (
+                  {PLANS.family.features.map((feature) => (
                     <li key={feature} className="text-sm text-foreground-secondary">
                       • {feature}
                     </li>
                   ))}
                 </ul>
+              </div>
+
+              <p className="text-xs text-foreground-muted text-center">
+                One-time payment. No subscription. Yours forever.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Upgrade from Pro to Family */}
+        {isPaid && !isFamily && (
+          <div className="space-y-3">
+            <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">Upgrade</h2>
+            <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-4">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <h3 className="font-semibold text-foreground">Upgrade to Family</h3>
+                  <p className="text-sm text-foreground-secondary">Monitor up to 5 programs for the whole family.</p>
+                  <p className="text-2xl font-bold text-foreground mt-1">
+                    ${PLANS.family.price}
+                    <span className="text-sm font-normal text-foreground-secondary"> one-time</span>
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleUpgrade('family')}
+                  disabled={loading === 'family'}
+                  className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
+                >
+                  {loading === 'family' ? 'Loading...' : 'Upgrade'}
+                </button>
               </div>
             </div>
           </div>
