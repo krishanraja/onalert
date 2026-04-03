@@ -1,9 +1,16 @@
-import { loadStripe } from '@stripe/stripe-js'
+import { loadStripe } from '@stripe/stripe-js/pure'
 import { supabase } from './supabase'
 
 export { PLANS } from './plans'
 
-export const stripe = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY ?? null)
+let stripePromise: ReturnType<typeof loadStripe> | null = null
+
+export function getStripe() {
+  if (!stripePromise) {
+    stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY ?? null)
+  }
+  return stripePromise
+}
 
 export async function createCheckoutSession(
   plan: 'premium_monthly' | 'premium_annual'
