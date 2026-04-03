@@ -98,7 +98,7 @@ Enable Realtime for `alerts` and `monitors` tables:
 ## Stripe Setup
 
 ### Products
-No pre-created products needed — `create-checkout` creates inline price data:
+No pre-created products needed  - `create-checkout` creates inline price data:
 - Premium Monthly: $19/month
 - Premium Annual: $149/year
 

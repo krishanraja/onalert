@@ -205,7 +205,7 @@ Deno.serve(async (req) => {
               slotTimestamp
             )
 
-            // Insert alert — this is picked up by the send-alert function
+            // Insert alert  - this is picked up by the send-alert function
             const { data: alertRecord, error: alertError } = await supabase
               .from('alerts')
               .insert({

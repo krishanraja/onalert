@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* OnAlert Design System — Dark-first, Bloomberg Terminal energy
+/* OnAlert Design System  - Dark-first, Bloomberg Terminal energy
    Crimson accent (#9F0506), black backgrounds, Inter + Fira Code
 */
 
@@ -24,11 +24,11 @@
     --input: 0 0% 12%;                /* #1F1F1F */
     --ring: 0 94% 32%;
 
-    /* Primary — Crimson */
+    /* Primary  - Crimson */
     --primary: 0 94% 32%;             /* #9F0506 */
     --primary-foreground: 0 0% 96%;
 
-    /* Alert (same crimson — reserved for time-sensitive) */
+    /* Alert (same crimson  - reserved for time-sensitive) */
     --alert: 0 94% 32%;
     --alert-muted: 0 60% 12%;
 

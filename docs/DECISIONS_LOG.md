@@ -10,7 +10,7 @@ Key technical and product decisions with rationale.
 - Reduces friction for a single-purpose tool
 - No password reset flow needed
 - Lower support burden
-- Users already providing email for alerts — reuse the same channel
+- Users already providing email for alerts  - reuse the same channel
 
 **Trade-off**: Requires email access to log in (no offline auth). Acceptable for this use case.
 

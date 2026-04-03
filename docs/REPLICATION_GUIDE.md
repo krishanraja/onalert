@@ -147,7 +147,7 @@ Use cron-job.org, Vercel Cron, or similar:
 npm run dev
 ```
 
-Open `http://localhost:5173` — you should see the landing page.
+Open `http://localhost:5173`  - you should see the landing page.
 
 ## Step 9: Deploy to Vercel
 

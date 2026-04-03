@@ -2,7 +2,7 @@
 
 ## Philosophy
 
-Bloomberg Terminal meets mobile-first: dark, precise, urgent. The design conveys reliability and speed — critical for a time-sensitive alerting product.
+Bloomberg Terminal meets mobile-first: dark, precise, urgent. The design conveys reliability and speed  - critical for a time-sensitive alerting product.
 
 ## Color Tokens
 
@@ -42,7 +42,7 @@ All colors are defined as CSS custom properties in `src/index.css` and mapped to
 
 ### Font Stack
 - **Sans-serif**: `Inter` (400, 500, 600, 700)
-- **Monospace**: `Fira Code` (400, 500) — slot times, badges, timestamps
+- **Monospace**: `Fira Code` (400, 500)  - slot times, badges, timestamps
 
 ### Scale
 | Usage | Size | Weight | Font |
@@ -89,10 +89,10 @@ All colors are defined as CSS custom properties in `src/index.css` and mapped to
 ## Component Patterns
 
 ### Buttons
-- **Primary**: `bg-primary text-white` — CTAs, submit actions
-- **Secondary**: `border border-border text-foreground` — Back, cancel
-- **Destructive**: `bg-destructive text-white` — Delete confirm
-- **Ghost**: `text-foreground-muted hover:text-foreground` — Nav items
+- **Primary**: `bg-primary text-white`  - CTAs, submit actions
+- **Secondary**: `border border-border text-foreground`  - Back, cancel
+- **Destructive**: `bg-destructive text-white`  - Delete confirm
+- **Ghost**: `text-foreground-muted hover:text-foreground`  - Nav items
 
 ### Cards
 - Surface background with border: `bg-surface border border-border rounded-lg p-4`

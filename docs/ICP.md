@@ -12,7 +12,7 @@
 - Values time and convenience
 - Willing to pay for tools that save effort
 - Tech-comfortable (uses apps daily)
-- Proactive — already applied for Trusted Traveler Programs
+- Proactive  - already applied for Trusted Traveler Programs
 
 ### Situation
 - Conditionally approved for Global Entry, TSA PreCheck, NEXUS, or SENTRI
@@ -24,7 +24,7 @@
 1. Constantly refreshing the CBP scheduler (multiple times daily)
 2. Missed slots because they were checking at the wrong time
 3. Anxiety about missing a cancellation before a planned trip
-4. No good alternative — existing tools are unreliable or defunct
+4. No good alternative  - existing tools are unreliable or defunct
 
 ### Decision Triggers
 - "My trip is in 6 weeks and the next appointment is in 9 months"
