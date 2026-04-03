@@ -37,7 +37,7 @@ export function useMonitors() {
 
     return () => {
       mounted = false
-      supabase.removeChannel(channel)
+      supabase!.removeChannel(channel)
     }
   }, [])
 

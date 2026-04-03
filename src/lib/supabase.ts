@@ -18,7 +18,7 @@ export const supabase = supabaseUrl && supabaseAnonKey
         detectSessionInUrl: true,
       },
     })
-  : (null as unknown as ReturnType<typeof createClient>)
+  : null
 
 export type Profile = {
   id: string
