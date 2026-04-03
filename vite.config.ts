@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["brand/favicon-32.png", "brand/apple-touch-icon.png"],
+      includeAssets: ["brand/favicon-32.png", "brand/favicon-16.png", "brand/apple-touch-icon.png", "brand/icon-192.png", "brand/icon-512.png"],
       manifest: {
         name: "OnAlert",
         short_name: "OnAlert",
