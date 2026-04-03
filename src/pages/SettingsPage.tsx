@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { Crown, Mail, Smartphone, ExternalLink, LogOut } from 'lucide-react'
 import { useProfile } from '@/hooks/useProfile'
 import { supabase } from '@/lib/supabase'
-import { createCheckoutSession, openCustomerPortal, PLANS } from '@/lib/stripe'
+import { createCheckoutSession, openCustomerPortal } from '@/lib/stripe'
+import { PLANS } from '@/lib/plans'
 import { cn } from '@/lib/utils'
 
 export function SettingsPage() {
