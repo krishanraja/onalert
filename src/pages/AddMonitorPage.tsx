@@ -1,25 +1,63 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, Check, Search, MapPin } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Search, MapPin, Zap, Star, Navigation } from 'lucide-react'
 import { useProfile } from '@/hooks/useProfile'
 import { useMonitors } from '@/hooks/useMonitors'
 import { SERVICE_TYPES, TOP_LOCATIONS, searchLocations, type ServiceType } from '@/lib/locations'
+import { getRecommendations, getNearestLocations } from '@/lib/recommendations'
+import { getUserLocation, guessLocationFromTimezone } from '@/lib/geolocation'
+import { haptic } from '@/lib/haptics'
+import { showToast } from '@/hooks/useToast'
 import { cn } from '@/lib/utils'
+
+// Popular locations based on typical demand
+const POPULAR_LOCATION_IDS = [5140, 5003, 5006, 5002, 5007, 5004, 5030, 5008]
 
 export function AddMonitorPage() {
   const navigate = useNavigate()
   const { profile, isPremium } = useProfile()
   const { monitors, createMonitor } = useMonitors()
-  const [step, setStep] = useState<1 | 2 | 3>(1)
-  const [serviceType, setServiceType] = useState<ServiceType | null>(null)
+  const [step, setStep] = useState<0 | 1 | 2 | 3>(0) // 0 = quick setup, 1-3 = wizard
+  const [serviceType, setServiceType] = useState<ServiceType | null>('GE') // Smart default: GE
   const [selectedLocations, setSelectedLocations] = useState<number[]>([])
   const [locationSearch, setLocationSearch] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [nearestLocations, setNearestLocations] = useState<number[]>([])
+  const [geoLoading, setGeoLoading] = useState(false)
 
   const filteredLocations = searchLocations(locationSearch)
   const maxLocations = isPremium ? Infinity : 3
   const canAddMore = isPremium || monitors.length < 1
+
+  // Try to get user's nearest locations on mount
+  useEffect(() => {
+    async function detectNearest() {
+      try {
+        setGeoLoading(true)
+        let coords: { lat: number; lng: number } | null = null
+
+        // Try geolocation first, fall back to timezone
+        try {
+          coords = await getUserLocation()
+        } catch {
+          coords = guessLocationFromTimezone()
+        }
+
+        if (coords) {
+          const nearest = getNearestLocations(coords.lat, coords.lng, 3)
+          setNearestLocations(nearest.map((l) => l.id))
+        }
+      } catch {
+        // Silent fail - not critical
+      } finally {
+        setGeoLoading(false)
+      }
+    }
+    detectNearest()
+  }, [])
+
+  const recommendations = getRecommendations(selectedLocations, 2)
 
   if (!canAddMore) {
     return (
@@ -42,17 +80,46 @@ export function AddMonitorPage() {
     )
   }
 
+  const handleQuickSetup = async () => {
+    const locationIds = nearestLocations.length > 0
+      ? nearestLocations.slice(0, maxLocations)
+      : POPULAR_LOCATION_IDS.slice(0, maxLocations)
+
+    setLoading(true)
+    setError('')
+    try {
+      const monitor = await createMonitor({
+        location_ids: locationIds,
+        service_type: 'GE',
+        last_known_slots: {}
+      })
+      if (monitor) {
+        haptic('monitorCreated')
+        showToast('Monitor activated! You\'ll get alerts when slots open.', 'success')
+        navigate('/app')
+      } else {
+        setError('Failed to create monitor. Please try again.')
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create monitor.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleNext = () => {
+    haptic('selection')
     if (step === 1 && serviceType) setStep(2)
     else if (step === 2 && selectedLocations.length > 0) setStep(3)
   }
 
   const handleBack = () => {
-    if (step > 1) setStep(step - 1 as 1 | 2)
-    else navigate('/app')
+    if (step === 0 || step === 1) navigate('/app')
+    else setStep(step - 1 as 1 | 2)
   }
 
   const handleLocationToggle = (locationId: number) => {
+    haptic('tap')
     setSelectedLocations(prev => {
       if (prev.includes(locationId)) {
         return prev.filter(id => id !== locationId)
@@ -77,16 +144,106 @@ export function AddMonitorPage() {
       })
 
       if (monitor) {
-        if ('vibrate' in navigator) navigator.vibrate([50, 30, 50])
+        haptic('monitorCreated')
+        showToast('Monitor activated! Scanning for slots now.', 'success')
         navigate('/app')
       } else {
         setError('Failed to create monitor. Please try again.')
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to create monitor. Please try again.')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create monitor. Please try again.')
     } finally {
       setLoading(false)
     }
+  }
+
+  // Quick setup screen (step 0)
+  if (step === 0) {
+    const quickLocations = nearestLocations.length > 0
+      ? nearestLocations.slice(0, 3)
+      : POPULAR_LOCATION_IDS.slice(0, 3)
+    const quickLocationNames = quickLocations
+      .map((id) => TOP_LOCATIONS.find((l) => l.id === id))
+      .filter(Boolean)
+
+    return (
+      <div className="min-h-screen bg-background">
+        <header className="bg-background-elevated border-b border-border safe-top">
+          <div className="px-4 py-4 flex items-center gap-3">
+            <button onClick={() => navigate('/app')} className="p-2 -ml-2 text-foreground-muted hover:text-foreground transition-colors">
+              <ArrowLeft size={20} />
+            </button>
+            <h1 className="font-semibold text-foreground">Add Monitor</h1>
+          </div>
+        </header>
+
+        <div className="p-6 space-y-8 max-w-lg mx-auto">
+          {/* Quick setup card */}
+          <div className="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-xl p-6">
+            <div className="flex items-center gap-2 mb-3">
+              <Zap size={18} className="text-primary" />
+              <h2 className="text-lg font-semibold text-foreground">Quick Start</h2>
+            </div>
+            <p className="text-sm text-foreground-secondary mb-4">
+              Monitor Global Entry at {nearestLocations.length > 0 ? 'your nearest' : 'the most popular'} airports. One tap to start.
+            </p>
+
+            {/* Show the locations that will be monitored */}
+            <div className="space-y-2 mb-4">
+              {quickLocationNames.map((loc) => loc && (
+                <div key={loc.id} className="flex items-center gap-2 text-sm text-foreground">
+                  {nearestLocations.includes(loc.id) ? (
+                    <Navigation size={12} className="text-primary shrink-0" />
+                  ) : (
+                    <Star size={12} className="text-warning shrink-0" />
+                  )}
+                  <span>{loc.city}, {loc.state}</span>
+                  <span className="text-xs text-foreground-muted">- {loc.name}</span>
+                </div>
+              ))}
+              {geoLoading && (
+                <p className="text-xs text-foreground-muted animate-pulse">Detecting your nearest locations...</p>
+              )}
+            </div>
+
+            <button
+              onClick={handleQuickSetup}
+              disabled={loading}
+              className="w-full bg-primary text-white py-3.5 rounded-lg font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {loading ? 'Activating...' : (
+                <>
+                  <Zap size={16} />
+                  Activate in one tap
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Error */}
+          {error && (
+            <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
+              <p className="text-sm text-destructive">{error}</p>
+            </div>
+          )}
+
+          {/* Customize option */}
+          <div className="text-center">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex-1 h-px bg-border" />
+              <span className="text-xs text-foreground-muted">or</span>
+              <div className="flex-1 h-px bg-border" />
+            </div>
+            <button
+              onClick={() => setStep(1)}
+              className="text-sm text-foreground-secondary hover:text-foreground transition-colors font-medium"
+            >
+              Customize your monitor →
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -107,18 +264,18 @@ export function AddMonitorPage() {
         </div>
       </header>
 
-      <div className="p-6 space-y-6">
+      <div className="p-6 space-y-6 max-w-lg mx-auto">
         {/* Progress */}
         <div className="flex items-center gap-2">
           {[1, 2, 3].map((s) => (
             <div key={s} className="flex items-center">
               <div className={cn(
-                'w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold',
+                'w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-colors',
                 s <= step ? 'bg-primary text-white' : 'bg-surface text-foreground-muted border border-border'
               )}>
                 {s < step ? <Check size={14} /> : s}
               </div>
-              {s < 3 && <div className={cn('h-0.5 w-8 mx-1', s < step ? 'bg-primary' : 'bg-border')} />}
+              {s < 3 && <div className={cn('h-0.5 w-8 mx-1 transition-colors', s < step ? 'bg-primary' : 'bg-border')} />}
             </div>
           ))}
         </div>
@@ -139,15 +296,20 @@ export function AddMonitorPage() {
               {Object.entries(SERVICE_TYPES).map(([key, service]) => (
                 <button
                   key={key}
-                  onClick={() => setServiceType(key as ServiceType)}
+                  onClick={() => { setServiceType(key as ServiceType); haptic('selection') }}
                   className={cn(
-                    'p-4 rounded-lg border text-left transition-colors',
+                    'p-4 rounded-lg border text-left transition-all active:scale-[0.97]',
                     serviceType === key
                       ? 'border-primary bg-primary/5'
                       : 'border-border bg-surface hover:border-border/60'
                   )}
                 >
-                  <h3 className="font-semibold text-foreground mb-1">{service.label}</h3>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-semibold text-foreground">{service.label}</h3>
+                    {key === 'GE' && (
+                      <span className="text-[9px] font-medium bg-warning/10 text-warning px-1.5 py-0.5 rounded">Popular</span>
+                    )}
+                  </div>
                   <p className="text-xs text-foreground-secondary leading-relaxed">
                     {service.description}
                   </p>
@@ -196,6 +358,39 @@ export function AddMonitorPage() {
               )}
             </div>
 
+            {/* Smart recommendations */}
+            {recommendations.length > 0 && selectedLocations.length > 0 && (
+              <div className="bg-surface border border-border rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Star size={12} className="text-warning" />
+                  <span className="text-xs font-semibold text-foreground-muted uppercase tracking-wide">Recommended</span>
+                </div>
+                {recommendations.map((rec) => {
+                  const isSelected = selectedLocations.includes(rec.location.id)
+                  const canSelect = isSelected || selectedLocations.length < maxLocations
+                  return (
+                    <button
+                      key={rec.location.id}
+                      onClick={() => canSelect && handleLocationToggle(rec.location.id)}
+                      disabled={!canSelect}
+                      className="w-full flex items-center gap-3 py-2 text-left"
+                    >
+                      <div className={cn(
+                        'w-4 h-4 rounded border flex items-center justify-center shrink-0',
+                        isSelected ? 'border-primary bg-primary' : 'border-border'
+                      )}>
+                        {isSelected && <Check size={10} className="text-white" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-foreground font-medium">{rec.location.city}, {rec.location.state}</p>
+                        <p className="text-xs text-foreground-muted">{rec.reason}</p>
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+
             {/* Location list */}
             <div className="space-y-2 max-h-96 overflow-y-auto">
               {filteredLocations.length === 0 && locationSearch && (
@@ -206,6 +401,8 @@ export function AddMonitorPage() {
               {filteredLocations.map((location) => {
                 const isSelected = selectedLocations.includes(location.id)
                 const canSelect = isSelected || selectedLocations.length < maxLocations
+                const isPopular = POPULAR_LOCATION_IDS.includes(location.id)
+                const isNearby = nearestLocations.includes(location.id)
 
                 return (
                   <button
@@ -213,7 +410,7 @@ export function AddMonitorPage() {
                     onClick={() => canSelect && handleLocationToggle(location.id)}
                     disabled={!canSelect}
                     className={cn(
-                      'w-full p-3 rounded-lg border text-left transition-colors',
+                      'w-full p-3 rounded-lg border text-left transition-all active:scale-[0.98]',
                       isSelected
                         ? 'border-primary bg-primary/5'
                         : canSelect
@@ -234,6 +431,12 @@ export function AddMonitorPage() {
                           <span className="font-medium text-foreground truncate">
                             {location.city}, {location.state}
                           </span>
+                          {isNearby && (
+                            <span className="text-[9px] font-medium bg-primary/10 text-primary px-1.5 py-0.5 rounded shrink-0">Nearby</span>
+                          )}
+                          {isPopular && !isNearby && (
+                            <span className="text-[9px] font-medium bg-warning/10 text-warning px-1.5 py-0.5 rounded shrink-0">Popular</span>
+                          )}
                         </div>
                         <p className="text-xs text-foreground-secondary truncate">
                           {location.name}

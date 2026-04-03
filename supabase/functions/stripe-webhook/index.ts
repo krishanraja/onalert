@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
         
         // Get user ID from customer metadata
         const customer = await stripe.customers.retrieve(customerId)
-        const userId = (customer as any).metadata?.supabase_user_id
+        const userId = (customer as Stripe.Customer).metadata?.supabase_user_id
         
         if (!userId) {
           console.error('No supabase_user_id in customer metadata')
@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
         
         // Get user ID from customer metadata
         const customer = await stripe.customers.retrieve(customerId)
-        const userId = (customer as any).metadata?.supabase_user_id
+        const userId = (customer as Stripe.Customer).metadata?.supabase_user_id
         
         if (!userId) {
           console.error('No supabase_user_id in customer metadata')

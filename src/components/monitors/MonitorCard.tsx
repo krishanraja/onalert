@@ -4,6 +4,8 @@ import { cn } from '@/lib/utils'
 import { type Monitor } from '@/lib/supabase'
 import { TOP_LOCATIONS, SERVICE_TYPES } from '@/lib/locations'
 import { formatDistanceToNow } from '@/lib/time'
+import { haptic } from '@/lib/haptics'
+import { showToast } from '@/hooks/useToast'
 
 interface Props {
   monitor: Monitor
@@ -22,7 +24,7 @@ export function MonitorCard({ monitor, onToggle, onDelete }: Props) {
 
   return (
     <div className={cn(
-      'bg-surface border border-border rounded-lg p-4 transition-opacity',
+      'bg-surface border border-border rounded-lg p-4 transition-all hover:border-border/80',
       !monitor.active && 'opacity-50'
     )}>
       {/* Header */}
@@ -33,10 +35,20 @@ export function MonitorCard({ monitor, onToggle, onDelete }: Props) {
               {service.abbr}
             </span>
             <span className={cn(
-              'text-[10px] font-medium',
+              'text-[10px] font-medium flex items-center gap-1',
               monitor.active ? 'text-success' : 'text-foreground-muted'
             )}>
-              {monitor.active ? '● Active' : '○ Paused'}
+              {monitor.active ? (
+                <>
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
+                  </span>
+                  Active
+                </>
+              ) : (
+                <>○ Paused</>
+              )}
             </span>
           </div>
           <div className="space-y-0.5">
@@ -59,7 +71,17 @@ export function MonitorCard({ monitor, onToggle, onDelete }: Props) {
           <button
             onClick={async () => {
               setToggling(true)
-              try { await onToggle(monitor.id, !monitor.active) } catch (err) { console.error('Failed to toggle monitor:', err) }
+              haptic('selection')
+              try {
+                await onToggle(monitor.id, !monitor.active)
+                showToast(
+                  monitor.active ? 'Monitor paused' : 'Monitor resumed',
+                  'info'
+                )
+              } catch (err) {
+                console.error('Failed to toggle monitor:', err)
+                showToast('Failed to update monitor', 'error')
+              }
               setToggling(false)
             }}
             disabled={toggling}
@@ -73,7 +95,16 @@ export function MonitorCard({ monitor, onToggle, onDelete }: Props) {
               <button
                 onClick={async () => {
                   setDeleting(true)
-                  try { await onDelete(monitor.id) } catch (err) { console.error('Failed to delete monitor:', err); setDeleting(false); setConfirmDelete(false) }
+                  haptic('warning')
+                  try {
+                    await onDelete(monitor.id)
+                    showToast('Monitor deleted', 'info')
+                  } catch (err) {
+                    console.error('Failed to delete monitor:', err)
+                    showToast('Failed to delete monitor', 'error')
+                    setDeleting(false)
+                    setConfirmDelete(false)
+                  }
                 }}
                 disabled={deleting}
                 aria-label="Confirm delete"
