@@ -1,4 +1,5 @@
 import { Outlet, Navigate } from 'react-router-dom'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { BottomNav } from './BottomNav'
@@ -21,11 +22,7 @@ export function AppLayout() {
   }, [])
 
   if (authed === null) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-1 h-1 rounded-full bg-primary animate-ping" />
-      </div>
-    )
+    return <LoadingSpinner />
   }
 
   if (!authed) return <Navigate to="/auth" replace />

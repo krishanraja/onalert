@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { Plus, Crown } from 'lucide-react'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { useProfile } from '@/hooks/useProfile'
 import { useMonitors } from '@/hooks/useMonitors'
 import { MonitorCard } from '@/components/monitors/MonitorCard'
@@ -10,11 +11,7 @@ export function DashboardPage() {
   const { monitors, loading: monitorsLoading, toggleMonitor, deleteMonitor } = useMonitors()
 
   if (profileLoading || monitorsLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-1 h-1 rounded-full bg-primary animate-ping" />
-      </div>
-    )
+    return <LoadingSpinner />
   }
 
   const handleAddMonitor = () => {
@@ -27,10 +24,10 @@ export function DashboardPage() {
       {/* Header */}
       <header className="bg-background-elevated border-b border-border safe-top">
         <div className="px-4 py-4 flex items-center justify-between">
-          <img 
-            src="/brand/logo-wordmark-dark.png" 
-            alt="OnAlert" 
-            className="h-7" 
+          <img
+            src="/brand/icon-192.png"
+            alt="OnAlert"
+            className="h-7 w-7 rounded"
           />
           <div className="flex items-center gap-2">
             {isPremium ? (

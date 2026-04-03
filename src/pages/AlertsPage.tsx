@@ -1,4 +1,5 @@
 import { Bell } from 'lucide-react'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { useAlerts } from '@/hooks/useAlerts'
 import { AlertCard } from '@/components/alerts/AlertCard'
 
@@ -6,11 +7,7 @@ export function AlertsPage() {
   const { alerts, loading } = useAlerts()
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-1 h-1 rounded-full bg-primary animate-ping" />
-      </div>
-    )
+    return <LoadingSpinner />
   }
 
   return (

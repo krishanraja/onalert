@@ -44,6 +44,7 @@ export function BottomNav({ unreadCount = 0 }: Props) {
             if ('vibrate' in navigator) navigator.vibrate([30])
             navigate('/app/add')
           }}
+          aria-label="Add new monitor"
           className="flex flex-col items-center gap-1 px-2 py-1"
         >
           <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-md">

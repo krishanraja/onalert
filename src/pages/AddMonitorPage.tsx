@@ -191,6 +191,9 @@ export function AddMonitorPage() {
               {selectedLocations.length >= maxLocations && !isPremium && (
                 <span className="text-warning">Limit reached</span>
               )}
+              {selectedLocations.length === 0 && (
+                <span className="text-foreground-muted text-xs" role="alert">Select at least one location to continue</span>
+              )}
             </div>
 
             {/* Location list */}

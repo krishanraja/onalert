@@ -59,10 +59,11 @@ export function MonitorCard({ monitor, onToggle, onDelete }: Props) {
           <button
             onClick={async () => {
               setToggling(true)
-              try { await onToggle(monitor.id, !monitor.active) } catch {}
+              try { await onToggle(monitor.id, !monitor.active) } catch (err) { console.error('Failed to toggle monitor:', err) }
               setToggling(false)
             }}
             disabled={toggling}
+            aria-label={monitor.active ? 'Pause monitor' : 'Resume monitor'}
             className="p-2 rounded-md text-foreground-muted hover:text-foreground hover:bg-surface-muted transition-colors disabled:opacity-50"
           >
             {monitor.active ? <Pause size={15} /> : <Play size={15} />}
@@ -72,15 +73,17 @@ export function MonitorCard({ monitor, onToggle, onDelete }: Props) {
               <button
                 onClick={async () => {
                   setDeleting(true)
-                  try { await onDelete(monitor.id) } catch { setDeleting(false); setConfirmDelete(false) }
+                  try { await onDelete(monitor.id) } catch (err) { console.error('Failed to delete monitor:', err); setDeleting(false); setConfirmDelete(false) }
                 }}
                 disabled={deleting}
+                aria-label="Confirm delete"
                 className="px-2 py-1 text-[10px] font-medium text-white bg-destructive rounded disabled:opacity-50"
               >
                 {deleting ? '...' : 'Delete'}
               </button>
               <button
                 onClick={() => setConfirmDelete(false)}
+                aria-label="Cancel delete"
                 className="px-2 py-1 text-[10px] font-medium text-foreground-muted bg-surface-muted rounded"
               >
                 Cancel
@@ -89,6 +92,7 @@ export function MonitorCard({ monitor, onToggle, onDelete }: Props) {
           ) : (
             <button
               onClick={() => setConfirmDelete(true)}
+              aria-label="Delete monitor"
               className="p-2 rounded-md text-foreground-muted hover:text-destructive hover:bg-surface-muted transition-colors"
             >
               <Trash2 size={15} />
