@@ -36,6 +36,7 @@ export default {
           DEFAULT: "hsl(var(--success))",
           muted: "hsl(var(--success-muted))",
         },
+        warning: "hsl(var(--warning))",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
