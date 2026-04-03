@@ -10,14 +10,15 @@ export function LandingPage() {
       {/* Header */}
       <header className="border-b border-border bg-background-elevated safe-top">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <img 
-            src="/brand/logo-wordmark-dark.png" 
-            alt="OnAlert" 
-            className="h-8" 
+          <img
+            src="/brand/icon-192.png"
+            alt="OnAlert"
+            className="h-8 w-8 rounded-lg"
           />
           <button
             onClick={() => navigate('/auth')}
             className="text-sm text-foreground-secondary hover:text-foreground transition-colors"
+            aria-label="Sign in"
           >
             Sign in
           </button>
@@ -27,11 +28,16 @@ export function LandingPage() {
       {/* Hero */}
       <section className="max-w-4xl mx-auto px-4 pt-16 pb-20">
         <div className="text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-foreground leading-tight mb-6">
-            Stop checking.<br />Start knowing.
-          </h1>
-          <p className="text-lg text-foreground-secondary max-w-2xl mx-auto mb-8">
-            OnAlert monitors government appointment systems in real time and reaches you 
+          <img
+            src="/brand/logo-wordmark-dark.png"
+            alt="OnAlert"
+            className="h-12 md:h-16 mx-auto mb-4"
+          />
+          <p className="text-lg md:text-xl text-foreground-secondary max-w-md mx-auto mb-6">
+            Be first in line for a US Govt appointment
+          </p>
+          <p className="text-sm text-foreground-secondary max-w-2xl mx-auto mb-8">
+            OnAlert monitors government appointment systems in real time and reaches you
             within minutes when a slot opens. Never miss a cancellation again.
           </p>
           <button
@@ -119,9 +125,9 @@ export function LandingPage() {
               © 2026 OnAlert. Real-time opportunity monitoring.
             </p>
             <div className="flex justify-center gap-6 mt-4">
-              <a href="#" className="text-xs text-foreground-secondary hover:text-foreground">Privacy</a>
-              <a href="#" className="text-xs text-foreground-secondary hover:text-foreground">Terms</a>
-              <a href="#" className="text-xs text-foreground-secondary hover:text-foreground">Support</a>
+              <a href="/privacy" className="text-xs text-foreground-secondary hover:text-foreground" aria-label="Privacy policy">Privacy</a>
+              <a href="/terms" className="text-xs text-foreground-secondary hover:text-foreground" aria-label="Terms of service">Terms</a>
+              <a href="mailto:support@onalert.app" className="text-xs text-foreground-secondary hover:text-foreground" aria-label="Contact support">Support</a>
             </div>
           </div>
         </div>

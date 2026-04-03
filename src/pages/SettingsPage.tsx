@@ -5,13 +5,17 @@ import { useProfile } from '@/hooks/useProfile'
 import { supabase } from '@/lib/supabase'
 import { createCheckoutSession, openCustomerPortal } from '@/lib/stripe'
 import { PLANS } from '@/lib/plans'
-import { cn } from '@/lib/utils'
+import { Switch } from '@/components/ui/switch'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 
 export function SettingsPage() {
   const navigate = useNavigate()
   const { profile, isPremium } = useProfile()
   const [loading, setLoading] = useState('')
   const [error, setError] = useState('')
+  const [emailAlerts, setEmailAlerts] = useState(true)
+  const [smsAlerts, setSmsAlerts] = useState(isPremium)
+  const [showSignOutDialog, setShowSignOutDialog] = useState(false)
 
   const handleUpgrade = async (plan: 'premium_monthly' | 'premium_annual') => {
     setLoading(plan)
@@ -113,9 +117,11 @@ export function SettingsPage() {
                   <p className="text-xs text-foreground-secondary">Get notified via email</p>
                 </div>
               </div>
-              <div className="w-11 h-6 bg-primary rounded-full flex items-center justify-end px-1">
-                <div className="w-4 h-4 bg-white rounded-full" />
-              </div>
+              <Switch
+                checked={emailAlerts}
+                onCheckedChange={setEmailAlerts}
+                aria-label="Toggle email alerts"
+              />
             </div>
 
             <div className="p-4 flex items-center justify-between">
@@ -128,12 +134,12 @@ export function SettingsPage() {
                   </p>
                 </div>
               </div>
-              <div className={cn(
-                'w-11 h-6 rounded-full flex items-center px-1',
-                isPremium ? 'bg-primary justify-end' : 'bg-border justify-start'
-              )}>
-                <div className="w-4 h-4 bg-white rounded-full" />
-              </div>
+              <Switch
+                checked={smsAlerts}
+                onCheckedChange={setSmsAlerts}
+                disabled={!isPremium}
+                aria-label="Toggle SMS alerts"
+              />
             </div>
           </div>
         </div>
@@ -208,14 +214,40 @@ export function SettingsPage() {
         {/* Sign out */}
         <div className="pt-6">
           <button
-            onClick={handleSignOut}
+            onClick={() => setShowSignOutDialog(true)}
             className="flex items-center gap-2 text-foreground-muted hover:text-destructive transition-colors"
+            aria-label="Sign out"
           >
             <LogOut size={16} />
             Sign out
           </button>
         </div>
       </div>
+
+      <Dialog open={showSignOutDialog} onOpenChange={setShowSignOutDialog}>
+        <DialogContent className="max-w-xs mx-auto">
+          <DialogHeader>
+            <DialogTitle>Sign out?</DialogTitle>
+            <DialogDescription>
+              You'll need to sign in again to access your monitors.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-row gap-2">
+            <button
+              onClick={() => setShowSignOutDialog(false)}
+              className="flex-1 border border-border text-foreground py-2 rounded-lg hover:bg-surface-muted transition-colors text-sm"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSignOut}
+              className="flex-1 bg-destructive text-white py-2 rounded-lg hover:bg-destructive/90 transition-colors text-sm font-medium"
+            >
+              Sign out
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

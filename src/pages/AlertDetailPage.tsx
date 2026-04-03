@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { ArrowLeft, ExternalLink, MapPin, Calendar, Clock } from 'lucide-react'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { supabase, type Alert } from '@/lib/supabase'
 import { useAlerts } from '@/hooks/useAlerts'
 import { SERVICE_TYPES } from '@/lib/locations'
@@ -53,11 +54,7 @@ export function AlertDetailPage() {
   }, [alert])
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-1 h-1 rounded-full bg-primary animate-ping" />
-      </div>
-    )
+    return <LoadingSpinner />
   }
 
   if (!alert) {
@@ -84,6 +81,7 @@ export function AlertDetailPage() {
         <div className="px-4 py-4 flex items-center gap-3">
           <button
             onClick={() => navigate('/app/alerts')}
+            aria-label="Go back to alerts"
             className="p-2 -ml-2 text-foreground-muted hover:text-foreground transition-colors"
           >
             <ArrowLeft size={20} />
@@ -158,6 +156,7 @@ export function AlertDetailPage() {
         <div className="space-y-3 pt-6">
           <button
             onClick={() => window.open(CBP_BOOK_URL, '_blank')}
+            aria-label="Book this appointment slot (opens in new tab)"
             className="w-full bg-primary text-white py-4 rounded-lg font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
           >
             <ExternalLink size={18} />
