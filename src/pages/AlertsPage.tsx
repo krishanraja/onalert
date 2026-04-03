@@ -1,8 +1,10 @@
 import { useState } from 'react'
-import { Bell, ArrowLeft, ExternalLink, MapPin, Calendar, Clock, Layers, RefreshCw, Lock } from 'lucide-react'
+import { Bell, ArrowLeft, ExternalLink, MapPin, Calendar, Clock, CheckCircle, Layers, RefreshCw, Lock } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useAlerts } from '@/hooks/useAlerts'
 import { useProfile } from '@/hooks/useProfile'
 import { AlertCard } from '@/components/alerts/AlertCard'
+import { SwipeableAlertCard } from '@/components/alerts/SwipeableAlertCard'
 import { AlertsListSkeleton } from '@/components/ui/Skeleton'
 import { type Alert } from '@/lib/supabase'
 import { SERVICE_TYPES } from '@/lib/locations'
@@ -50,7 +52,6 @@ function AlertDetailInline({ alert, onClose, isPaid }: { alert: Alert; onClose: 
   return (
     <div className="h-full overflow-y-auto">
       <div className="p-6 space-y-6">
-        {/* Back button for tablet-ish sizes */}
         <button
           onClick={onClose}
           className="flex items-center gap-2 text-sm text-foreground-muted hover:text-foreground transition-colors xl:hidden"
@@ -58,7 +59,6 @@ function AlertDetailInline({ alert, onClose, isPaid }: { alert: Alert; onClose: 
           <ArrowLeft size={14} /> Back to list
         </button>
 
-        {/* Service badge */}
         <div className="flex items-center gap-2">
           <span className="text-xs font-mono font-medium bg-primary/10 text-primary px-2 py-1 rounded">
             {service.abbr}
@@ -208,6 +208,7 @@ export function AlertsPage() {
   const { alerts, loading, markRead } = useAlerts()
   const { isPaid } = useProfile()
   const [selectedAlertId, setSelectedAlertId] = useState<string | null>(null)
+  const [currentIndex, setCurrentIndex] = useState(0)
 
   const selectedAlert = selectedAlertId
     ? alerts.find((a) => a.id === selectedAlertId) ?? null
@@ -217,6 +218,24 @@ export function AlertsPage() {
     setSelectedAlertId(alert.id)
     if (!alert.read_at) {
       markRead(alert.id)
+    }
+  }
+
+  const handleSwipeNext = () => {
+    if (currentIndex < alerts.length - 1) {
+      const current = alerts[currentIndex]
+      if (current && !current.read_at) {
+        markRead(current.id)
+      }
+      setCurrentIndex((i) => i + 1)
+      haptic('selection')
+    }
+  }
+
+  const handleSwipePrev = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex((i) => i - 1)
+      haptic('selection')
     }
   }
 
@@ -235,28 +254,105 @@ export function AlertsPage() {
     )
   }
 
+  const currentAlert = alerts[currentIndex]
+
   return (
     <div className="min-h-full bg-background">
-      {/* Mobile header */}
-      <header className="bg-background-elevated border-b border-border safe-top lg:hidden">
-        <div className="px-4 py-4">
-          <h1 className="text-lg font-semibold text-foreground">Alerts</h1>
-        </div>
-      </header>
+      {/* ============ MOBILE: Swipeable card stack ============ */}
+      <div className="lg:hidden flex flex-col" style={{ height: 'calc(100dvh - var(--bottom-nav-height) - var(--safe-area-bottom))' }}>
+        {/* Header */}
+        <header className="bg-background-elevated border-b border-border safe-top shrink-0">
+          <div className="px-4 py-3 flex items-center justify-between">
+            <h1 className="text-lg font-semibold text-foreground">Alerts</h1>
+            <span className="text-xs font-mono text-foreground-muted">
+              {alerts.length} total
+            </span>
+          </div>
+        </header>
 
-      {/* Desktop: split pane layout */}
-      <div className="lg:flex lg:h-[calc(100vh-0px)]">
+        {alerts.length === 0 ? (
+          /* Empty state */
+          <div className="flex-1 flex flex-col items-center justify-center p-6">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              className="text-center"
+            >
+              <motion.div
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                className="w-16 h-16 bg-success/10 border border-success/20 rounded-full flex items-center justify-center mx-auto mb-4"
+              >
+                <CheckCircle className="w-7 h-7 text-success" />
+              </motion.div>
+              <h3 className="font-semibold text-foreground mb-2">All caught up</h3>
+              <p className="text-sm text-foreground-secondary max-w-sm mx-auto">
+                Alerts will appear here when appointment slots become available.
+              </p>
+            </motion.div>
+          </div>
+        ) : (
+          /* Swipeable alert cards */
+          <div className="flex-1 flex flex-col p-4 min-h-0">
+            <div className="flex-1 flex items-center justify-center">
+              <div className="w-full max-w-sm">
+                <AnimatePresence mode="wait">
+                  {currentAlert && (
+                    <SwipeableAlertCard
+                      key={currentAlert.id}
+                      alert={currentAlert}
+                      onSwipeLeft={handleSwipeNext}
+                      onSwipeRight={handleSwipePrev}
+                    />
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+
+            {/* Card counter + dots */}
+            <div className="shrink-0 flex flex-col items-center gap-2 pt-3">
+              <div className="flex items-center gap-1.5">
+                {alerts.slice(
+                  Math.max(0, currentIndex - 3),
+                  Math.min(alerts.length, currentIndex + 4)
+                ).map((a, i) => {
+                  const actualIndex = Math.max(0, currentIndex - 3) + i
+                  return (
+                    <motion.button
+                      key={a.id}
+                      onClick={() => { setCurrentIndex(actualIndex); haptic('tap') }}
+                      className={`rounded-full transition-all ${
+                        actualIndex === currentIndex
+                          ? 'w-6 h-2 bg-primary'
+                          : 'w-2 h-2 bg-border'
+                      }`}
+                      layout
+                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    />
+                  )
+                })}
+              </div>
+              <span className="text-[10px] font-mono text-foreground-muted">
+                {currentIndex + 1} of {alerts.length}
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ============ DESKTOP: Split pane ============ */}
+      <div className="hidden lg:flex lg:h-[calc(100vh-0px)]">
         {/* Alert list */}
         <div className="lg:w-96 lg:border-r lg:border-border lg:overflow-y-auto lg:shrink-0">
-          {/* Desktop header for list */}
-          <div className="hidden lg:block px-4 py-4 border-b border-border">
+          <div className="px-4 py-4 border-b border-border">
             <h1 className="text-lg font-semibold text-foreground">Alerts</h1>
             <p className="text-xs text-foreground-muted mt-0.5">
               {alerts.length} alert{alerts.length !== 1 ? 's' : ''}
             </p>
           </div>
 
-          <div className="px-4 py-4 lg:py-2">
+          <div className="px-4 py-2">
             {alerts.length === 0 ? (
               <div className="text-center py-12">
                 <div className="w-16 h-16 bg-surface border-2 border-dashed border-border rounded-lg flex items-center justify-center mx-auto mb-4">
@@ -270,21 +366,15 @@ export function AlertsPage() {
             ) : (
               <div className="space-y-2">
                 {alerts.map((alert) => (
-                  <div key={alert.id} className="lg:cursor-pointer">
-                    {/* Mobile: navigate to detail page */}
-                    <div className="lg:hidden">
-                      <AlertCard alert={alert} />
-                    </div>
-                    {/* Desktop: select for split pane */}
-                    <div
-                      className="hidden lg:block"
-                      onClick={() => handleSelectAlert(alert)}
-                    >
-                      <AlertCard
-                        alert={alert}
-                        isSelected={selectedAlertId === alert.id}
-                      />
-                    </div>
+                  <div
+                    key={alert.id}
+                    className="cursor-pointer"
+                    onClick={() => handleSelectAlert(alert)}
+                  >
+                    <AlertCard
+                      alert={alert}
+                      isSelected={selectedAlertId === alert.id}
+                    />
                   </div>
                 ))}
               </div>
@@ -292,8 +382,8 @@ export function AlertsPage() {
           </div>
         </div>
 
-        {/* Desktop: detail pane */}
-        <div className="hidden lg:block flex-1 bg-background-elevated overflow-y-auto">
+        {/* Detail pane */}
+        <div className="flex-1 bg-background-elevated overflow-y-auto">
           {selectedAlert ? (
             <AlertDetailInline
               alert={selectedAlert}
