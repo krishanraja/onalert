@@ -3,11 +3,12 @@ import { supabase } from './supabase'
 
 export { PLANS } from './plans'
 
-export const stripe = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
+export const stripe = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY ?? null)
 
 export async function createCheckoutSession(
   plan: 'premium_monthly' | 'premium_annual'
 ): Promise<string | null> {
+  if (!supabase) return null
   const { data, error } = await supabase.functions.invoke('create-checkout', {
     body: { plan },
   })
@@ -19,6 +20,7 @@ export async function createCheckoutSession(
 }
 
 export async function openCustomerPortal(): Promise<void> {
+  if (!supabase) return
   const { data, error } = await supabase.functions.invoke('customer-portal', {})
   if (error || !data?.url) {
     console.error('Portal error:', error)

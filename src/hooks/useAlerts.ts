@@ -45,7 +45,7 @@ export function useAlerts(limit = 50) {
 
     return () => {
       mounted = false
-      supabase.removeChannel(channel)
+      supabase!.removeChannel(channel)
     }
   }, [limit])
 
