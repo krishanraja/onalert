@@ -57,12 +57,12 @@
 |---------|------|-----------|--------------|
 | Active monitors | 1 | 1 | Up to 5 |
 | Locations per monitor | 3 | Unlimited | Unlimited |
-| Check interval | 60 min | 5 min (12x faster) | 5 min (12x faster) |
-| Email alerts | Yes | Yes | Yes |
+| Check interval | 60 min (enforced) | 5 min (12x faster) | 5 min (12x faster) |
+| Email alert delivery | Delayed 15 min | Instant | Instant |
 | SMS alerts | -- | Yes (planned) | Yes (planned) |
 | Real-time in-app alerts | Yes | Yes | Yes |
 | Direct booking links | Yes | Yes | Yes |
-| Haptic feedback | Yes | Yes | Yes |
+| Monitoring window | 7 days | Never expires | Never expires |
 | Payment model | Free forever | One-time | One-time |
 
 ## Planned Features

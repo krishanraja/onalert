@@ -18,13 +18,13 @@ OnAlert eliminates the guesswork entirely. It polls the CBP scheduler API every 
 
 OnAlert uses a one-time payment model aligned with how users actually use the product: they need monitoring until they book their appointment, then they're done. No subscriptions, no recurring charges, no cancellation friction.
 
-| Tier | Price | Model | Monitors | Check Frequency | Channels |
-|------|-------|-------|----------|-----------------|----------|
-| Free | $0 | Free forever | 1 | Every 60 min | Email |
-| Pro | $29 | One-time | 1 | Every 5 min | Email + SMS |
-| Family | $49 | One-time | Up to 5 | Every 5 min | Email + SMS |
+| Tier | Price | Model | Monitors | Check Frequency | Alert Delivery | Window |
+|------|-------|-------|----------|-----------------|----------------|--------|
+| Free | $0 | Free | 1 (3 locations) | Every 60 min | Delayed 15 min | 7 days |
+| Pro | $29 | One-time | 1 (unlimited) | Every 5 min | Instant | Forever |
+| Family | $49 | One-time | Up to 5 | Every 5 min | Instant | Forever |
 
-**ROI**: A single caught appointment saves weeks or months of waiting. $29 once is trivial compared to the value of having Global Entry on your next international trip.
+**ROI**: Slots fill in 5-15 minutes. Free tier proves the product works but can't catch slots fast enough. $29 once gets instant alerts that actually land before the slot fills.
 
 ## Tech Stack
 
