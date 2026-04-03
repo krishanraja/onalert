@@ -52,8 +52,8 @@ export function LandingPage() {
         <div className="grid md:grid-cols-3 gap-6 mt-16">
           <div className="text-center">
             <Clock className="w-8 h-8 text-primary mx-auto mb-3" />
-            <h3 className="font-semibold text-foreground mb-2">Checks every 10 minutes</h3>
-            <p className="text-sm text-foreground-secondary">Faster than manual checking. Premium users get priority monitoring.</p>
+            <h3 className="font-semibold text-foreground mb-2">Checks every 5 minutes</h3>
+            <p className="text-sm text-foreground-secondary">Faster than manual checking. Paid users get 12x faster monitoring.</p>
           </div>
           <div className="text-center">
             <Smartphone className="w-8 h-8 text-primary mx-auto mb-3" />
@@ -70,12 +70,13 @@ export function LandingPage() {
 
       {/* Pricing */}
       <section className="max-w-4xl mx-auto px-4 py-16">
-        <h2 className="text-3xl font-bold text-center text-foreground mb-12">Simple pricing</h2>
-        <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+        <h2 className="text-3xl font-bold text-center text-foreground mb-4">Simple pricing</h2>
+        <p className="text-center text-foreground-secondary mb-12">One-time payment. No subscription. Yours forever.</p>
+        <div className="grid md:grid-cols-3 gap-6 max-w-3xl mx-auto">
           {/* Free */}
           <div className="bg-surface border border-border rounded-lg p-6">
             <h3 className="text-lg font-semibold text-foreground mb-2">Free</h3>
-            <p className="text-3xl font-bold text-foreground mb-4">$0<span className="text-base font-normal text-foreground-secondary">/month</span></p>
+            <p className="text-3xl font-bold text-foreground mb-4">$0</p>
             <ul className="space-y-2 mb-6">
               {PLANS.free.features.map((feature) => (
                 <li key={feature} className="flex items-center gap-2 text-sm text-foreground-secondary">
@@ -92,15 +93,16 @@ export function LandingPage() {
             </button>
           </div>
 
-          {/* Premium */}
+          {/* Pro */}
           <div className="bg-surface border border-primary rounded-lg p-6 relative">
             <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
               <span className="bg-primary text-white px-3 py-1 rounded-full text-xs font-medium">Most popular</span>
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">Premium</h3>
-            <p className="text-3xl font-bold text-foreground mb-4">$19<span className="text-base font-normal text-foreground-secondary">/month</span></p>
+            <h3 className="text-lg font-semibold text-foreground mb-2">Pro</h3>
+            <p className="text-3xl font-bold text-foreground mb-1">${PLANS.pro.price}</p>
+            <p className="text-sm text-foreground-secondary mb-4">one-time payment</p>
             <ul className="space-y-2 mb-6">
-              {PLANS.premium_monthly.features.map((feature) => (
+              {PLANS.pro.features.map((feature) => (
                 <li key={feature} className="flex items-center gap-2 text-sm text-foreground-secondary">
                   <Check size={14} className="text-success shrink-0" />
                   {feature}
@@ -111,7 +113,31 @@ export function LandingPage() {
               onClick={() => navigate('/auth')}
               className="w-full bg-primary text-white py-2 rounded-lg hover:bg-primary/90 transition-colors"
             >
-              Start Premium trial
+              Get Pro
+            </button>
+          </div>
+
+          {/* Family */}
+          <div className="bg-gradient-to-b from-primary/5 to-transparent border border-primary/30 rounded-lg p-6 relative">
+            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+              <span className="bg-primary/80 text-white px-3 py-1 rounded-full text-xs font-medium">Best for families</span>
+            </div>
+            <h3 className="text-lg font-semibold text-foreground mb-2">Family</h3>
+            <p className="text-3xl font-bold text-foreground mb-1">${PLANS.family.price}</p>
+            <p className="text-sm text-foreground-secondary mb-4">one-time payment</p>
+            <ul className="space-y-2 mb-6">
+              {PLANS.family.features.map((feature) => (
+                <li key={feature} className="flex items-center gap-2 text-sm text-foreground-secondary">
+                  <Check size={14} className="text-success shrink-0" />
+                  {feature}
+                </li>
+              ))}
+            </ul>
+            <button
+              onClick={() => navigate('/auth')}
+              className="w-full bg-primary/80 text-white py-2 rounded-lg hover:bg-primary/70 transition-colors"
+            >
+              Get Family
             </button>
           </div>
         </div>

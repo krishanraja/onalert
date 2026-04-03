@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Crown, Zap, Bell, ArrowRight } from 'lucide-react'
+import { Plus, Crown, Users, Zap, Bell, ArrowRight } from 'lucide-react'
 import { useProfile } from '@/hooks/useProfile'
 import { useMonitors } from '@/hooks/useMonitors'
 import { useAlerts } from '@/hooks/useAlerts'
@@ -14,7 +14,7 @@ import { haptic } from '@/lib/haptics'
 
 export function DashboardPage() {
   const navigate = useNavigate()
-  const { profile, loading: profileLoading, isPremium } = useProfile()
+  const { profile, loading: profileLoading, isPaid, isFamily } = useProfile()
   const { monitors, loading: monitorsLoading, toggleMonitor, deleteMonitor } = useMonitors()
   const { alerts, loading: alertsLoading } = useAlerts()
   const [hasRedirected, setHasRedirected] = useState(false)
@@ -56,6 +56,8 @@ export function DashboardPage() {
     navigate('/app/add')
   }
 
+  const planLabel = isFamily ? 'FAMILY' : isPaid ? 'PRO' : 'FREE'
+
   return (
     <div className="min-h-full bg-background">
       {/* Mobile Header - hidden on desktop (sidebar has logo) */}
@@ -67,10 +69,10 @@ export function DashboardPage() {
             className="h-8 w-8"
           />
           <div className="flex items-center gap-2">
-            {isPremium ? (
+            {isPaid ? (
               <div className="flex items-center gap-1.5 bg-primary/10 text-primary px-2 py-1 rounded-full">
-                <Crown size={12} />
-                <span className="text-xs font-medium">PREMIUM</span>
+                {isFamily ? <Users size={12} /> : <Crown size={12} />}
+                <span className="text-xs font-medium">{planLabel}</span>
               </div>
             ) : (
               <div className="flex items-center gap-1.5 bg-surface text-foreground-muted px-2 py-1 rounded-full border border-border">
@@ -185,20 +187,20 @@ export function DashboardPage() {
               </div>
 
               {/* Upgrade prompt for free users */}
-              {!isPremium && monitors.length > 0 && (
+              {!isPaid && monitors.length > 0 && (
                 <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-4">
                   <div className="flex items-start gap-3">
                     <Crown className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                     <div className="flex-1">
-                      <h3 className="font-medium text-foreground mb-1">Upgrade to Premium</h3>
+                      <h3 className="font-medium text-foreground mb-1">Get alerts 12x faster</h3>
                       <p className="text-sm text-foreground-secondary mb-3">
-                        Get unlimited monitors, SMS alerts, and checks every 10 minutes.
+                        Pro checks every 5 minutes with SMS alerts and unlimited locations. One-time payment, no subscription.
                       </p>
                       <button
                         onClick={() => navigate('/app/settings')}
                         className="text-sm text-primary hover:text-primary/80 transition-colors font-medium inline-flex items-center gap-1"
                       >
-                        Upgrade for $19/month <ArrowRight size={14} />
+                        Upgrade for $29 (one-time) <ArrowRight size={14} />
                       </button>
                     </div>
                   </div>

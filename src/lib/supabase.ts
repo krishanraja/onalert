@@ -24,7 +24,7 @@ export type Profile = {
   id: string
   email: string
   stripe_customer_id: string | null
-  plan: 'free' | 'premium'
+  plan: 'free' | 'pro' | 'family'
   email_alerts_enabled: boolean
   sms_alerts_enabled: boolean
   created_at: string

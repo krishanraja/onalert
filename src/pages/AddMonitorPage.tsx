@@ -15,7 +15,7 @@ const POPULAR_LOCATION_IDS = [5140, 5003, 5006, 5002, 5007, 5004, 5030, 5008]
 
 export function AddMonitorPage() {
   const navigate = useNavigate()
-  const { profile, isPremium } = useProfile()
+  const { profile, isPaid, isFamily } = useProfile()
   const { monitors, createMonitor } = useMonitors()
   const [step, setStep] = useState<0 | 1 | 2 | 3>(0) // 0 = quick setup, 1-3 = wizard
   const [serviceType, setServiceType] = useState<ServiceType | null>('GE') // Smart default: GE
@@ -27,8 +27,9 @@ export function AddMonitorPage() {
   const [geoLoading, setGeoLoading] = useState(false)
 
   const filteredLocations = searchLocations(locationSearch)
-  const maxLocations = isPremium ? Infinity : 3
-  const canAddMore = isPremium || monitors.length < 1
+  const maxLocations = isPaid ? Infinity : 3
+  const maxMonitors = isFamily ? 5 : 1
+  const canAddMore = monitors.length < maxMonitors
 
   // Try to get user's nearest locations on mount
   useEffect(() => {
@@ -60,6 +61,13 @@ export function AddMonitorPage() {
   const recommendations = getRecommendations(selectedLocations, 2)
 
   if (!canAddMore) {
+    const upgradeTarget = isPaid ? 'Family' : 'Pro or Family'
+    const limitText = isFamily
+      ? 'Family accounts can have up to 5 active monitors.'
+      : isPaid
+        ? 'Pro accounts can have 1 active monitor. Upgrade to Family for up to 5.'
+        : 'Free accounts can have 1 active monitor.'
+
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="text-center max-w-sm">
@@ -67,14 +75,16 @@ export function AddMonitorPage() {
             Monitor limit reached
           </h1>
           <p className="text-sm text-foreground-secondary mb-4">
-            Free accounts can have 1 active monitor. Upgrade to Premium for unlimited monitors.
+            {limitText}
           </p>
-          <button
-            onClick={() => navigate('/app/settings')}
-            className="bg-primary text-white px-4 py-2 rounded-lg"
-          >
-            Upgrade to Premium
-          </button>
+          {!isFamily && (
+            <button
+              onClick={() => navigate('/app/settings')}
+              className="bg-primary text-white px-4 py-2 rounded-lg"
+            >
+              Upgrade to {upgradeTarget}
+            </button>
+          )}
         </div>
       </div>
     )
@@ -328,7 +338,7 @@ export function AddMonitorPage() {
               </h2>
               <p className="text-sm text-foreground-secondary">
                 Choose which enrollment centers to monitor.
-                {!isPremium && ` Free accounts can select up to ${maxLocations} locations.`}
+                {!isPaid && ` Free accounts can select up to ${maxLocations} locations.`}
               </p>
             </div>
 
@@ -350,7 +360,7 @@ export function AddMonitorPage() {
               <span className="text-foreground-secondary">
                 {selectedLocations.length} location{selectedLocations.length !== 1 ? 's' : ''} selected
               </span>
-              {selectedLocations.length >= maxLocations && !isPremium && (
+              {selectedLocations.length >= maxLocations && !isPaid && (
                 <span className="text-warning">Limit reached</span>
               )}
               {selectedLocations.length === 0 && (
@@ -487,14 +497,14 @@ export function AddMonitorPage() {
               <div>
                 <h3 className="font-medium text-foreground mb-1">Check frequency</h3>
                 <p className="text-sm text-foreground-secondary">
-                  Every {isPremium ? '10' : '60'} minutes
+                  Every {isPaid ? '5' : '60'} minutes
                 </p>
               </div>
 
               <div>
                 <h3 className="font-medium text-foreground mb-1">Notifications</h3>
                 <p className="text-sm text-foreground-secondary">
-                  Email{isPremium ? ' + SMS' : ' only'}
+                  Email{isPaid ? ' + SMS' : ' only'}
                 </p>
               </div>
             </div>

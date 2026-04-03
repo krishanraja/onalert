@@ -150,9 +150,9 @@ Deno.serve(async (req) => {
     await sendEmail(profile.email, subject, html)
     channels.push('email')
 
-    // 2. Send SMS for premium users (if SMS env is configured)
+    // 2. Send SMS for paid users (if SMS env is configured)
     // SMS integration point  - add Twilio/SNS here when ready
-    // if (profile.plan === 'premium') {
+    // if (profile.plan === 'pro' || profile.plan === 'family') {
     //   const TWILIO_SID = Deno.env.get('TWILIO_ACCOUNT_SID')
     //   const TWILIO_TOKEN = Deno.env.get('TWILIO_AUTH_TOKEN')
     //   const TWILIO_FROM = Deno.env.get('TWILIO_FROM_NUMBER')

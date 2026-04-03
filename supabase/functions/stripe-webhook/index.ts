@@ -31,58 +31,33 @@ Deno.serve(async (req) => {
 
   try {
     switch (event.type) {
-      case 'customer.subscription.created':
-      case 'customer.subscription.updated': {
-        const subscription = event.data.object as Stripe.Subscription
-        const customerId = subscription.customer as string
-        
-        // Get user ID from customer metadata
-        const customer = await stripe.customers.retrieve(customerId)
-        const userId = (customer as Stripe.Customer).metadata?.supabase_user_id
-        
-        if (!userId) {
-          console.error('No supabase_user_id in customer metadata')
+      case 'checkout.session.completed': {
+        const session = event.data.object as Stripe.Checkout.Session
+
+        // Only handle one-time payments (not subscriptions)
+        if (session.mode !== 'payment') break
+
+        const userId = session.metadata?.supabase_user_id
+        const plan = session.metadata?.plan
+
+        if (!userId || !plan) {
+          console.error('Missing metadata in checkout session:', session.id)
           break
         }
 
-        // Update user plan
-        const plan = subscription.status === 'active' ? 'premium' : 'free'
+        // Validate plan value
+        if (plan !== 'pro' && plan !== 'family') {
+          console.error('Invalid plan in metadata:', plan)
+          break
+        }
+
+        // Upgrade user plan (permanent -- one-time purchase)
         await supabase
           .from('profiles')
           .update({ plan })
           .eq('id', userId)
-        
-        console.log(`Updated user ${userId} plan to ${plan}`)
-        break
-      }
 
-      case 'customer.subscription.deleted': {
-        const subscription = event.data.object as Stripe.Subscription
-        const customerId = subscription.customer as string
-        
-        // Get user ID from customer metadata
-        const customer = await stripe.customers.retrieve(customerId)
-        const userId = (customer as Stripe.Customer).metadata?.supabase_user_id
-        
-        if (!userId) {
-          console.error('No supabase_user_id in customer metadata')
-          break
-        }
-
-        // Downgrade to free
-        await supabase
-          .from('profiles')
-          .update({ plan: 'free' })
-          .eq('id', userId)
-        
-        console.log(`Downgraded user ${userId} to free plan`)
-        break
-      }
-
-      case 'invoice.payment_failed': {
-        const invoice = event.data.object as Stripe.Invoice
-        console.log(`Payment failed for customer ${invoice.customer}`)
-        // Could send an email notification here
+        console.log(`Upgraded user ${userId} to ${plan} plan`)
         break
       }
 

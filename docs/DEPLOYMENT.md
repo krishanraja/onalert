@@ -104,17 +104,14 @@ Enable Realtime for these tables:
 
 ### Products
 No pre-created products needed -- `create-checkout` creates inline price data:
-- Premium Monthly: $19/month (1900 cents)
-- Premium Annual: $149/year (14900 cents)
+- Pro: $29 one-time (2900 cents)
+- Family: $49 one-time (4900 cents)
 
 ### Webhook
 1. Create webhook endpoint in Stripe Dashboard -> Developers -> Webhooks
 2. URL: `https://<project-id>.supabase.co/functions/v1/stripe-webhook`
 3. Events to listen for:
-   - `customer.subscription.created`
-   - `customer.subscription.updated`
-   - `customer.subscription.deleted`
-   - `invoice.payment_failed`
+   - `checkout.session.completed`
 4. Note the signing secret (`whsec_...`) and set it in Supabase edge function secrets
 
 ### Customer Portal

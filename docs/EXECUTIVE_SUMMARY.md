@@ -12,17 +12,19 @@ Every year, millions of conditionally approved travelers are stuck in a frustrat
 
 ## The Solution
 
-OnAlert eliminates the guesswork entirely. It polls the CBP scheduler API every 10 minutes (premium) or 60 minutes (free), detects newly available slots through intelligent state comparison, and delivers branded email alerts within seconds -- complete with a direct booking link. Users act before the slot fills again, turning months of waiting into days.
+OnAlert eliminates the guesswork entirely. It polls the CBP scheduler API every 5 minutes (paid) or 60 minutes (free), detects newly available slots through intelligent state comparison, and delivers branded email alerts within seconds -- complete with a direct booking link. Users act before the slot fills again, turning months of waiting into days.
 
 ## Business Model
 
-| Tier | Price | Monitors | Check Frequency | Channels |
-|------|-------|----------|-----------------|----------|
-| Free | $0/month | 1 | Every 60 min | Email |
-| Premium Monthly | $19/month | Unlimited | Every 10 min | Email + SMS |
-| Premium Annual | $149/year | Unlimited | Every 10 min | Email + SMS |
+OnAlert uses a one-time payment model aligned with how users actually use the product: they need monitoring until they book their appointment, then they're done. No subscriptions, no recurring charges, no cancellation friction.
 
-**ROI**: A single caught appointment saves weeks or months of waiting. $19/month is trivial compared to the value of having Global Entry on your next international trip.
+| Tier | Price | Model | Monitors | Check Frequency | Channels |
+|------|-------|-------|----------|-----------------|----------|
+| Free | $0 | Free forever | 1 | Every 60 min | Email |
+| Pro | $29 | One-time | 1 | Every 5 min | Email + SMS |
+| Family | $49 | One-time | Up to 5 | Every 5 min | Email + SMS |
+
+**ROI**: A single caught appointment saves weeks or months of waiting. $29 once is trivial compared to the value of having Global Entry on your next international trip.
 
 ## Tech Stack
 
@@ -30,7 +32,7 @@ OnAlert eliminates the guesswork entirely. It polls the CBP scheduler API every 
 |-------|-----------|-----|
 | Frontend | React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui | Fast, type-safe, component-driven |
 | Backend | Supabase (PostgreSQL, Auth, Edge Functions, Realtime) | Full backend in one platform with RLS |
-| Payments | Stripe (subscriptions via Checkout + Customer Portal) | Industry-standard billing |
+| Payments | Stripe (one-time payments via Checkout) | Industry-standard billing |
 | Email | Resend (transactional alerts) | Developer-first email delivery |
 | Hosting | Vercel (static SPA + global CDN) | Zero-config deploys, edge performance |
 | PWA | Workbox service worker, installable on mobile | Native app feel, no app store needed |
@@ -39,7 +41,7 @@ OnAlert eliminates the guesswork entirely. It polls the CBP scheduler API every 
 
 | Metric | Target |
 |--------|--------|
-| Slot detection latency | <10 minutes (premium) |
+| Slot detection latency | <5 minutes (paid) |
 | Alert delivery latency | <30 seconds after detection |
 | Alert delivery rate | >99% |
 | Polling success rate | >98% |
@@ -47,4 +49,4 @@ OnAlert eliminates the guesswork entirely. It polls the CBP scheduler API every 
 
 ## Competitive Advantage
 
-OnAlert is purpose-built for a single job: catching government appointment cancellations. Unlike generic monitoring tools, Reddit threads, or abandoned side projects, OnAlert offers real-time API polling, instant multi-channel notifications, and a mobile-first PWA experience -- all backed by a transparent freemium model.
+OnAlert is purpose-built for a single job: catching government appointment cancellations. Unlike generic monitoring tools, Reddit threads, or abandoned side projects, OnAlert offers real-time API polling, instant multi-channel notifications, and a mobile-first PWA experience -- all backed by honest one-time pricing that aligns with how users actually use the product.

@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom'
-import { Home, Bell, Plus, Settings, Crown, Keyboard } from 'lucide-react'
+import { Home, Bell, Plus, Settings, Crown, Users, Keyboard } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useProfile } from '@/hooks/useProfile'
 
@@ -9,7 +9,7 @@ interface Props {
 
 export function Sidebar({ unreadCount = 0 }: Props) {
   const navigate = useNavigate()
-  const { isPremium } = useProfile()
+  const { isPaid, isFamily } = useProfile()
 
   const navItems = [
     { to: '/app', end: true, icon: Home, label: 'Dashboard', shortcut: '1' },
@@ -72,10 +72,10 @@ export function Sidebar({ unreadCount = 0 }: Props) {
       {/* Plan badge & shortcuts hint */}
       <div className="px-3 py-4 border-t border-border space-y-3">
         <div className="flex items-center gap-2 px-3">
-          {isPremium ? (
+          {isPaid ? (
             <div className="flex items-center gap-1.5 bg-primary/10 text-primary px-2 py-1 rounded-full">
-              <Crown size={11} />
-              <span className="text-[10px] font-medium">PREMIUM</span>
+              {isFamily ? <Users size={11} /> : <Crown size={11} />}
+              <span className="text-[10px] font-medium">{isFamily ? 'FAMILY' : 'PRO'}</span>
             </div>
           ) : (
             <div className="flex items-center gap-1.5 bg-surface text-foreground-muted px-2 py-1 rounded-full border border-border">

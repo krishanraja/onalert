@@ -38,16 +38,16 @@
 - "I just got conditionally approved and the wait times are insane"
 
 ### Willingness to Pay
-- **High**: $19/month is negligible compared to the value of getting Global Entry weeks or months sooner
-- **Clear ROI**: Even one caught appointment justifies the entire subscription cost
-- **Low churn risk**: Users stay subscribed until they book their appointment, then cancel naturally
+- **High**: $29 one-time is negligible compared to the value of getting Global Entry weeks or months sooner
+- **Clear ROI**: A single caught appointment justifies the entire cost
+- **No subscription friction**: One-time payment means no cancellation needed after booking -- users feel good about the purchase
 
 ## Secondary Persona: The Family Coordinator
 
 - Managing applications for 2-4 family members
 - Needs to monitor multiple locations and programs simultaneously
-- Premium plan is essential (unlimited monitors, faster checks)
-- Higher willingness to pay -- the per-person value multiplies
+- Family plan is essential (up to 5 monitors, faster checks)
+- Higher willingness to pay -- $49 one-time for the whole family is obvious value
 - Often the most vocal advocate (word-of-mouth referrals)
 
 ## Tertiary Persona: The Business Traveler
