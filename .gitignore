@@ -30,5 +30,8 @@ dist-ssr
 # TypeScript build info
 *.tsbuildinfo
 
+# Test artifacts
+test-results/
+
 # Seed scripts
 seed-data.ts
