@@ -1,4 +1,4 @@
-# OnAlert — Project Documentation
+# OnAlert  - Project Documentation
 
 Comprehensive documentation for the OnAlert platform.
 

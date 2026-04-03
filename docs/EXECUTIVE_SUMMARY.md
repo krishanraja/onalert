@@ -2,7 +2,7 @@
 
 ## What is OnAlert?
 
-OnAlert is a real-time government appointment monitoring service. It watches CBP Trusted Traveler Program systems (Global Entry, TSA PreCheck, NEXUS, SENTRI) and instantly notifies users when appointment slots open — typically from cancellations.
+OnAlert is a real-time government appointment monitoring service. It watches CBP Trusted Traveler Program systems (Global Entry, TSA PreCheck, NEXUS, SENTRI) and instantly notifies users when appointment slots open  - typically from cancellations.
 
 ## The Problem
 

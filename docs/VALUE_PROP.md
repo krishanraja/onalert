@@ -10,9 +10,9 @@ OnAlert monitors government appointment systems in real time and notifies you wi
 
 This is the experience for millions of Trusted Traveler Program applicants:
 - **3–12 month wait** at popular enrollment centers
-- **Cancellations are invisible** — no native notification system
-- **Slots fill in 5–15 minutes** — manual checking is a losing game
-- **High opportunity cost** — time spent refreshing vs. living your life
+- **Cancellations are invisible**  - no native notification system
+- **Slots fill in 5–15 minutes**  - manual checking is a losing game
+- **High opportunity cost**  - time spent refreshing vs. living your life
 
 ## The Solution
 
@@ -45,7 +45,7 @@ OnAlert automates the tedious checking and delivers instant alerts:
 ## Key Differentiators
 
 1. **Purpose-built**: Focused exclusively on CBP Trusted Traveler Programs
-2. **Real-time**: Not aggregated or delayed — direct API polling
+2. **Real-time**: Not aggregated or delayed  - direct API polling
 3. **Mobile-first PWA**: Install on home screen, receive alerts anywhere
 4. **Transparent pricing**: Simple free + premium tiers, no hidden fees
 5. **Privacy-first**: No data selling, minimal data collection

@@ -144,14 +144,14 @@ Deno.serve(async (req) => {
     const channels: string[] = []
 
     // 1. Always send email first (fastest delivery)
-    const subject = `🚨 ${payload.service_type} slot available — ${payload.location_name}`
+    const subject = `🚨 ${payload.service_type} slot available  - ${payload.location_name}`
     const html = generateEmailHTML(payload)
 
     await sendEmail(profile.email, subject, html)
     channels.push('email')
 
     // 2. Send SMS for premium users (if SMS env is configured)
-    // SMS integration point — add Twilio/SNS here when ready
+    // SMS integration point  - add Twilio/SNS here when ready
     // if (profile.plan === 'premium') {
     //   const TWILIO_SID = Deno.env.get('TWILIO_ACCOUNT_SID')
     //   const TWILIO_TOKEN = Deno.env.get('TWILIO_AUTH_TOKEN')

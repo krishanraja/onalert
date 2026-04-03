@@ -2,9 +2,9 @@
 
 ## Project Timeline
 
-### v0.1.0 — Initial Build (April 2026)
+### v0.1.0  - Initial Build (April 2026)
 
-**Commit**: `5499ac1` — feat: initial OnAlert build — government appointment monitor
+**Commit**: `5499ac1`  - feat: initial OnAlert build  - government appointment monitor
 
 First working version of the platform:
 - React 18 + TypeScript + Vite frontend
@@ -17,21 +17,21 @@ First working version of the platform:
 - 7 pages: Landing, Auth, Dashboard, Alerts, Alert Detail, Add Monitor, Settings
 - 50 top CBP enrollment locations
 
-### v0.1.1 — Cleanup (April 2026)
+### v0.1.1  - Cleanup (April 2026)
 
-**Commit**: `7df28aa` — chore: remove fractional-circle artifacts — clean slate for OnAlert
+**Commit**: `7df28aa`  - chore: remove fractional-circle artifacts  - clean slate for OnAlert
 
 Removed artifacts from a previous project to establish a clean codebase.
 
-### v0.1.2 — Component Cleanup (April 2026)
+### v0.1.2  - Component Cleanup (April 2026)
 
-**Commit**: `dba072c` — fix: remove unused shadcn/ui components with missing deps
+**Commit**: `dba072c`  - fix: remove unused shadcn/ui components with missing deps
 
 Removed 23 unused UI component files that had missing dependencies. Reduced bundle size.
 
-### v0.2.0 — Reliability & Documentation (April 2026)
+### v0.2.0  - Reliability & Documentation (April 2026)
 
-**Commit**: `175fcbf+` — fix: resolve blank screen + comprehensive hardening
+**Commit**: `175fcbf+`  - fix: resolve blank screen + comprehensive hardening
 
 Major reliability and documentation overhaul:
 

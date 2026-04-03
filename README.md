@@ -2,16 +2,16 @@
 
 Real-time government appointment slot monitoring.
 
-**[onalert.app](https://onalert.app)** — Stop checking. Start knowing.
+**[onalert.app](https://onalert.app)**  - Stop checking. Start knowing.
 
 OnAlert monitors CBP Trusted Traveler Program schedulers (Global Entry, TSA PreCheck, NEXUS, SENTRI) and alerts you within minutes when appointment slots open from cancellations.
 
 ## How It Works
 
-1. **Create a monitor** — choose your program and enrollment centers
-2. **We poll the CBP API** — every 10 min (premium) or 60 min (free)
-3. **Get alerted instantly** — email notification with direct booking link
-4. **Book before it fills** — slots typically fill in 5–15 minutes
+1. **Create a monitor**  - choose your program and enrollment centers
+2. **We poll the CBP API**  - every 10 min (premium) or 60 min (free)
+3. **Get alerted instantly**  - email notification with direct booking link
+4. **Book before it fills**  - slots typically fill in 5–15 minutes
 
 ## Tech Stack
 
@@ -46,14 +46,14 @@ Open [http://localhost:5173](http://localhost:5173).
 ## Environment Variables
 
 ```bash
-# Required — Supabase
+# Required  - Supabase
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
 
-# Required — Stripe
+# Required  - Stripe
 VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
 
-# Optional — App URL (for auth redirects)
+# Optional  - App URL (for auth redirects)
 VITE_APP_URL=http://localhost:5173
 ```
 
@@ -96,14 +96,14 @@ npm run preview  # Preview production build
 
 Full documentation is in the [`docs/`](docs/) directory:
 
-- **[Executive Summary](docs/EXECUTIVE_SUMMARY.md)** — High-level overview
-- **[Architecture](docs/ARCHITECTURE.md)** — System design and data flow
-- **[Features](docs/FEATURES.md)** — Complete feature inventory
-- **[Deployment](docs/DEPLOYMENT.md)** — Production deployment guide
-- **[Replication Guide](docs/REPLICATION_GUIDE.md)** — Set up from scratch
-- **[Common Issues](docs/COMMON_ISSUES.md)** — Troubleshooting
-- **[Design System](docs/DESIGN_SYSTEM.md)** — Colors, typography, components
-- **[Decisions Log](docs/DECISIONS_LOG.md)** — Technical decision rationale
+- **[Executive Summary](docs/EXECUTIVE_SUMMARY.md)**  - High-level overview
+- **[Architecture](docs/ARCHITECTURE.md)**  - System design and data flow
+- **[Features](docs/FEATURES.md)**  - Complete feature inventory
+- **[Deployment](docs/DEPLOYMENT.md)**  - Production deployment guide
+- **[Replication Guide](docs/REPLICATION_GUIDE.md)**  - Set up from scratch
+- **[Common Issues](docs/COMMON_ISSUES.md)**  - Troubleshooting
+- **[Design System](docs/DESIGN_SYSTEM.md)**  - Colors, typography, components
+- **[Decisions Log](docs/DECISIONS_LOG.md)**  - Technical decision rationale
 
 See [docs/README.md](docs/README.md) for the full documentation index.
 

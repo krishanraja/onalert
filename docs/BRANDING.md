@@ -2,7 +2,7 @@
 
 ## Brand Identity
 
-**OnAlert** — Real-time government appointment monitoring.
+**OnAlert**  - Real-time government appointment monitoring.
 
 ### Tagline
 > Stop checking. Start knowing.
@@ -33,13 +33,13 @@ All assets are in `/public/brand/`:
 ## Color Palette
 
 ### Primary
-- **Crimson**: `#9F0506` — Brand color, CTAs, urgency
+- **Crimson**: `#9F0506`  - Brand color, CTAs, urgency
 - Used for: buttons, badges, active states, alert accents
 
 ### Backgrounds
-- **Near-black**: `#0A0A0A` — App background
-- **Elevated**: `#111111` — Headers, nav
-- **Surface**: `#141414` — Cards
+- **Near-black**: `#0A0A0A`  - App background
+- **Elevated**: `#111111`  - Headers, nav
+- **Surface**: `#141414`  - Cards
 
 ### Neutral
 - **Text primary**: `#F5F5F5`

@@ -143,7 +143,7 @@ export function AuthPage() {
           </form>
 
           <p className="text-xs text-foreground-muted text-center mt-6">
-            We'll send you a link — no password needed
+            We'll send you a link  - no password needed
           </p>
         </div>
       </div>

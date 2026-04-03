@@ -34,7 +34,7 @@
 
 ## Data Flow: Alert Pipeline
 
-This is the critical path — how a user gets notified when a slot opens:
+This is the critical path  - how a user gets notified when a slot opens:
 
 ```
 1. CRON trigger (every 10min) ──▶ poll-appointments edge function
@@ -81,11 +81,11 @@ monitors   (1) ──▶ (N) alerts
 
 ### Indexes
 
-- `idx_monitors_user_id` — Filter monitors by user
-- `idx_monitors_active` — Partial index for active monitors only
-- `idx_alerts_user_id` — Filter alerts by user
-- `idx_alerts_created_at` — Sort alerts by newest first
-- `idx_alerts_monitor_id` — Join alerts to monitors
+- `idx_monitors_user_id`  - Filter monitors by user
+- `idx_monitors_active`  - Partial index for active monitors only
+- `idx_alerts_user_id`  - Filter alerts by user
+- `idx_alerts_created_at`  - Sort alerts by newest first
+- `idx_alerts_monitor_id`  - Join alerts to monitors
 
 ## Frontend Architecture
 
@@ -105,10 +105,10 @@ monitors   (1) ──▶ (N) alerts
 
 ### State Management
 
-- **No global store** — React hooks + Supabase Realtime
-- `useProfile()` — Current user profile + plan
-- `useMonitors()` — Monitor CRUD + realtime sync
-- `useAlerts()` — Alert feed + realtime inserts + mark-read
+- **No global store**  - React hooks + Supabase Realtime
+- `useProfile()`  - Current user profile + plan
+- `useMonitors()`  - Monitor CRUD + realtime sync
+- `useAlerts()`  - Alert feed + realtime inserts + mark-read
 - All hooks include null Supabase guards for graceful degradation
 
 ### Component Hierarchy
