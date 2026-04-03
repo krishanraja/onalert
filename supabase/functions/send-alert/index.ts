@@ -103,7 +103,7 @@ function generateEmailHTML(payload: AlertPayload): string {
           </div>
 
           <div style="margin-top: 24px; padding: 16px; background: #1A1A1A; border-radius: 8px; font-size: 13px; color: #888888;">
-            <strong>Action required:</strong> Appointment slots typically fill within 5–15 minutes.
+            <strong>Action required:</strong> Appointment slots typically fill within 5-15 minutes.
             Book immediately if this time works for you.
           </div>
         </div>

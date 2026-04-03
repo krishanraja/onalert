@@ -7,6 +7,7 @@ import { useAlerts } from '@/hooks/useAlerts'
 import { SERVICE_TYPES } from '@/lib/locations'
 import { formatSlotDate, formatSlotTime, minutesSince } from '@/lib/time'
 import { CBP_BOOK_URL } from '@/lib/cbpApi'
+import { haptic } from '@/lib/haptics'
 
 export function AlertDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -45,10 +46,12 @@ export function AlertDetailPage() {
 
   // Haptic feedback for recent alerts
   useEffect(() => {
-    if (alert && 'vibrate' in navigator) {
+    if (alert) {
       const ageMinutes = minutesSince(alert.created_at)
-      if (ageMinutes < 30) {
-        navigator.vibrate([100, 50, 100])
+      if (ageMinutes <= 5) {
+        haptic('urgentAlert')
+      } else if (ageMinutes < 30) {
+        haptic('alertArrival')
       }
     }
   }, [alert])

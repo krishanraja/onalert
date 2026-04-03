@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase, type Profile } from '@/lib/supabase'
 
 export function useProfile() {
@@ -30,5 +30,22 @@ export function useProfile() {
     return () => { mounted = false }
   }, [])
 
-  return { profile, loading, isPremium: profile?.plan === 'premium' }
+  const updateProfile = useCallback(async (updates: Partial<Profile>) => {
+    if (!supabase || !profile) return
+
+    const previous = profile
+    setProfile({ ...profile, ...updates })
+
+    const { error } = await supabase
+      .from('profiles')
+      .update(updates)
+      .eq('id', profile.id)
+
+    if (error) {
+      setProfile(previous)
+      throw error
+    }
+  }, [profile])
+
+  return { profile, loading, isPremium: profile?.plan === 'premium', updateProfile }
 }

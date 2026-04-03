@@ -1,21 +1,46 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Crown, Mail, Smartphone, ExternalLink, LogOut } from 'lucide-react'
+import { Crown, Mail, Smartphone, ExternalLink, LogOut, Bell } from 'lucide-react'
 import { useProfile } from '@/hooks/useProfile'
 import { supabase } from '@/lib/supabase'
 import { createCheckoutSession, openCustomerPortal } from '@/lib/stripe'
 import { PLANS } from '@/lib/plans'
 import { Switch } from '@/components/ui/switch'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
+import { showToast } from '@/hooks/useToast'
+import { haptic } from '@/lib/haptics'
 
 export function SettingsPage() {
   const navigate = useNavigate()
-  const { profile, isPremium } = useProfile()
+  const { profile, isPremium, updateProfile } = useProfile()
   const [loading, setLoading] = useState('')
   const [error, setError] = useState('')
-  const [emailAlerts, setEmailAlerts] = useState(true)
-  const [smsAlerts, setSmsAlerts] = useState(isPremium)
   const [showSignOutDialog, setShowSignOutDialog] = useState(false)
+
+  // Derive notification prefs from profile with fallbacks
+  const emailAlerts = profile?.email_alerts_enabled ?? true
+  const smsAlerts = profile?.sms_alerts_enabled ?? false
+
+  const handleToggleEmail = async (checked: boolean) => {
+    haptic('selection')
+    try {
+      await updateProfile({ email_alerts_enabled: checked })
+      showToast(checked ? 'Email alerts enabled' : 'Email alerts disabled', 'info')
+    } catch {
+      showToast('Failed to update preference', 'error')
+    }
+  }
+
+  const handleToggleSms = async (checked: boolean) => {
+    if (!isPremium) return
+    haptic('selection')
+    try {
+      await updateProfile({ sms_alerts_enabled: checked })
+      showToast(checked ? 'SMS alerts enabled' : 'SMS alerts disabled', 'info')
+    } catch {
+      showToast('Failed to update preference', 'error')
+    }
+  }
 
   const handleUpgrade = async (plan: 'premium_monthly' | 'premium_annual') => {
     setLoading(plan)
@@ -27,8 +52,8 @@ export function SettingsPage() {
       } else {
         setError('Could not create checkout session. Please try again.')
       }
-    } catch (err: any) {
-      setError(err.message || 'Upgrade failed. Please try again.')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Upgrade failed. Please try again.')
     } finally {
       setLoading('')
     }
@@ -39,8 +64,8 @@ export function SettingsPage() {
     setError('')
     try {
       await openCustomerPortal()
-    } catch (err: any) {
-      setError(err.message || 'Could not open billing portal. Please try again.')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not open billing portal. Please try again.')
     } finally {
       setLoading('')
     }
@@ -55,13 +80,19 @@ export function SettingsPage() {
   return (
     <div className="min-h-full bg-background">
       {/* Header */}
-      <header className="bg-background-elevated border-b border-border safe-top">
+      <header className="bg-background-elevated border-b border-border safe-top lg:hidden">
         <div className="px-4 py-4">
           <h1 className="text-lg font-semibold text-foreground">Settings</h1>
         </div>
       </header>
 
-      <div className="px-4 py-6 space-y-6">
+      <div className="px-4 lg:px-6 py-6 space-y-6 max-w-2xl lg:mx-0">
+        {/* Desktop title */}
+        <div className="hidden lg:block">
+          <h1 className="text-2xl font-bold text-foreground">Settings</h1>
+          <p className="text-sm text-foreground-secondary mt-1">Manage your account and notifications</p>
+        </div>
+
         {/* Error */}
         {error && (
           <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
@@ -119,7 +150,7 @@ export function SettingsPage() {
               </div>
               <Switch
                 checked={emailAlerts}
-                onCheckedChange={setEmailAlerts}
+                onCheckedChange={handleToggleEmail}
                 aria-label="Toggle email alerts"
               />
             </div>
@@ -136,10 +167,40 @@ export function SettingsPage() {
               </div>
               <Switch
                 checked={smsAlerts}
-                onCheckedChange={setSmsAlerts}
+                onCheckedChange={handleToggleSms}
                 disabled={!isPremium}
                 aria-label="Toggle SMS alerts"
               />
+            </div>
+
+            <div className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Bell size={18} className="text-foreground-muted" />
+                <div>
+                  <p className="font-medium text-foreground">Push notifications</p>
+                  <p className="text-xs text-foreground-secondary">
+                    Browser push when slots open
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  if ('Notification' in window && Notification.permission === 'default') {
+                    Notification.requestPermission().then((perm) => {
+                      if (perm === 'granted') {
+                        showToast('Push notifications enabled!', 'success')
+                      }
+                    })
+                  } else if ('Notification' in window && Notification.permission === 'granted') {
+                    showToast('Push notifications already enabled', 'info')
+                  } else {
+                    showToast('Notifications blocked. Check browser settings.', 'error')
+                  }
+                }}
+                className="text-xs text-primary hover:text-primary/80 font-medium transition-colors"
+              >
+                {typeof Notification !== 'undefined' && Notification.permission === 'granted' ? 'Enabled' : 'Enable'}
+              </button>
             </div>
           </div>
         </div>

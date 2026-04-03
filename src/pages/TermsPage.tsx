@@ -39,7 +39,7 @@ export function TermsPage() {
         <section className="space-y-3">
           <h2 className="text-lg font-semibold text-foreground">Payments and refunds</h2>
           <p className="text-foreground-secondary leading-relaxed">
-            Premium subscriptions are billed monthly or annually through Stripe. You may cancel at any time — your access continues through the end of the billing period. Refunds are handled on a case-by-case basis.
+            Premium subscriptions are billed monthly or annually through Stripe. You may cancel at any time - your access continues through the end of the billing period. Refunds are handled on a case-by-case basis.
           </p>
         </section>
 

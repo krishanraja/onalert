@@ -1,13 +1,18 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase, type Alert } from '@/lib/supabase'
+import { haptic } from '@/lib/haptics'
+import { minutesSince } from '@/lib/time'
 
 export function useAlerts(limit = 50) {
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [loading, setLoading] = useState(true)
   const [unreadCount, setUnreadCount] = useState(0)
+  const [connected, setConnected] = useState(true)
 
   useEffect(() => {
     let mounted = true
+    let retryTimeout: ReturnType<typeof setTimeout> | null = null
+    let retryCount = 0
 
     async function load() {
       if (!supabase) { setLoading(false); return }
@@ -39,12 +44,36 @@ export function useAlerts(limit = 50) {
         const newAlert = payload.new as Alert
         setAlerts((prev) => [newAlert, ...prev])
         setUnreadCount((c) => c + 1)
-        if ('vibrate' in navigator) navigator.vibrate([100, 50, 100])
+
+        // Smart haptic based on urgency
+        const age = minutesSince(newAlert.created_at)
+        if (age <= 2) {
+          haptic('urgentAlert')
+        } else {
+          haptic('alertArrival')
+        }
+
+        setConnected(true)
+        retryCount = 0
       })
-      .subscribe()
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          setConnected(true)
+          retryCount = 0
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          setConnected(false)
+          // Exponential backoff reconnection
+          const delay = Math.min(1000 * Math.pow(2, retryCount), 30000)
+          retryCount++
+          retryTimeout = setTimeout(() => {
+            if (mounted) load()
+          }, delay)
+        }
+      })
 
     return () => {
       mounted = false
+      if (retryTimeout) clearTimeout(retryTimeout)
       supabase!.removeChannel(channel)
     }
   }, [limit])
@@ -68,5 +97,5 @@ export function useAlerts(limit = 50) {
     }
   }, [])
 
-  return { alerts, loading, unreadCount, markRead }
+  return { alerts, loading, unreadCount, markRead, connected }
 }

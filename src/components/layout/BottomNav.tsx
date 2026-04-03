@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { Home, Bell, Plus, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { haptic } from '@/lib/haptics'
 
 interface Props {
   unreadCount?: number
@@ -12,7 +13,7 @@ export function BottomNav({ unreadCount = 0 }: Props) {
   return (
     <nav
       aria-label="Main navigation"
-      className="fixed bottom-0 left-0 right-0 bg-background-elevated border-t border-border z-50"
+      className="fixed bottom-0 left-0 right-0 bg-background-elevated border-t border-border z-50 lg:hidden"
       style={{ height: 'calc(var(--bottom-nav-height) + var(--safe-area-bottom))', paddingBottom: 'var(--safe-area-bottom)' }}
     >
       <div className="flex items-center justify-around h-[var(--bottom-nav-height)] px-2">
@@ -41,7 +42,7 @@ export function BottomNav({ unreadCount = 0 }: Props) {
 
         <button
           onClick={() => {
-            if ('vibrate' in navigator) navigator.vibrate([30])
+            haptic('navigation')
             navigate('/app/add')
           }}
           aria-label="Add new monitor"
