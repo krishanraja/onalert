@@ -5,82 +5,80 @@ export function LandingPage() {
   const navigate = useNavigate()
 
   return (
-    <div className="h-dvh overflow-hidden flex flex-col bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-background-elevated safe-top">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <img
-            src="/brand/icon-light.svg"
-            alt="OnAlert"
-            className="h-9 w-9"
-          />
-          <button
-            onClick={() => navigate('/auth')}
-            className="text-sm text-foreground-secondary hover:text-foreground transition-colors"
-            aria-label="Sign in"
-          >
-            Sign in
-          </button>
-        </div>
-      </header>
+    <div className="h-dvh overflow-hidden flex flex-col bg-background relative">
+      {/* Ambient crimson glow */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse at 50% 25%, hsl(0 94% 32% / 0.07) 0%, transparent 60%)' }}
+      />
+
+      {/* Floating sign-in */}
+      <button
+        onClick={() => navigate('/auth')}
+        className="absolute top-4 right-4 z-10 text-sm text-foreground-secondary hover:text-foreground transition-colors"
+        aria-label="Sign in"
+        style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+      >
+        Sign in
+      </button>
 
       {/* Hero */}
-      <section className="flex-1 flex flex-col justify-center max-w-4xl mx-auto px-4 pt-8 pb-8 md:pt-16 md:pb-20 overflow-hidden">
-        <div className="text-center">
-          <img
-            src="/brand/logo-wordmark-dark.png"
-            alt="OnAlert"
-            className="h-36 md:h-48 mx-auto mb-4"
-          />
-          <p className="text-lg md:text-xl text-foreground-secondary max-w-md mx-auto mb-6">
-            Be first in line for a US Govt appointment
-          </p>
-          <p className="text-sm text-foreground-secondary max-w-2xl mx-auto mb-8">
-            OnAlert monitors government appointment systems in real time and reaches you
-            within minutes when a slot opens. Never miss a cancellation again.
-          </p>
-          <button
-            onClick={() => navigate('/auth')}
-            className="bg-primary text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-primary/90 transition-colors w-full max-w-sm"
-          >
-            Set up your first monitor
-          </button>
-        </div>
+      <section className="flex-1 flex flex-col justify-center items-center px-6 relative z-10">
+        <img
+          src="/brand/logo-wordmark-dark.png"
+          alt="OnAlert"
+          className="h-16 md:h-36 mx-auto mb-3"
+        />
+        <p className="text-lg md:text-xl font-medium tracking-tight text-foreground text-center max-w-md mx-auto mb-2">
+          Be first in line for a US Govt appointment
+        </p>
+        <p className="text-xs md:text-sm text-foreground-secondary text-center max-w-sm mx-auto mb-6">
+          OnAlert monitors government appointment systems and alerts you within minutes when a slot opens.
+        </p>
+        <button
+          onClick={() => navigate('/auth')}
+          className="bg-primary text-white px-8 py-3 rounded-lg text-base font-semibold hover:bg-primary/90 transition-colors w-full max-w-sm ring-1 ring-primary/20"
+          style={{ boxShadow: '0 0 24px -4px hsl(0 94% 32% / 0.5)' }}
+        >
+          Set up your first monitor
+        </button>
 
-        {/* Features */}
-        <div className="grid md:grid-cols-3 gap-6 mt-8 md:mt-16">
-          <div className="text-center">
-            <Clock className="w-8 h-8 text-primary mx-auto mb-3" />
-            <h3 className="font-semibold text-foreground mb-2">Checks every 5 minutes</h3>
-            <p className="text-sm text-foreground-secondary">Slots fill in under 10 minutes. Pro catches them before they're gone.</p>
+        {/* Compact features row */}
+        <div className="grid grid-cols-3 gap-2 mt-8 w-full max-w-sm md:max-w-2xl">
+          <div className="flex flex-col items-center text-center">
+            <div className="w-9 h-9 rounded-lg bg-surface-muted flex items-center justify-center mb-1.5">
+              <Clock className="w-4 h-4 text-primary" />
+            </div>
+            <span className="text-[11px] md:text-xs font-medium text-foreground">Every 5 min</span>
+            <p className="hidden md:block text-xs text-foreground-secondary mt-1">Slots fill in under 10 minutes. Pro catches them before they're gone.</p>
           </div>
-          <div className="text-center">
-            <Smartphone className="w-8 h-8 text-primary mx-auto mb-3" />
-            <h3 className="font-semibold text-foreground mb-2">Instant email + SMS</h3>
-            <p className="text-sm text-foreground-secondary">Alerts delivered the moment a slot opens. Not 15 minutes later.</p>
+          <div className="flex flex-col items-center text-center">
+            <div className="w-9 h-9 rounded-lg bg-surface-muted flex items-center justify-center mb-1.5">
+              <Smartphone className="w-4 h-4 text-primary" />
+            </div>
+            <span className="text-[11px] md:text-xs font-medium text-foreground">Email + SMS</span>
+            <p className="hidden md:block text-xs text-foreground-secondary mt-1">Alerts delivered the moment a slot opens. Not 15 minutes later.</p>
           </div>
-          <div className="text-center">
-            <Shield className="w-8 h-8 text-primary mx-auto mb-3" />
-            <h3 className="font-semibold text-foreground mb-2">All trusted traveler programs</h3>
-            <p className="text-sm text-foreground-secondary">Global Entry · TSA PreCheck · NEXUS · SENTRI</p>
+          <div className="flex flex-col items-center text-center">
+            <div className="w-9 h-9 rounded-lg bg-surface-muted flex items-center justify-center mb-1.5">
+              <Shield className="w-4 h-4 text-primary" />
+            </div>
+            <span className="text-[11px] md:text-xs font-medium text-foreground">All programs</span>
+            <p className="hidden md:block text-xs text-foreground-secondary mt-1">Global Entry · TSA PreCheck · NEXUS · SENTRI</p>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border bg-background-elevated">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="text-center">
-            <p className="text-sm text-foreground-muted">
-              © 2026 OnAlert. Real-time opportunity monitoring.
-            </p>
-            <div className="flex justify-center gap-6 mt-4">
-              <a href="/privacy" className="text-xs text-foreground-secondary hover:text-foreground" aria-label="Privacy policy">Privacy</a>
-              <a href="/terms" className="text-xs text-foreground-secondary hover:text-foreground" aria-label="Terms of service">Terms</a>
-              <a href="mailto:support@onalert.app" className="text-xs text-foreground-secondary hover:text-foreground" aria-label="Contact support">Support</a>
-            </div>
-          </div>
-        </div>
+      {/* Minimal footer */}
+      <footer className="relative z-10 py-3 px-4 text-center">
+        <p className="text-[11px] text-foreground-muted">
+          © 2026 OnAlert{' · '}
+          <a href="/privacy" className="hover:text-foreground transition-colors" aria-label="Privacy policy">Privacy</a>
+          {' · '}
+          <a href="/terms" className="hover:text-foreground transition-colors" aria-label="Terms of service">Terms</a>
+          {' · '}
+          <a href="mailto:support@onalert.app" className="hover:text-foreground transition-colors" aria-label="Contact support">Support</a>
+        </p>
       </footer>
     </div>
   )
