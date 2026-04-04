@@ -51,17 +51,17 @@ export function LandingPage() {
               {
                 name: 'DHS',
                 full: 'Dept. of Homeland Security',
-                src: '/brand/gov/dhs.svg',
+                src: '/dhs logo.png',
               },
               {
                 name: 'CBP',
                 full: 'Customs & Border Protection',
-                src: '/brand/gov/cbp.svg',
+                src: '/CBP logo.png',
               },
               {
                 name: 'TSA',
                 full: 'Transportation Security Admin.',
-                src: '/brand/gov/tsa.svg',
+                src: '/TSA logo.png',
               },
             ].map((agency) => (
               <div key={agency.name} className="flex flex-col items-center gap-1.5">
@@ -69,7 +69,7 @@ export function LandingPage() {
                   src={agency.src}
                   alt={agency.full}
                   className="h-10 md:h-12 w-auto object-contain"
-                  style={{ opacity: 0.85 }}
+                  style={{ filter: 'brightness(0) invert(1)', opacity: 0.85 }}
                   loading="lazy"
                 />
                 <span className="text-[9px] md:text-[10px] text-foreground-muted">{agency.full}</span>
