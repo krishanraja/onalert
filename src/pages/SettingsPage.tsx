@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Crown, Mail, Smartphone, LogOut, Bell, Users } from 'lucide-react'
 import { useProfile } from '@/hooks/useProfile'
@@ -18,14 +18,24 @@ export function SettingsPage() {
   const [error, setError] = useState('')
   const [showSignOutDialog, setShowSignOutDialog] = useState(false)
   const upgradeRef = useRef<HTMLDivElement>(null)
+  const hasScrolled = useRef(false)
 
+  const scrollToUpgrade = useCallback(() => {
+    if (hasScrolled.current || !upgradeRef.current) return
+    hasScrolled.current = true
+    // Wait for page transition animation to complete
+    setTimeout(() => {
+      upgradeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 500)
+  }, [])
+
+  // Scroll to upgrade section when navigated here with state or hash
   useEffect(() => {
-    if (location.hash === '#upgrade' && upgradeRef.current) {
-      setTimeout(() => {
-        upgradeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }, 100)
+    const shouldScroll = location.state?.scrollToUpgrade || location.hash === '#upgrade'
+    if (shouldScroll && upgradeRef.current) {
+      scrollToUpgrade()
     }
-  }, [location.hash])
+  }, [location.state, location.hash, isPaid, scrollToUpgrade])
 
   // Derive notification prefs from profile with fallbacks
   const emailAlerts = profile?.email_alerts_enabled ?? true
@@ -57,11 +67,7 @@ export function SettingsPage() {
     setError('')
     try {
       const url = await createCheckoutSession(plan)
-      if (url) {
-        window.location.href = url
-      } else {
-        setError('Could not create checkout session. Please try again.')
-      }
+      window.location.href = url
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Upgrade failed. Please try again.')
     } finally {
@@ -93,13 +99,6 @@ export function SettingsPage() {
           <p className="text-sm text-foreground-secondary mt-1">Manage your account and notifications</p>
         </div>
 
-        {/* Error */}
-        {error && (
-          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
-            <p className="text-sm text-destructive">{error}</p>
-          </div>
-        )}
-
         {/* Account */}
         <div className="space-y-3">
           <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">Account</h2>
@@ -114,9 +113,15 @@ export function SettingsPage() {
                       <span className="text-xs font-medium">{planLabel}</span>
                     </div>
                   ) : (
-                    <span className="text-xs text-foreground-muted bg-surface-muted px-2 py-0.5 rounded-full">
+                    <button
+                      onClick={() => {
+                        hasScrolled.current = false
+                        upgradeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                      }}
+                      className="text-xs text-foreground-muted bg-surface-muted px-2 py-0.5 rounded-full hover:text-primary hover:bg-primary/10 transition-colors"
+                    >
                       FREE
-                    </span>
+                    </button>
                   )}
                 </div>
               </div>
@@ -260,6 +265,11 @@ export function SettingsPage() {
                 </ul>
               </div>
 
+              {error && (
+                <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
+                  <p className="text-sm text-destructive">{error}</p>
+                </div>
+              )}
               <p className="text-xs text-foreground-muted text-center">
                 One-time payment. No subscription. Yours forever.
               </p>

@@ -197,7 +197,7 @@ function AlertDetailInline({ alert, onClose, isPaid }: { alert: Alert; onClose: 
           </button>
         ) : !isDigest && !isPaid ? (
           <button
-            onClick={() => navigate('/app/settings#upgrade')}
+            onClick={() => navigate('/app/settings', { state: { scrollToUpgrade: true } })}
             className="w-full flex items-center justify-center gap-2 text-xs text-foreground-muted hover:text-primary py-2 transition-colors"
           >
             <Lock size={12} />

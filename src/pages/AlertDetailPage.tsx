@@ -266,7 +266,7 @@ export function AlertDetailPage() {
             </button>
           ) : !isDigest && !isPaid ? (
             <button
-              onClick={() => navigate('/app/settings#upgrade')}
+              onClick={() => navigate('/app/settings', { state: { scrollToUpgrade: true } })}
               className="w-full border border-border text-foreground-muted py-3 rounded-lg font-medium hover:bg-surface-muted transition-colors flex items-center justify-center gap-2"
             >
               <Lock size={14} />
