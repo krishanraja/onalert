@@ -1,11 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Bell, ArrowLeft, ExternalLink, MapPin, Calendar, Clock, CheckCircle, Layers, RefreshCw, Lock } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { useAlerts } from '@/hooks/useAlerts'
 import { useProfile } from '@/hooks/useProfile'
 import { AlertCard } from '@/components/alerts/AlertCard'
-import { SwipeableAlertCard } from '@/components/alerts/SwipeableAlertCard'
 import { AlertsListSkeleton } from '@/components/ui/Skeleton'
 import { type Alert } from '@/lib/supabase'
 import { SERVICE_TYPES } from '@/lib/locations'
@@ -213,7 +212,6 @@ export function AlertsPage() {
   const { alerts, loading, markRead } = useAlerts()
   const { isPaid } = useProfile()
   const [selectedAlertId, setSelectedAlertId] = useState<string | null>(null)
-  const [currentIndex, setCurrentIndex] = useState(0)
 
   const selectedAlert = selectedAlertId
     ? alerts.find((a) => a.id === selectedAlertId) ?? null
@@ -223,24 +221,6 @@ export function AlertsPage() {
     setSelectedAlertId(alert.id)
     if (!alert.read_at) {
       markRead(alert.id)
-    }
-  }
-
-  const handleSwipeNext = () => {
-    if (currentIndex < alerts.length - 1) {
-      const current = alerts[currentIndex]
-      if (current && !current.read_at) {
-        markRead(current.id)
-      }
-      setCurrentIndex((i) => i + 1)
-      haptic('selection')
-    }
-  }
-
-  const handleSwipePrev = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex((i) => i - 1)
-      haptic('selection')
     }
   }
 
@@ -258,8 +238,6 @@ export function AlertsPage() {
       </div>
     )
   }
-
-  const currentAlert = alerts[currentIndex]
 
   return (
     <div className="min-h-full bg-background">
@@ -298,49 +276,12 @@ export function AlertsPage() {
             </motion.div>
           </div>
         ) : (
-          /* Swipeable alert cards */
-          <div className="flex-1 flex flex-col p-4 min-h-0">
-            <div className="flex-1 flex items-center justify-center">
-              <div className="w-full max-w-sm">
-                <AnimatePresence mode="wait">
-                  {currentAlert && (
-                    <SwipeableAlertCard
-                      key={currentAlert.id}
-                      alert={currentAlert}
-                      onSwipeLeft={handleSwipeNext}
-                      onSwipeRight={handleSwipePrev}
-                    />
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
-
-            {/* Card counter + dots */}
-            <div className="shrink-0 flex flex-col items-center gap-2 pt-3">
-              <div className="flex items-center gap-1.5">
-                {alerts.slice(
-                  Math.max(0, currentIndex - 3),
-                  Math.min(alerts.length, currentIndex + 4)
-                ).map((a, i) => {
-                  const actualIndex = Math.max(0, currentIndex - 3) + i
-                  return (
-                    <motion.button
-                      key={a.id}
-                      onClick={() => { setCurrentIndex(actualIndex); haptic('tap') }}
-                      className={`rounded-full transition-all ${
-                        actualIndex === currentIndex
-                          ? 'w-6 h-2 bg-primary'
-                          : 'w-2 h-2 bg-border'
-                      }`}
-                      layout
-                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                    />
-                  )
-                })}
-              </div>
-              <span className="text-[10px] font-mono text-foreground-muted">
-                {currentIndex + 1} of {alerts.length}
-              </span>
+          /* Scrollable alert list */
+          <div className="flex-1 overflow-y-auto px-4 py-2">
+            <div className="space-y-2">
+              {alerts.map((alert) => (
+                <AlertCard key={alert.id} alert={alert} />
+              ))}
             </div>
           </div>
         )}
