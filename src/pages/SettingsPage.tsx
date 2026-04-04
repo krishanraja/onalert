@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect, useRef } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { Crown, Mail, Smartphone, LogOut, Bell, Users } from 'lucide-react'
 import { useProfile } from '@/hooks/useProfile'
 import { supabase } from '@/lib/supabase'
@@ -12,10 +12,20 @@ import { haptic } from '@/lib/haptics'
 
 export function SettingsPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { profile, isPaid, isFamily, updateProfile } = useProfile()
   const [loading, setLoading] = useState('')
   const [error, setError] = useState('')
   const [showSignOutDialog, setShowSignOutDialog] = useState(false)
+  const upgradeRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (location.hash === '#upgrade' && upgradeRef.current) {
+      setTimeout(() => {
+        upgradeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 100)
+    }
+  }, [location.hash])
 
   // Derive notification prefs from profile with fallbacks
   const emailAlerts = profile?.email_alerts_enabled ?? true
@@ -185,7 +195,7 @@ export function SettingsPage() {
 
         {/* Upgrade */}
         {!isPaid && (
-          <div className="space-y-3">
+          <div ref={upgradeRef} className="space-y-3 scroll-mt-4">
             <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">Upgrade</h2>
             <div className="space-y-3">
               {/* Pro */}
@@ -220,8 +230,8 @@ export function SettingsPage() {
 
               {/* Family */}
               <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-4 relative">
-                <div className="absolute -top-2 left-4">
-                  <span className="bg-primary text-white px-2 py-0.5 rounded-full text-xs font-medium">
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                  <span className="bg-primary text-white px-3 py-1 rounded-full text-xs font-medium">
                     Best for families
                   </span>
                 </div>

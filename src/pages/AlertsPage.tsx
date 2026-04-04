@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Bell, ArrowLeft, ExternalLink, MapPin, Calendar, Clock, CheckCircle, Layers, RefreshCw, Lock } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAlerts } from '@/hooks/useAlerts'
@@ -15,6 +16,7 @@ import { showToast } from '@/hooks/useToast'
 import { haptic } from '@/lib/haptics'
 
 function AlertDetailInline({ alert, onClose, isPaid }: { alert: Alert; onClose: () => void; isPaid: boolean }) {
+  const navigate = useNavigate()
   const [recheckLoading, setRecheckLoading] = useState(false)
   const [recheckSent, setRecheckSent] = useState(false)
 
@@ -194,10 +196,13 @@ function AlertDetailInline({ alert, onClose, isPaid }: { alert: Alert; onClose: 
             {recheckSent ? 'Re-check requested — email in ~2 min' : recheckLoading ? 'Requesting...' : 'Re-check in 2 min'}
           </button>
         ) : !isDigest && !isPaid ? (
-          <div className="flex items-center justify-center gap-2 text-xs text-foreground-muted py-2">
+          <button
+            onClick={() => navigate('/app/settings#upgrade')}
+            className="w-full flex items-center justify-center gap-2 text-xs text-foreground-muted hover:text-primary py-2 transition-colors"
+          >
             <Lock size={12} />
             <span>Upgrade to Pro to re-check slot availability</span>
-          </div>
+          </button>
         ) : null}
       </div>
     </div>
