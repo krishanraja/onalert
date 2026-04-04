@@ -79,16 +79,11 @@ export function AlertCard({ alert, isSelected }: Props) {
           {/* Slot time(s) */}
           {isDigest ? (
             <div className="space-y-0.5">
-              {alert.payload.slots!.slice(0, 2).map((slot, i) => (
+              {alert.payload.slots!.map((slot, i) => (
                 <p key={i} className="font-mono text-xs text-foreground-secondary truncate">
                   {slot.location_name} · {formatSlotDate(slot.slot_timestamp)}
                 </p>
               ))}
-              {alert.payload.slots!.length > 2 && (
-                <p className="text-[10px] text-foreground-muted">
-                  +{alert.payload.slots!.length - 2} more
-                </p>
-              )}
             </div>
           ) : (
             <>

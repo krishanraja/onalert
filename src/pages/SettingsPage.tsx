@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Crown, Mail, Smartphone, LogOut, Bell, Users } from 'lucide-react'
+import { Crown, Mail, Smartphone, LogOut, Bell, Users, Activity } from 'lucide-react'
 import { useProfile } from '@/hooks/useProfile'
 import { supabase } from '@/lib/supabase'
+import { useMonitors } from '@/hooks/useMonitors'
+import { MonitorCard } from '@/components/monitors/MonitorCard'
 import { createCheckoutSession } from '@/lib/stripe'
 import { PLANS } from '@/lib/plans'
 import { Switch } from '@/components/ui/switch'
@@ -15,6 +17,7 @@ export function SettingsPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { profile, isPaid, isFamily, updateProfile } = useProfile()
+  const { monitors, loading: monitorsLoading, toggleMonitor, deleteMonitor } = useMonitors()
   const [loading, setLoading] = useState('')
   const [error, setError] = useState('')
   const [showSignOutDialog, setShowSignOutDialog] = useState(false)
@@ -203,6 +206,34 @@ export function SettingsPage() {
               </button>
             </div>
           </div>
+        </div>
+
+        {/* Monitors */}
+        <div className="space-y-3">
+          <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">Monitors</h2>
+          {monitorsLoading ? (
+            <div className="bg-surface border border-border rounded-lg p-4">
+              <p className="text-sm text-foreground-muted">Loading monitors...</p>
+            </div>
+          ) : monitors.length === 0 ? (
+            <div className="bg-surface border border-border rounded-lg p-4">
+              <div className="flex items-center gap-3">
+                <Activity size={18} className="text-foreground-muted" />
+                <p className="text-sm text-foreground-muted">No monitors set up yet.</p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {monitors.map((monitor) => (
+                <MonitorCard
+                  key={monitor.id}
+                  monitor={monitor}
+                  onToggle={toggleMonitor}
+                  onDelete={deleteMonitor}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Upgrade */}

@@ -1,5 +1,5 @@
 import { motion, useMotionValue, useTransform, type PanInfo } from 'framer-motion'
-import { ExternalLink, Flame, MapPin, Calendar } from 'lucide-react'
+import { ExternalLink, Flame, MapPin, Calendar, Layers } from 'lucide-react'
 import { type Alert } from '@/lib/supabase'
 import { SERVICE_TYPES } from '@/lib/locations'
 import { formatSlotDate, formatSlotTime, minutesSince } from '@/lib/time'
@@ -22,6 +22,7 @@ export function SwipeableAlertCard({ alert, onSwipeLeft, onSwipeRight }: Props) 
   const age = minutesSince(alert.created_at)
   const isHot = age <= 5
   const isWarm = age <= 15
+  const isDigest = alert.payload.slots && alert.payload.slots.length > 1
 
   const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const threshold = 100
@@ -77,25 +78,51 @@ export function SwipeableAlertCard({ alert, onSwipeLeft, onSwipeRight }: Props) 
       </div>
 
       {/* Location */}
-      <div className="flex items-center gap-2 mb-3">
-        <MapPin size={14} className="text-foreground-muted shrink-0" />
-        <p className="text-foreground font-medium truncate">
-          {alert.payload.location_name}
-        </p>
-      </div>
+      {isDigest ? (
+        <div className="flex items-center gap-2 mb-3">
+          <Layers size={14} className="text-foreground-muted shrink-0" />
+          <p className="text-foreground font-medium">
+            {alert.payload.slots!.length} slots available
+          </p>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2 mb-3">
+          <MapPin size={14} className="text-foreground-muted shrink-0" />
+          <p className="text-foreground font-medium truncate">
+            {alert.payload.location_name}
+          </p>
+        </div>
+      )}
 
       {/* Slot details */}
       <div className="bg-background/50 border border-border rounded-xl p-4 mb-5">
         <div className="flex items-center gap-2 text-foreground-muted mb-2">
           <Calendar size={14} />
-          <span className="text-xs font-medium">Available appointment</span>
+          <span className="text-xs font-medium">
+            {isDigest ? 'Available appointments' : 'Available appointment'}
+          </span>
         </div>
-        <p className="text-3xl font-mono font-bold text-primary mb-1">
-          {formatSlotTime(alert.payload.slot_timestamp)}
-        </p>
-        <p className="text-sm font-medium text-foreground">
-          {formatSlotDate(alert.payload.slot_timestamp)}
-        </p>
+        {isDigest ? (
+          <div className="space-y-2">
+            {alert.payload.slots!.map((slot, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <MapPin size={11} className="text-foreground-muted shrink-0" />
+                <p className="font-mono text-sm text-foreground truncate">
+                  {slot.location_name} · {formatSlotDate(slot.slot_timestamp)}
+                </p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <>
+            <p className="text-3xl font-mono font-bold text-primary mb-1">
+              {formatSlotTime(alert.payload.slot_timestamp)}
+            </p>
+            <p className="text-sm font-medium text-foreground">
+              {formatSlotDate(alert.payload.slot_timestamp)}
+            </p>
+          </>
+        )}
       </div>
 
       {/* Book CTA */}
@@ -108,7 +135,7 @@ export function SwipeableAlertCard({ alert, onSwipeLeft, onSwipeRight }: Props) 
         className="w-full bg-primary text-white py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 active:brightness-90 transition-colors"
       >
         <ExternalLink size={16} />
-        Book this slot
+        {isDigest ? 'Book a slot' : 'Book this slot'}
       </motion.button>
 
       {/* Swipe hint */}
