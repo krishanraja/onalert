@@ -1,12 +1,11 @@
 import { useNavigate } from 'react-router-dom'
-import { Check, Clock, Smartphone, Shield } from 'lucide-react'
-import { PLANS } from '@/lib/plans'
+import { Clock, Smartphone, Shield } from 'lucide-react'
 
 export function LandingPage() {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-dvh overflow-hidden flex flex-col bg-background">
       {/* Header */}
       <header className="border-b border-border bg-background-elevated safe-top">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -26,7 +25,7 @@ export function LandingPage() {
       </header>
 
       {/* Hero */}
-      <section className="max-w-4xl mx-auto px-4 pt-16 pb-20">
+      <section className="flex-1 flex flex-col justify-center max-w-4xl mx-auto px-4 pt-8 pb-8 md:pt-16 md:pb-20 overflow-hidden">
         <div className="text-center">
           <img
             src="/brand/logo-wordmark-dark.png"
@@ -49,7 +48,7 @@ export function LandingPage() {
         </div>
 
         {/* Features */}
-        <div className="grid md:grid-cols-3 gap-6 mt-16">
+        <div className="grid md:grid-cols-3 gap-6 mt-8 md:mt-16">
           <div className="text-center">
             <Clock className="w-8 h-8 text-primary mx-auto mb-3" />
             <h3 className="font-semibold text-foreground mb-2">Checks every 5 minutes</h3>
@@ -68,84 +67,9 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Pricing */}
-      <section className="max-w-4xl mx-auto px-4 py-16">
-        <h2 className="text-3xl font-bold text-center text-foreground mb-4">Simple pricing</h2>
-        <p className="text-center text-foreground-secondary mb-12">One-time payment. No subscription. Yours forever.</p>
-        <div className="grid md:grid-cols-3 gap-6 max-w-3xl mx-auto">
-          {/* Free */}
-          <div className="bg-surface border border-border rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-foreground mb-2">Free</h3>
-            <p className="text-3xl font-bold text-foreground mb-4">$0</p>
-            <ul className="space-y-2 mb-6">
-              {PLANS.free.features.map((feature) => (
-                <li key={feature} className="flex items-center gap-2 text-sm text-foreground-secondary">
-                  <Check size={14} className="text-success shrink-0" />
-                  {feature}
-                </li>
-              ))}
-            </ul>
-            <button
-              onClick={() => navigate('/auth')}
-              className="w-full border border-border text-foreground py-2 rounded-lg hover:bg-surface-muted transition-colors"
-            >
-              Get started
-            </button>
-          </div>
-
-          {/* Pro */}
-          <div className="bg-surface border border-primary rounded-lg p-6 relative">
-            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-              <span className="bg-primary text-white px-3 py-1 rounded-full text-xs font-medium">Most popular</span>
-            </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">Pro</h3>
-            <p className="text-3xl font-bold text-foreground mb-1">${PLANS.pro.price}</p>
-            <p className="text-sm text-foreground-secondary mb-4">one-time payment</p>
-            <ul className="space-y-2 mb-6">
-              {PLANS.pro.features.map((feature) => (
-                <li key={feature} className="flex items-center gap-2 text-sm text-foreground-secondary">
-                  <Check size={14} className="text-success shrink-0" />
-                  {feature}
-                </li>
-              ))}
-            </ul>
-            <button
-              onClick={() => navigate('/auth')}
-              className="w-full bg-primary text-white py-2 rounded-lg hover:bg-primary/90 transition-colors"
-            >
-              Get Pro
-            </button>
-          </div>
-
-          {/* Family */}
-          <div className="bg-gradient-to-b from-primary/5 to-transparent border border-primary/30 rounded-lg p-6 relative">
-            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-              <span className="bg-primary/80 text-white px-3 py-1 rounded-full text-xs font-medium">Best for families</span>
-            </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">Family</h3>
-            <p className="text-3xl font-bold text-foreground mb-1">${PLANS.family.price}</p>
-            <p className="text-sm text-foreground-secondary mb-4">one-time payment</p>
-            <ul className="space-y-2 mb-6">
-              {PLANS.family.features.map((feature) => (
-                <li key={feature} className="flex items-center gap-2 text-sm text-foreground-secondary">
-                  <Check size={14} className="text-success shrink-0" />
-                  {feature}
-                </li>
-              ))}
-            </ul>
-            <button
-              onClick={() => navigate('/auth')}
-              className="w-full bg-primary/80 text-white py-2 rounded-lg hover:bg-primary/70 transition-colors"
-            >
-              Get Family
-            </button>
-          </div>
-        </div>
-      </section>
-
       {/* Footer */}
-      <footer className="border-t border-border bg-background-elevated safe-bottom">
-        <div className="max-w-4xl mx-auto px-4 py-8">
+      <footer className="border-t border-border bg-background-elevated">
+        <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="text-center">
             <p className="text-sm text-foreground-muted">
               © 2026 OnAlert. Real-time opportunity monitoring.
