@@ -38,8 +38,8 @@ function generateDigestEmailHTML(slots: DigestSlot[], serviceType: string): stri
           <div style="font-size: 14px; color: #F5F5F5;">${date}</div>
           ${slot.narrative ? `<div style="font-size: 12px; color: #666; margin-top: 6px;">${slot.narrative}</div>` : ''}
         </td>
-        <td style="padding: 16px; border-bottom: 1px solid #2A2A2A; text-align: right; vertical-align: middle;">
-          <a href="${slot.book_url}" style="background: #9F0506; color: white; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; font-size: 13px; display: inline-block;">Book →</a>
+        <td style="padding: 16px; border-bottom: 1px solid #2A2A2A; text-align: right; vertical-align: middle; width: 80px; min-width: 80px;">
+          <a href="${slot.book_url}" style="background: #9F0506; color: white; text-decoration: none; padding: 12px 16px; border-radius: 6px; font-weight: 600; font-size: 13px; display: inline-block; white-space: nowrap; mso-padding-alt: 0; text-align: center;">Book&nbsp;→</a>
         </td>
       </tr>
     `
@@ -110,15 +110,28 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: 'No slots in digest' }), { status: 400 })
     }
 
-    // Get user profile
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('email, plan')
+      .select('email, plan, email_alerts_enabled')
       .eq('id', userId)
       .single()
 
     if (profileError || !profile) {
       throw new Error(`User not found: ${profileError?.message || 'no profile'}`)
+    }
+
+    if (profile.email_alerts_enabled === false) {
+      await supabase
+        .from('alerts')
+        .update({ delivered_at: new Date().toISOString(), channel: 'suppressed' })
+        .eq('id', alertId)
+
+      return new Response(JSON.stringify({
+        success: true,
+        suppressed: true,
+        reason: 'email_alerts_disabled',
+        alert_id: alertId,
+      }), { headers: { 'Content-Type': 'application/json' } })
     }
 
     const locationCount = new Set(slots.map(s => s.location_id)).size

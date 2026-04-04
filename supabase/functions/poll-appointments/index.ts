@@ -176,15 +176,10 @@ async function getLocationAlertHistory(locationId: number): Promise<{
     (Date.now() - new Date(recentAlerts[0].created_at).getTime()) / (1000 * 60 * 60 * 24)
   )
 
-  // Estimate avg fill time from slot frequency patterns
-  const avgFillMinutes = recentAlerts.length > 5
-    ? Math.round(7 + Math.random() * 6) // 7-13 min realistic estimate
-    : null
-
   return {
     daysSinceLastAlert,
     alertsLast30Days: recentAlerts.length,
-    avgFillMinutes,
+    avgFillMinutes: null,
   }
 }
 

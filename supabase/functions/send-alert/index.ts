@@ -130,10 +130,9 @@ Deno.serve(async (req) => {
     const userId = record.user_id
     const payload: AlertPayload = record.payload
 
-    // Get user profile for email and plan info
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('email, plan')
+      .select('email, plan, email_alerts_enabled')
       .eq('id', userId)
       .single()
 
@@ -141,9 +140,21 @@ Deno.serve(async (req) => {
       throw new Error(`User not found: ${profileError?.message || 'no profile'}`)
     }
 
-    const channels: string[] = []
+    if (profile.email_alerts_enabled === false) {
+      await supabase
+        .from('alerts')
+        .update({ delivered_at: new Date().toISOString(), channel: 'suppressed' })
+        .eq('id', alertId)
 
-    // 1. Always send email first (fastest delivery)
+      return new Response(JSON.stringify({
+        success: true,
+        suppressed: true,
+        reason: 'email_alerts_disabled',
+        alert_id: alertId,
+      }), { headers: { 'Content-Type': 'application/json' } })
+    }
+
+    const channels: string[] = []
     const subject = `🚨 ${payload.service_type} slot available  - ${payload.location_name}`
     const html = generateEmailHTML(payload)
 
