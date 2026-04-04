@@ -1,4 +1,4 @@
-project_id = "ksyuwacuigshvcyptlhe"
+project_id = "zcreubinittdqyoxxwtp"
 
 [api]
 enabled = true
@@ -9,31 +9,30 @@ max_rows = 1000
 
 [auth]
 enabled = true
-port = 9999
 site_url = "http://localhost:3000"
 additional_redirect_urls = ["https://localhost:3000"]
 jwt_expiry = 3600
-refresh_token_rotation_enabled = true
-refresh_token_reuse_interval = 10
-enable_signup = true
 
-[functions.ai-strategic-analysis]
+[functions.poll-appointments]
 verify_jwt = false
 
-[functions.google-sheets-integration]
+[functions.send-alert]
 verify_jwt = false
 
-[functions.test-google-secret]
+[functions.send-digest-alert]
 verify_jwt = false
 
-[functions.generate-user-insights]
+[functions.create-checkout]
+verify_jwt = true
+
+[functions.customer-portal]
+verify_jwt = true
+
+[functions.stripe-webhook]
 verify_jwt = false
 
-[functions.transcribe]
+[functions.process-delayed-alerts]
 verify_jwt = false
 
-[functions.parse-voice-log]
-verify_jwt = false
-
-[functions.parse-onboarding]
+[functions.process-rechecks]
 verify_jwt = false
