@@ -1,0 +1,46 @@
+- generic [ref=e3]:
+  - button "Sign in" [ref=e4] [cursor=pointer]
+  - generic [ref=e5]:
+    - img "OnAlert" [ref=e6]
+    - paragraph [ref=e7]: Be first in line for a US Govt appointment
+    - paragraph [ref=e8]: OnAlert monitors government appointment systems and alerts you within minutes when a slot opens.
+    - button "Set up your first monitor" [ref=e9] [cursor=pointer]
+    - generic [ref=e10]:
+      - paragraph [ref=e11]: Programs monitored from
+      - generic [ref=e12]:
+        - generic [ref=e13]:
+          - img "Dept. of Homeland Security" [ref=e14]
+          - generic [ref=e15]: Dept. of Homeland Security
+        - generic [ref=e16]:
+          - img "Customs & Border Protection" [ref=e17]
+          - generic [ref=e18]: Customs & Border Protection
+        - generic [ref=e19]:
+          - img "Transportation Security Admin."
+          - generic [ref=e20]: Transportation Security Admin.
+    - generic [ref=e21]:
+      - generic [ref=e22]:
+        - img [ref=e24]
+        - generic [ref=e27]: Every 5 min
+        - paragraph [ref=e28]: Slots fill in under 10 minutes. Pro catches them before they're gone.
+      - generic [ref=e29]:
+        - img [ref=e31]
+        - generic [ref=e33]: Email + SMS
+        - paragraph [ref=e34]: Alerts delivered the moment a slot opens. Not 15 minutes later.
+      - generic [ref=e35]:
+        - img [ref=e37]
+        - generic [ref=e39]: All programs
+        - paragraph [ref=e40]: Global Entry · TSA PreCheck · NEXUS · SENTRI
+  - contentinfo [ref=e41]:
+    - paragraph [ref=e42]:
+      - text: © 2026 OnAlert ·
+      - link "Privacy policy" [ref=e43] [cursor=pointer]:
+        - /url: /privacy
+        - text: Privacy
+      - text: ·
+      - link "Terms of service" [ref=e44] [cursor=pointer]:
+        - /url: /terms
+        - text: Terms
+      - text: ·
+      - link "Contact support" [ref=e45] [cursor=pointer]:
+        - /url: mailto:support@onalert.app
+        - text: Support

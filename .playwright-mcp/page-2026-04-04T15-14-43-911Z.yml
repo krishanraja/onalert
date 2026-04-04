@@ -1,0 +1,43 @@
+- generic [ref=e3]:
+  - button "Sign in" [ref=e4] [cursor=pointer]
+  - generic [ref=e5]:
+    - img "OnAlert" [ref=e40]
+    - paragraph [ref=e6]: Be first in line for a US Govt appointment
+    - paragraph [ref=e7]: OnAlert monitors government appointment systems and alerts you within minutes when a slot opens.
+    - button "Set up your first monitor" [ref=e8] [cursor=pointer]
+    - generic [ref=e9]:
+      - paragraph [ref=e10]: Programs monitored from
+      - generic [ref=e11]:
+        - generic [ref=e12]:
+          - img "Dept. of Homeland Security" [ref=e41]
+          - generic [ref=e13]: Dept. of Homeland Security
+        - generic [ref=e14]:
+          - img "Customs & Border Protection" [ref=e42]
+          - generic [ref=e15]: Customs & Border Protection
+        - generic [ref=e16]:
+          - img "Transportation Security Admin." [ref=e43]
+          - generic [ref=e17]: Transportation Security Admin.
+    - generic [ref=e18]:
+      - generic [ref=e19]:
+        - img [ref=e21]
+        - generic [ref=e24]: Every 5 min
+      - generic [ref=e25]:
+        - img [ref=e27]
+        - generic [ref=e29]: Email + SMS
+      - generic [ref=e30]:
+        - img [ref=e32]
+        - generic [ref=e34]: All programs
+  - contentinfo [ref=e35]:
+    - paragraph [ref=e36]:
+      - text: © 2026 OnAlert ·
+      - link "Privacy policy" [ref=e37] [cursor=pointer]:
+        - /url: /privacy
+        - text: Privacy
+      - text: ·
+      - link "Terms of service" [ref=e38] [cursor=pointer]:
+        - /url: /terms
+        - text: Terms
+      - text: ·
+      - link "Contact support" [ref=e39] [cursor=pointer]:
+        - /url: mailto:support@onalert.app
+        - text: Support

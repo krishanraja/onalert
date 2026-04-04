@@ -1,0 +1,33 @@
+- generic [ref=e47]:
+  - banner [ref=e100]:
+    - button "Go back" [ref=e102] [cursor=pointer]:
+      - img [ref=e103]
+  - generic [ref=e106]:
+    - generic [ref=e107]:
+      - img "OnAlert" [ref=e108]
+      - heading "Create your account" [level=1] [ref=e109]
+      - paragraph [ref=e110]: Get started with appointment monitoring
+    - button "Continue with Google" [ref=e111] [cursor=pointer]:
+      - img [ref=e112]
+      - text: Continue with Google
+    - generic [ref=e119]: or
+    - generic [ref=e121]:
+      - generic [ref=e122]:
+        - generic [ref=e123]: Email address
+        - textbox "Email address" [ref=e124]:
+          - /placeholder: you@example.com
+          - text: test-1775315832505@test.com
+      - generic [ref=e125]:
+        - generic [ref=e126]: Password
+        - generic [ref=e127]:
+          - textbox "Password" [ref=e128]:
+            - /placeholder: Create a password (min 6 characters)
+            - text: Test123!
+          - button "Hide password" [active] [ref=e138] [cursor=pointer]:
+            - img [ref=e139]
+      - button "Create account" [ref=e133] [cursor=pointer]
+    - generic [ref=e134]:
+      - button "Sign in with magic link instead" [ref=e135] [cursor=pointer]
+      - paragraph [ref=e136]:
+        - text: Already have an account?
+        - button "Sign in" [ref=e137] [cursor=pointer]

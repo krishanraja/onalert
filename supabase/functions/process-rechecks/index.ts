@@ -95,7 +95,7 @@ async function sendRecheckEmail(to: string, available: boolean, locationName: st
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'OnAlert <alerts@themindmaker.ai>',
+      from: 'OnAlert <onboarding@resend.dev>',
       to: [to],
       subject,
       html,

@@ -133,7 +133,7 @@ Deno.serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'OnAlert <alerts@themindmaker.ai>',
+        from: 'OnAlert <onboarding@resend.dev>',
         to: [profile.email],
         subject,
         html,

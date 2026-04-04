@@ -1,0 +1,46 @@
+- generic [ref=e150]:
+  - button "Sign in" [ref=e151] [cursor=pointer]
+  - generic [ref=e152]:
+    - img "OnAlert" [ref=e153]
+    - paragraph [ref=e154]: Be first in line for a US Govt appointment
+    - paragraph [ref=e155]: OnAlert monitors government appointment systems and alerts you within minutes when a slot opens.
+    - button "Set up your first monitor" [ref=e156] [cursor=pointer]
+    - generic [ref=e157]:
+      - paragraph [ref=e158]: Programs monitored from
+      - generic [ref=e159]:
+        - generic [ref=e160]:
+          - img "Dept. of Homeland Security" [ref=e161]
+          - generic [ref=e162]: Dept. of Homeland Security
+        - generic [ref=e163]:
+          - img "Customs & Border Protection" [ref=e164]
+          - generic [ref=e165]: Customs & Border Protection
+        - generic [ref=e166]:
+          - img "Transportation Security Admin." [ref=e167]
+          - generic [ref=e168]: Transportation Security Admin.
+    - generic [ref=e169]:
+      - generic [ref=e170]:
+        - img [ref=e172]
+        - generic [ref=e175]: Every 5 min
+        - paragraph [ref=e176]: Slots fill in under 10 minutes. Pro catches them before they're gone.
+      - generic [ref=e177]:
+        - img [ref=e179]
+        - generic [ref=e181]: Email + SMS
+        - paragraph [ref=e182]: Alerts delivered the moment a slot opens. Not 15 minutes later.
+      - generic [ref=e183]:
+        - img [ref=e185]
+        - generic [ref=e187]: All programs
+        - paragraph [ref=e188]: Global Entry · TSA PreCheck · NEXUS · SENTRI
+  - contentinfo [ref=e189]:
+    - paragraph [ref=e190]:
+      - text: © 2026 OnAlert ·
+      - link "Privacy policy" [ref=e191] [cursor=pointer]:
+        - /url: /privacy
+        - text: Privacy
+      - text: ·
+      - link "Terms of service" [ref=e192] [cursor=pointer]:
+        - /url: /terms
+        - text: Terms
+      - text: ·
+      - link "Contact support" [ref=e193] [cursor=pointer]:
+        - /url: mailto:support@onalert.app
+        - text: Support

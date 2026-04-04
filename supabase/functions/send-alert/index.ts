@@ -24,7 +24,7 @@ async function sendEmail(to: string, subject: string, html: string) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'OnAlert <alerts@themindmaker.ai>',
+      from: 'OnAlert <onboarding@resend.dev>',
       to: [to],
       subject,
       html,

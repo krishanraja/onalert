@@ -1,0 +1,34 @@
+- generic [ref=e47]:
+  - banner [ref=e100]:
+    - button "Go back" [ref=e102] [cursor=pointer]:
+      - img [ref=e103]
+  - generic [ref=e106]:
+    - generic [ref=e107]:
+      - img "OnAlert" [ref=e108]
+      - heading "Sign in to OnAlert" [level=1] [ref=e144]
+      - paragraph [ref=e110]: Monitor government appointments in real time
+    - button "Continue with Google" [ref=e111] [cursor=pointer]:
+      - img [ref=e112]
+      - text: Continue with Google
+    - generic [ref=e119]: or
+    - generic [ref=e121]:
+      - generic [ref=e122]:
+        - generic [ref=e123]: Email address
+        - textbox "Email address" [ref=e124]:
+          - /placeholder: you@example.com
+          - text: test-1775315832505@test.com
+      - generic [ref=e125]:
+        - generic [ref=e126]: Password
+        - generic [ref=e127]:
+          - textbox "Password" [ref=e128]:
+            - /placeholder: Enter your password
+            - text: wrongpassword
+          - button "Hide password" [ref=e138] [cursor=pointer]:
+            - img [ref=e139]
+      - paragraph [ref=e147]: Invalid login credentials
+      - button "Sign in" [ref=e145] [cursor=pointer]
+    - generic [ref=e134]:
+      - button "Sign in with magic link instead" [ref=e135] [cursor=pointer]
+      - paragraph [ref=e136]:
+        - text: Don't have an account?
+        - button "Create one" [ref=e146] [cursor=pointer]
