@@ -25,7 +25,7 @@ export function SettingsPage() {
         upgradeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }, 100)
     }
-  }, [location.hash])
+  }, [location.hash, isPaid])
 
   // Derive notification prefs from profile with fallbacks
   const emailAlerts = profile?.email_alerts_enabled ?? true
@@ -114,9 +114,12 @@ export function SettingsPage() {
                       <span className="text-xs font-medium">{planLabel}</span>
                     </div>
                   ) : (
-                    <span className="text-xs text-foreground-muted bg-surface-muted px-2 py-0.5 rounded-full">
+                    <button
+                      onClick={() => upgradeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                      className="text-xs text-foreground-muted bg-surface-muted px-2 py-0.5 rounded-full hover:text-primary hover:bg-primary/10 transition-colors"
+                    >
                       FREE
-                    </span>
+                    </button>
                   )}
                 </div>
               </div>

@@ -78,9 +78,13 @@ export function Sidebar({ unreadCount = 0 }: Props) {
               <span className="text-[10px] font-medium">{isFamily ? 'FAMILY' : 'PRO'}</span>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 bg-surface text-foreground-muted px-2 py-1 rounded-full border border-border">
+            <button
+              onClick={() => navigate('/app/settings#upgrade')}
+              className="flex items-center gap-1.5 bg-surface text-foreground-muted px-2 py-1 rounded-full border border-border hover:border-primary hover:text-primary transition-colors"
+            >
+              <Crown size={10} />
               <span className="text-[10px] font-medium">FREE</span>
-            </div>
+            </button>
           )}
         </div>
 

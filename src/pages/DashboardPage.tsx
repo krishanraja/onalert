@@ -80,7 +80,7 @@ export function DashboardPage() {
   return (
     <div className="min-h-full bg-background">
       {/* ============ MOBILE LAYOUT - No scroll, viewport fit ============ */}
-      <div className="lg:hidden flex flex-col" style={{ height: 'calc(100dvh - var(--bottom-nav-height) - var(--safe-area-bottom))' }}>
+      <div className="lg:hidden flex flex-col overflow-hidden" style={{ height: 'calc(100dvh - var(--bottom-nav-height) - var(--safe-area-bottom))' }}>
         {/* Header */}
         <header className="bg-background-elevated border-b border-border safe-top shrink-0">
           <div className="px-4 py-3 flex items-center justify-between">
@@ -96,9 +96,13 @@ export function DashboardPage() {
                   <span className="text-xs font-medium">{planLabel}</span>
                 </div>
               ) : (
-                <div className="flex items-center gap-1.5 bg-surface text-foreground-muted px-2 py-1 rounded-full border border-border">
+                <button
+                  onClick={() => navigate('/app/settings#upgrade')}
+                  className="flex items-center gap-1.5 bg-surface text-foreground-muted px-2 py-1 rounded-full border border-border hover:border-primary hover:text-primary transition-colors"
+                >
+                  <Crown size={10} />
                   <span className="text-xs font-medium">FREE</span>
-                </div>
+                </button>
               )}
             </div>
           </div>
