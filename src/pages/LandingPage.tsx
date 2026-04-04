@@ -51,17 +51,17 @@ export function LandingPage() {
               {
                 name: 'DHS',
                 full: 'Dept. of Homeland Security',
-                src: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Seal_of_the_United_States_Department_of_Homeland_Security.svg/200px-Seal_of_the_United_States_Department_of_Homeland_Security.svg.png',
+                src: '/dhs logo.png',
               },
               {
                 name: 'CBP',
                 full: 'Customs & Border Protection',
-                src: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Patch_of_the_U.S._Customs_and_Border_Protection.svg/200px-Patch_of_the_U.S._Customs_and_Border_Protection.svg.png',
+                src: '/CBP logo.png',
               },
               {
                 name: 'TSA',
                 full: 'Transportation Security Admin.',
-                src: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Transportation_Security_Administration_Logo.svg/200px-Transportation_Security_Administration_Logo.svg.png',
+                src: '/TSA logo.png',
               },
             ].map((agency) => (
               <div key={agency.name} className="flex flex-col items-center gap-1.5">
