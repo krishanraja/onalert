@@ -15,9 +15,9 @@ export function LandingPage() {
       {/* Floating sign-in */}
       <button
         onClick={() => navigate('/auth')}
-        className="absolute top-4 right-4 z-10 text-sm text-foreground-secondary hover:text-foreground transition-colors"
+        className="absolute top-2 right-2 z-10 text-sm text-foreground-secondary hover:text-foreground transition-colors px-3 py-2"
         aria-label="Sign in"
-        style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+        style={{ marginTop: 'env(safe-area-inset-top, 0px)' }}
       >
         Sign in
       </button>
@@ -106,13 +106,14 @@ export function LandingPage() {
 
       {/* Minimal footer */}
       <footer className="relative z-10 py-3 px-4 text-center">
-        <p className="text-[11px] text-foreground-muted">
-          © 2026 OnAlert{' · '}
-          <a href="/privacy" className="hover:text-foreground transition-colors" aria-label="Privacy policy">Privacy</a>
-          {' · '}
-          <a href="/terms" className="hover:text-foreground transition-colors" aria-label="Terms of service">Terms</a>
-          {' · '}
-          <a href="mailto:support@onalert.app" className="hover:text-foreground transition-colors" aria-label="Contact support">Support</a>
+        <p className="text-[11px] text-foreground-muted flex items-center justify-center gap-1 flex-wrap">
+          <span>© 2026 OnAlert</span>
+          <span>·</span>
+          <a href="/privacy" className="py-2 px-1 hover:text-foreground transition-colors" aria-label="Privacy policy">Privacy</a>
+          <span>·</span>
+          <a href="/terms" className="py-2 px-1 hover:text-foreground transition-colors" aria-label="Terms of service">Terms</a>
+          <span>·</span>
+          <a href="mailto:support@onalert.app" className="py-2 px-1 hover:text-foreground transition-colors" aria-label="Contact support">Support</a>
         </p>
       </footer>
     </div>
