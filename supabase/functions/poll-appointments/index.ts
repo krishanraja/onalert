@@ -7,11 +7,34 @@ const supabase = createClient(
 
 const CBP_BASE = 'https://ttp.cbp.dhs.gov/schedulerapi'
 
+// --- Structured Logging ---
+const runId = crypto.randomUUID()
+
+function log(level: 'info' | 'warn' | 'error', event: string, data?: Record<string, unknown>) {
+  console.log(JSON.stringify({
+    ts: new Date().toISOString(),
+    run_id: runId,
+    level,
+    event,
+    ...data,
+  }))
+}
+
+// --- Types ---
 interface CBPSlot {
   locationId: number
   startTimestamp: string
   endTimestamp: string
   active: boolean
+}
+
+interface FetchResult {
+  locationId: number
+  slots: CBPSlot[]
+  httpStatus: number | null
+  latencyMs: number
+  error: string | null
+  valid: boolean
 }
 
 interface Monitor {
@@ -83,20 +106,48 @@ function getLocationName(locationId: number): string {
   return LOCATION_NAMES[locationId] || `CBP Location ${locationId}`
 }
 
-async function getSlots(locationId: number): Promise<CBPSlot[]> {
+function validateSlot(slot: unknown, expectedLocationId: number): boolean {
+  if (typeof slot !== 'object' || slot === null) return false
+  const s = slot as Record<string, unknown>
+  if (typeof s.locationId !== 'number') return false
+  if (typeof s.startTimestamp !== 'string' || isNaN(Date.parse(s.startTimestamp))) return false
+  if (typeof s.active !== 'boolean') return false
+  if (s.locationId !== expectedLocationId) return false
+  return true
+}
+
+async function fetchLocation(locationId: number): Promise<FetchResult> {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 10000)
+  const start = Date.now()
 
   try {
     const res = await fetch(
       `${CBP_BASE}/slots?orderBy=soonest&limit=5&locationId=${locationId}&serviceId=TP`,
       { signal: controller.signal }
     )
-    if (!res.ok) return []
+    const latencyMs = Date.now() - start
+
+    if (!res.ok) {
+      return { locationId, slots: [], httpStatus: res.status, latencyMs, error: `HTTP ${res.status}`, valid: false }
+    }
+
     const data = await res.json()
-    return Array.isArray(data) ? data : []
-  } catch {
-    return []
+    if (!Array.isArray(data)) {
+      log('warn', 'cbp.validation_warning', { location_id: locationId, reason: 'response_not_array' })
+      return { locationId, slots: [], httpStatus: res.status, latencyMs, error: 'Response not an array', valid: false }
+    }
+
+    const allValid = data.every((s: unknown) => validateSlot(s, locationId))
+    if (!allValid) {
+      log('warn', 'cbp.validation_warning', { location_id: locationId, reason: 'slot_schema_invalid' })
+    }
+
+    return { locationId, slots: data as CBPSlot[], httpStatus: res.status, latencyMs, error: null, valid: allValid }
+  } catch (err) {
+    const latencyMs = Date.now() - start
+    const message = err instanceof Error ? err.message : 'Unknown error'
+    return { locationId, slots: [], httpStatus: null, latencyMs, error: message, valid: false }
   } finally {
     clearTimeout(timeout)
   }
@@ -218,7 +269,11 @@ Deno.serve(async (req) => {
   const startTime = Date.now()
   let checked = 0
   let newAlerts = 0
+  let alertsSent = 0
+  let alertsDelayed = 0
   let skipped = 0
+  let newSlotsDetected = 0
+  const allFetchResults: FetchResult[] = []
 
   try {
     // Get all active appointment monitors
@@ -231,6 +286,7 @@ Deno.serve(async (req) => {
     if (monitorError) throw monitorError
 
     if (!allMonitors || allMonitors.length === 0) {
+      log('info', 'poll.start', { monitors_total: 0 })
       return new Response(JSON.stringify({ checked: 0, new_alerts: 0, skipped: 0 }), {
         headers: { 'Content-Type': 'application/json' }
       })
@@ -284,6 +340,7 @@ Deno.serve(async (req) => {
     })
 
     if (monitors.length === 0) {
+      log('info', 'poll.start', { monitors_total: allMonitors.length, monitors_eligible: 0, monitors_skipped: skipped })
       return new Response(JSON.stringify({ checked: 0, new_alerts: 0, skipped }), {
         headers: { 'Content-Type': 'application/json' }
       })
@@ -295,6 +352,13 @@ Deno.serve(async (req) => {
       m.config.location_ids.forEach(id => locationIds.add(id))
     })
 
+    log('info', 'poll.start', {
+      monitors_total: allMonitors.length,
+      monitors_eligible: monitors.length,
+      monitors_skipped: skipped,
+      unique_locations: locationIds.size,
+    })
+
     // Fetch slots for each unique location in parallel (batches of 5 to avoid rate limiting)
     const locationSlots = new Map<number, CBPSlot[]>()
     const locationArray = Array.from(locationIds)
@@ -303,15 +367,24 @@ Deno.serve(async (req) => {
     for (let i = 0; i < locationArray.length; i += BATCH_SIZE) {
       const batch = locationArray.slice(i, i + BATCH_SIZE)
       const results = await Promise.allSettled(
-        batch.map(async (locationId) => {
-          const slots = await getSlots(locationId)
-          return { locationId, slots }
-        })
+        batch.map((locationId) => fetchLocation(locationId))
       )
 
       for (const result of results) {
         if (result.status === 'fulfilled') {
-          locationSlots.set(result.value.locationId, result.value.slots)
+          const fr = result.value
+          locationSlots.set(fr.locationId, fr.slots)
+          allFetchResults.push(fr)
+          log('info', 'cbp.fetch', {
+            location_id: fr.locationId,
+            http_status: fr.httpStatus,
+            latency_ms: fr.latencyMs,
+            slots_count: fr.slots.length,
+            valid: fr.valid,
+            error: fr.error,
+          })
+        } else {
+          log('error', 'cbp.fetch', { error: result.reason?.message || 'Promise rejected' })
         }
         checked++
       }
@@ -345,6 +418,8 @@ Deno.serve(async (req) => {
           newSlots = newSlots.filter(ts => new Date(ts).getTime() <= deadline)
         }
 
+        newSlotsDetected += newSlots.length
+
         if (newSlots.length > 0) {
           const locationName = getLocationName(locationId)
           const userPlan = planMap.get(monitor.user_id) || 'free'
@@ -376,6 +451,16 @@ Deno.serve(async (req) => {
         // Update known slots for this location
         newKnownSlots[locationId.toString()] = slotTimestamps
       }
+
+      log('info', 'monitor.diff', {
+        monitor_id: monitor.id,
+        user_id: monitor.user_id,
+        plan: planMap.get(monitor.user_id) || 'free',
+        locations_checked: monitor.config.location_ids.length,
+        new_slots_found: allNewSlotsForMonitor.length,
+        alert_decision: allNewSlotsForMonitor.length === 0 ? 'none' :
+          (allNewSlotsForMonitor.length > 1 && (planMap.get(monitor.user_id) === 'pro' || planMap.get(monitor.user_id) === 'family')) ? 'digest' : 'individual',
+      })
 
       // Process collected new slots: digest (2+) or individual alerts
       const userPlan = planMap.get(monitor.user_id) || 'free'
@@ -416,21 +501,26 @@ Deno.serve(async (req) => {
           .single()
 
         if (!alertError && alertRecord) {
+          log('info', 'alert.created', { alert_id: alertRecord.id, monitor_id: monitor.id, type: 'digest', delayed: false })
+          newAlerts += sortedSlots.length
           try {
             await supabase.functions.invoke('send-digest-alert', {
               body: { record: alertRecord }
             })
+            alertsSent++
+            log('info', 'alert.sent', { alert_id: alertRecord.id })
           } catch (sendErr) {
             // Fall back to regular send-alert if digest function doesn't exist yet
             try {
               await supabase.functions.invoke('send-alert', {
                 body: { record: alertRecord }
               })
+              alertsSent++
+              log('info', 'alert.sent', { alert_id: alertRecord.id, fallback: true })
             } catch (fallbackErr) {
-              console.error(`Failed to send digest alert ${alertRecord.id}:`, fallbackErr)
+              log('error', 'alert.send_failed', { alert_id: alertRecord.id, error: (fallbackErr as Error).message })
             }
           }
-          newAlerts += sortedSlots.length
         }
       } else {
         // Individual alerts (single slot or free user)
@@ -455,18 +545,25 @@ Deno.serve(async (req) => {
             .single()
 
           if (alertError) {
-            console.error(`Failed to insert alert for monitor ${monitor.id}:`, alertError)
+            log('error', 'alert.create_failed', { monitor_id: monitor.id, error: alertError.message })
             continue
           }
+
+          const isDelayed = !!slot.delay_until
+          log('info', 'alert.created', { alert_id: alertRecord.id, monitor_id: monitor.id, type: 'individual', delayed: isDelayed })
 
           if (!slot.delay_until) {
             try {
               await supabase.functions.invoke('send-alert', {
                 body: { record: alertRecord }
               })
+              alertsSent++
+              log('info', 'alert.sent', { alert_id: alertRecord.id })
             } catch (sendErr) {
-              console.error(`Failed to send alert ${alertRecord.id}:`, sendErr)
+              log('error', 'alert.send_failed', { alert_id: alertRecord.id, error: (sendErr as Error).message })
             }
+          } else {
+            alertsDelayed++
           }
 
           newAlerts++
@@ -491,41 +588,114 @@ Deno.serve(async (req) => {
         .eq('id', monitor.id)
     }
 
-    // Log the scrape run
+    // --- Anomaly Detection ---
+    const locationsFailed = allFetchResults.filter(r => r.error !== null).length
+    const locationsZeroSlots = allFetchResults.filter(r => r.error === null && r.slots.length === 0).length
+    const latencies = allFetchResults.map(r => r.latencyMs)
+    const avgLatency = latencies.length > 0 ? Math.round(latencies.reduce((a, b) => a + b, 0) / latencies.length) : 0
+    const maxLatency = latencies.length > 0 ? Math.max(...latencies) : 0
+    const totalSlotsFound = Array.from(locationSlots.values()).flat().length
+
+    const anomalyFlags: string[] = []
+    if (allFetchResults.length >= 3 && allFetchResults.every(r => r.slots.length === 0)) {
+      anomalyFlags.push('all_locations_zero')
+    }
+    if (allFetchResults.length > 0 && locationsFailed / allFetchResults.length > 0.5) {
+      anomalyFlags.push('high_failure_rate')
+    }
+    if (avgLatency > 5000) {
+      anomalyFlags.push('slow_api')
+    }
+    if (allFetchResults.some(r => !r.valid && r.error === null)) {
+      anomalyFlags.push('response_schema_invalid')
+    }
+
+    const durationMs = Date.now() - startTime
+
+    log('info', 'poll.complete', {
+      duration_ms: durationMs,
+      locations_fetched: allFetchResults.length,
+      locations_failed: locationsFailed,
+      total_slots: totalSlotsFound,
+      new_slots: newSlotsDetected,
+      alerts_created: newAlerts,
+      alerts_sent: alertsSent,
+      alerts_delayed: alertsDelayed,
+      anomaly_flags: anomalyFlags,
+    })
+
+    // --- Bulk insert location fetch logs ---
+    if (allFetchResults.length > 0) {
+      await supabase.from('location_fetch_logs').insert(
+        allFetchResults.map(r => ({
+          run_id: runId,
+          location_id: r.locationId,
+          http_status: r.httpStatus,
+          latency_ms: r.latencyMs,
+          slots_returned: r.slots.length,
+          response_valid: r.valid,
+          error: r.error,
+        }))
+      ).catch((err: Error) => log('warn', 'location_fetch_logs.insert_failed', { error: err.message }))
+    }
+
+    // --- Log the enriched scrape run ---
     await supabase.from('scrape_logs').insert({
+      run_id: runId,
       location_id: null,
       service_type: 'all',
       started_at: new Date(startTime).toISOString(),
       completed_at: new Date().toISOString(),
-      slots_found: Array.from(locationSlots.values()).flat().length,
+      slots_found: totalSlotsFound,
       new_alerts_fired: newAlerts,
-      error: null
+      error: null,
+      monitors_eligible: monitors.length,
+      monitors_skipped: skipped,
+      locations_fetched: allFetchResults.length,
+      locations_failed: locationsFailed,
+      locations_zero_slots: locationsZeroSlots,
+      new_slots_detected: newSlotsDetected,
+      alerts_created: newAlerts,
+      alerts_sent: alertsSent,
+      alerts_delayed: alertsDelayed,
+      duration_ms: durationMs,
+      cbp_avg_latency_ms: avgLatency,
+      cbp_max_latency_ms: maxLatency,
+      anomaly_flags: anomalyFlags.length > 0 ? anomalyFlags : null,
     })
 
     return new Response(JSON.stringify({
+      run_id: runId,
       checked,
       new_alerts: newAlerts,
       skipped,
-      duration_ms: Date.now() - startTime
+      duration_ms: durationMs,
+      anomaly_flags: anomalyFlags,
     }), {
       headers: { 'Content-Type': 'application/json' }
     })
 
   } catch (error) {
-    console.error('Polling error:', error)
+    log('error', 'poll.error', { error: (error as Error).message, stack: (error as Error).stack })
 
-    // Log the error
+    // Log the error with enriched data
     await supabase.from('scrape_logs').insert({
+      run_id: runId,
       location_id: null,
       service_type: 'all',
       started_at: new Date(startTime).toISOString(),
       completed_at: new Date().toISOString(),
       slots_found: 0,
       new_alerts_fired: 0,
-      error: error.message
+      error: (error as Error).message,
+      duration_ms: Date.now() - startTime,
+      monitors_eligible: 0,
+      monitors_skipped: 0,
+      locations_fetched: allFetchResults.length,
+      locations_failed: allFetchResults.filter(r => r.error !== null).length,
     }).catch(() => {}) // Don't fail if logging itself fails
 
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: (error as Error).message, run_id: runId }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     })
