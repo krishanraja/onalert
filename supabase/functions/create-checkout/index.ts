@@ -12,18 +12,28 @@ const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
 
 const PLANS = {
   pro: {
-    price: 2900, // $29.00 one-time
+    price: 3900, // $39.00 one-time
     name: 'OnAlert Pro',
     description: '1 monitor, SMS alerts, 5-minute checks, unlimited locations',
   },
   family: {
-    price: 4900, // $49.00 one-time
+    price: 5900, // $59.00 one-time
     name: 'OnAlert Family',
     description: 'Up to 5 monitors, SMS alerts, 5-minute checks, unlimited locations',
   },
 }
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+}
+
 Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
   if (req.method !== 'POST') {
     return new Response('Method not allowed', { status: 405 })
   }
@@ -95,14 +105,14 @@ Deno.serve(async (req) => {
     })
 
     return new Response(JSON.stringify({ url: session.url }), {
-      headers: { 'Content-Type': 'application/json' }
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
 
   } catch (error) {
     console.error('Checkout error:', error)
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
   }
 })
