@@ -68,8 +68,7 @@ export function LandingPage() {
                 <img
                   src={agency.src}
                   alt={agency.full}
-                  className="h-10 md:h-12 w-auto object-contain"
-                  style={{ filter: 'brightness(0) invert(1)', opacity: 0.85 }}
+                  className="h-10 md:h-12 w-auto object-contain rounded-full"
                   loading="lazy"
                 />
                 <span className="text-[9px] md:text-[10px] text-foreground-muted">{agency.full}</span>
