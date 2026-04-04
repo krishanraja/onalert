@@ -6,6 +6,7 @@ import { AlertsPage } from './pages/AlertsPage'
 import { AddMonitorPage } from './pages/AddMonitorPage'
 import { AlertDetailPage } from './pages/AlertDetailPage'
 import { SettingsPage } from './pages/SettingsPage'
+import { AdminAuditPage } from './pages/AdminAuditPage'
 import { PrivacyPage } from './pages/PrivacyPage'
 import { TermsPage } from './pages/TermsPage'
 import { AppLayout } from './components/layout/AppLayout'
@@ -24,6 +25,7 @@ function App() {
           <Route path="alerts/:id" element={<AlertDetailPage />} />
           <Route path="add" element={<AddMonitorPage />} />
           <Route path="settings" element={<SettingsPage />} />
+          <Route path="admin/audit" element={<AdminAuditPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

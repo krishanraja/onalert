@@ -27,6 +27,7 @@ export type Profile = {
   plan: 'free' | 'pro' | 'family'
   email_alerts_enabled: boolean
   sms_alerts_enabled: boolean
+  is_admin: boolean
   created_at: string
   updated_at: string
 }
@@ -72,4 +73,43 @@ export type Alert = {
   delivered_at: string | null
   read_at: string | null
   created_at: string
+  delay_until: string | null
+}
+
+export type ScrapeLog = {
+  id: string
+  run_id: string | null
+  location_id: number | null
+  service_type: string | null
+  started_at: string
+  completed_at: string | null
+  slots_found: number
+  new_alerts_fired: number
+  error: string | null
+  monitors_eligible: number | null
+  monitors_skipped: number | null
+  locations_fetched: number | null
+  locations_failed: number | null
+  locations_zero_slots: number | null
+  new_slots_detected: number | null
+  alerts_created: number | null
+  alerts_sent: number | null
+  alerts_delayed: number | null
+  duration_ms: number | null
+  cbp_avg_latency_ms: number | null
+  cbp_max_latency_ms: number | null
+  anomaly_flags: string[] | null
+  metadata: Record<string, unknown> | null
+}
+
+export type LocationFetchLog = {
+  id: string
+  run_id: string
+  location_id: number
+  http_status: number | null
+  latency_ms: number | null
+  slots_returned: number
+  response_valid: boolean
+  error: string | null
+  fetched_at: string
 }
