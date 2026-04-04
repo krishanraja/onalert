@@ -43,6 +43,41 @@ export function LandingPage() {
           Set up your first monitor
         </button>
 
+        {/* Government agency logos */}
+        <div className="mt-6 mb-2 flex flex-col items-center">
+          <p className="text-[10px] md:text-xs text-foreground-muted mb-3 tracking-wide uppercase">Programs monitored from</p>
+          <div className="flex items-center justify-center gap-8 md:gap-12">
+            {[
+              {
+                name: 'DHS',
+                full: 'Dept. of Homeland Security',
+                src: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Seal_of_the_United_States_Department_of_Homeland_Security.svg/200px-Seal_of_the_United_States_Department_of_Homeland_Security.svg.png',
+              },
+              {
+                name: 'CBP',
+                full: 'Customs & Border Protection',
+                src: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Patch_of_the_U.S._Customs_and_Border_Protection.svg/200px-Patch_of_the_U.S._Customs_and_Border_Protection.svg.png',
+              },
+              {
+                name: 'TSA',
+                full: 'Transportation Security Admin.',
+                src: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Transportation_Security_Administration_Logo.svg/200px-Transportation_Security_Administration_Logo.svg.png',
+              },
+            ].map((agency) => (
+              <div key={agency.name} className="flex flex-col items-center gap-1.5">
+                <img
+                  src={agency.src}
+                  alt={agency.full}
+                  className="h-10 md:h-12 w-auto object-contain"
+                  style={{ filter: 'brightness(0) invert(1)', opacity: 0.85 }}
+                  loading="lazy"
+                />
+                <span className="text-[9px] md:text-[10px] text-foreground-muted">{agency.full}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Compact features row */}
         <div className="grid grid-cols-3 gap-2 mt-8 w-full max-w-sm md:max-w-2xl">
           <div className="flex flex-col items-center text-center">
