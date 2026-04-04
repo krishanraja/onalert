@@ -27,7 +27,7 @@ export function LandingPage() {
         <img
           src="/brand/logo-wordmark-dark.png"
           alt="OnAlert"
-          className="h-16 md:h-36 mx-auto mb-3"
+          className="h-[141px] md:h-[317px] mx-auto mb-3"
         />
         <p className="text-lg md:text-xl font-medium tracking-tight text-foreground text-center max-w-md mx-auto mb-2">
           Be first in line for a US Govt appointment
