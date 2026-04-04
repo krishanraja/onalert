@@ -51,17 +51,17 @@ export function LandingPage() {
               {
                 name: 'DHS',
                 full: 'Dept. of Homeland Security',
-                src: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Seal_of_the_United_States_Department_of_Homeland_Security.svg/200px-Seal_of_the_United_States_Department_of_Homeland_Security.svg.png',
+                src: '/brand/gov/dhs.svg',
               },
               {
                 name: 'CBP',
                 full: 'Customs & Border Protection',
-                src: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Patch_of_the_U.S._Customs_and_Border_Protection.svg/200px-Patch_of_the_U.S._Customs_and_Border_Protection.svg.png',
+                src: '/brand/gov/cbp.svg',
               },
               {
                 name: 'TSA',
                 full: 'Transportation Security Admin.',
-                src: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Transportation_Security_Administration_Logo.svg/200px-Transportation_Security_Administration_Logo.svg.png',
+                src: '/brand/gov/tsa.svg',
               },
             ].map((agency) => (
               <div key={agency.name} className="flex flex-col items-center gap-1.5">
@@ -69,7 +69,7 @@ export function LandingPage() {
                   src={agency.src}
                   alt={agency.full}
                   className="h-10 md:h-12 w-auto object-contain"
-                  style={{ filter: 'brightness(0) invert(1)', opacity: 0.85 }}
+                  style={{ opacity: 0.85 }}
                   loading="lazy"
                 />
                 <span className="text-[9px] md:text-[10px] text-foreground-muted">{agency.full}</span>
