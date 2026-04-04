@@ -14,14 +14,17 @@ export function getStripe() {
 
 export async function createCheckoutSession(
   plan: 'pro' | 'family'
-): Promise<string | null> {
-  if (!supabase) return null
+): Promise<string> {
+  if (!supabase) throw new Error('Not connected. Please refresh and try again.')
   const { data, error } = await supabase.functions.invoke('create-checkout', {
     body: { plan },
   })
-  if (error || !data?.url) {
+  if (error) {
     console.error('Checkout error:', error)
-    return null
+    throw new Error('Payment service unavailable. Please try again in a moment.')
+  }
+  if (!data?.url) {
+    throw new Error('Could not create checkout session. Please try again.')
   }
   return data.url
 }

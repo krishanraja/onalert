@@ -79,7 +79,7 @@ export function Sidebar({ unreadCount = 0 }: Props) {
             </div>
           ) : (
             <button
-              onClick={() => navigate('/app/settings#upgrade')}
+              onClick={() => navigate('/app/settings', { state: { scrollToUpgrade: true } })}
               className="flex items-center gap-1.5 bg-surface text-foreground-muted px-2 py-1 rounded-full border border-border hover:border-primary hover:text-primary transition-colors"
             >
               <Crown size={10} />

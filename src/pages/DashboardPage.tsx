@@ -97,7 +97,7 @@ export function DashboardPage() {
                 </div>
               ) : (
                 <button
-                  onClick={() => navigate('/app/settings#upgrade')}
+                  onClick={() => navigate('/app/settings', { state: { scrollToUpgrade: true } })}
                   className="flex items-center gap-1.5 bg-surface text-foreground-muted px-2 py-1 rounded-full border border-border hover:border-primary hover:text-primary transition-colors"
                 >
                   <Crown size={10} />
@@ -192,7 +192,7 @@ export function DashboardPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => navigate('/app/settings#upgrade')}
+                onClick={() => navigate('/app/settings', { state: { scrollToUpgrade: true } })}
                 className="shrink-0 bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-xl px-4 py-3 flex items-center gap-3"
               >
                 <Crown className="w-4 h-4 text-primary shrink-0" />
@@ -305,7 +305,7 @@ export function DashboardPage() {
                           Free alerts are delayed 15 min and slots fill in under 10. Pro delivers instant alerts with 5-minute checks.
                         </p>
                         <button
-                          onClick={() => navigate('/app/settings#upgrade')}
+                          onClick={() => navigate('/app/settings', { state: { scrollToUpgrade: true } })}
                           className="text-sm text-primary hover:text-primary/80 transition-colors font-medium inline-flex items-center gap-1"
                         >
                           Upgrade for $39 (one-time) <ArrowRight size={14} />

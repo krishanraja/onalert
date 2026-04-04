@@ -90,7 +90,7 @@ export function AddMonitorPage() {
           {!isFamily && (
             <motion.button
               whileTap={{ scale: 0.97 }}
-              onClick={() => navigate('/app/settings#upgrade')}
+              onClick={() => navigate('/app/settings', { state: { scrollToUpgrade: true } })}
               className="bg-primary text-white px-4 py-2 rounded-lg"
             >
               Upgrade to {upgradeTarget}
@@ -581,7 +581,7 @@ export function AddMonitorPage() {
                       </div>
                     ) : (
                       <p className="text-xs text-foreground-muted">
-                        <button onClick={() => navigate('/app/settings#upgrade')} className="text-primary hover:text-primary/80">Upgrade to Pro</button> to filter alerts by date — only get notified about slots you can actually use.
+                        <button onClick={() => navigate('/app/settings', { state: { scrollToUpgrade: true } })} className="text-primary hover:text-primary/80">Upgrade to Pro</button> to filter alerts by date — only get notified about slots you can actually use.
                       </p>
                     )}
                   </div>
