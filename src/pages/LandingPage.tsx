@@ -71,7 +71,7 @@ export function LandingPage() {
                   className="h-10 md:h-12 w-auto object-contain rounded-full"
                   loading="lazy"
                 />
-                <span className="text-[9px] md:text-[10px] text-foreground-muted">{agency.full}</span>
+                <span className="text-[9px] md:text-[10px] text-foreground-muted text-center">{agency.full}</span>
               </div>
             ))}
           </div>
