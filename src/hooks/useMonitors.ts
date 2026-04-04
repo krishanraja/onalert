@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase, type Monitor } from '@/lib/supabase'
+import { trackEvent, AnalyticsEvents } from '@/lib/analytics'
 
 export function useMonitors() {
   const [monitors, setMonitors] = useState<Monitor[]>([])
@@ -83,6 +84,13 @@ export function useMonitors() {
     if (!data) return null
 
     setMonitors((prev) => [data, ...prev])
+    
+    // Track monitor creation
+    trackEvent(AnalyticsEvents.MONITOR_CREATED, {
+      service_type: config.service_type,
+      location_count: config.location_ids?.length || 0,
+    })
+    
     return data
   }
 

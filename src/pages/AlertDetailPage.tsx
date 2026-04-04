@@ -10,6 +10,7 @@ import { formatSlotDate, formatSlotTime, minutesSince } from '@/lib/time'
 import { CBP_BOOK_URL } from '@/lib/cbpApi'
 import { haptic } from '@/lib/haptics'
 import { showToast } from '@/hooks/useToast'
+import { trackEvent, AnalyticsEvents } from '@/lib/analytics'
 
 export function AlertDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -39,6 +40,15 @@ export function AlertDetailPage() {
 
       setAlert(data)
       setLoading(false)
+
+      // Track alert view
+      if (data) {
+        trackEvent(AnalyticsEvents.ALERT_VIEWED, {
+          alert_id: data.id,
+          service_type: data.payload?.service_type,
+          age_minutes: minutesSince(data.created_at),
+        })
+      }
 
       // Mark as read
       if (data && !data.read_at) {

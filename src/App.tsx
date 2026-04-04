@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { LandingPage } from './pages/LandingPage'
 import { AuthPage } from './pages/AuthPage'
 import { DashboardPage } from './pages/DashboardPage'
@@ -10,6 +10,7 @@ import { AdminAuditPage } from './pages/AdminAuditPage'
 import { PrivacyPage } from './pages/PrivacyPage'
 import { TermsPage } from './pages/TermsPage'
 import { AppLayout } from './components/layout/AppLayout'
+import NotFoundPage from './pages/NotFoundPage'
 
 function App() {
   return (
@@ -27,7 +28,7 @@ function App() {
           <Route path="settings" element={<SettingsPage />} />
           <Route path="admin/audit" element={<AdminAuditPage />} />
         </Route>
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   )

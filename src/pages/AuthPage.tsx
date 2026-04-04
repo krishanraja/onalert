@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { ArrowLeft, Mail, Eye, EyeOff } from 'lucide-react'
+import { trackEvent, AnalyticsEvents } from '@/lib/analytics'
 
 type AuthMode = 'sign_in' | 'sign_up' | 'magic_link'
 
@@ -27,6 +28,9 @@ export function AuthPage() {
     // Handle auth state changes (magic link, OAuth redirect, etc.)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
+        trackEvent(AnalyticsEvents.SIGNIN_COMPLETED, {
+          provider: session.user?.app_metadata?.provider || 'email',
+        })
         navigate('/app')
       }
     })
@@ -74,6 +78,7 @@ export function AuthPage() {
           },
         })
         if (error) throw error
+        trackEvent(AnalyticsEvents.SIGNUP_SUBMITTED, { method: 'email' })
         setSent(true)
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -134,7 +139,7 @@ export function AuthPage() {
             </p>
             <button
               onClick={() => { setSent(false); setError('') }}
-              className="text-xs text-primary hover:underline mt-3"
+              className="text-xs text-primary hover:underline mt-3 min-h-[44px] px-3 py-2"
             >
               Try different email
             </button>
@@ -291,11 +296,11 @@ export function AuthPage() {
           )}
 
           {/* Mode switchers */}
-          <div className="text-center mt-6 space-y-2">
+          <div className="text-center mt-6 space-y-1">
             {mode !== 'magic_link' && (
               <button
                 onClick={() => { setMode('magic_link'); setError(''); setPassword('') }}
-                className="text-xs text-foreground-muted hover:text-foreground-secondary transition-colors block mx-auto"
+                className="text-xs text-foreground-muted hover:text-foreground-secondary transition-colors block mx-auto min-h-[44px] px-3 py-2"
               >
                 Sign in with magic link instead
               </button>
@@ -303,21 +308,21 @@ export function AuthPage() {
             {mode === 'magic_link' && (
               <button
                 onClick={() => { setMode('sign_in'); setError('') }}
-                className="text-xs text-foreground-muted hover:text-foreground-secondary transition-colors block mx-auto"
+                className="text-xs text-foreground-muted hover:text-foreground-secondary transition-colors block mx-auto min-h-[44px] px-3 py-2"
               >
                 Sign in with password instead
               </button>
             )}
-            <p className="text-xs text-foreground-muted">
+            <p className="text-xs text-foreground-muted py-2">
               {mode === 'sign_up' ? (
                 <>Already have an account?{' '}
-                  <button onClick={() => { setMode('sign_in'); setError('') }} className="text-primary hover:underline">
+                  <button onClick={() => { setMode('sign_in'); setError('') }} className="text-primary hover:underline min-h-[44px] py-2 px-1">
                     Sign in
                   </button>
                 </>
               ) : (
                 <>Don't have an account?{' '}
-                  <button onClick={() => { setMode('sign_up'); setError('') }} className="text-primary hover:underline">
+                  <button onClick={() => { setMode('sign_up'); setError('') }} className="text-primary hover:underline min-h-[44px] py-2 px-1">
                     Create one
                   </button>
                 </>

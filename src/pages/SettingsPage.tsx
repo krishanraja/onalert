@@ -9,6 +9,7 @@ import { Switch } from '@/components/ui/switch'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { showToast } from '@/hooks/useToast'
 import { haptic } from '@/lib/haptics'
+import { trackEvent, AnalyticsEvents } from '@/lib/analytics'
 
 export function SettingsPage() {
   const navigate = useNavigate()
@@ -63,10 +64,15 @@ export function SettingsPage() {
   }
 
   const handleUpgrade = async (plan: 'pro' | 'family') => {
+    // Track upgrade click
+    trackEvent(AnalyticsEvents.UPGRADE_CLICKED, { plan })
+    
     setLoading(plan)
     setError('')
     try {
       const url = await createCheckoutSession(plan)
+      // Track checkout started
+      trackEvent(AnalyticsEvents.CHECKOUT_STARTED, { plan })
       window.location.href = url
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Upgrade failed. Please try again.')
@@ -78,6 +84,7 @@ export function SettingsPage() {
   const handleSignOut = async () => {
     if (!supabase) { navigate('/'); return }
     await supabase.auth.signOut()
+    trackEvent(AnalyticsEvents.SIGNOUT_COMPLETED)
     navigate('/')
   }
 
