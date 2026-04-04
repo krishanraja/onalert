@@ -24,7 +24,7 @@ async function sendEmail(to: string, subject: string, html: string) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'OnAlert <onboarding@resend.dev>',
+      from: 'OnAlert <alerts@onalert.app>',
       to: [to],
       subject,
       html,
@@ -155,7 +155,7 @@ Deno.serve(async (req) => {
     }
 
     const channels: string[] = []
-    const subject = `🚨 ${payload.service_type} slot available  - ${payload.location_name}`
+    const subject = `🚨 ${payload.service_type} slot available - ${payload.location_name}`
     const html = generateEmailHTML(payload)
 
     await sendEmail(profile.email, subject, html)
