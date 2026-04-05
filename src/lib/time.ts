@@ -30,6 +30,13 @@ export function formatSlotTime(timestamp: string): string {
   })
 }
 
+export function formatSlotDateShort(timestamp: string): string {
+  const d = new Date(timestamp)
+  const date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+  return `${date} at ${time}`
+}
+
 export function minutesSince(dateStr: string): number {
   return Math.floor((Date.now() - new Date(dateStr).getTime()) / 60000)
 }

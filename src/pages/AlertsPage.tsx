@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bell, ArrowLeft, ExternalLink, MapPin, Calendar, Clock, CheckCircle, Layers, RefreshCw, Lock } from 'lucide-react'
+import { Bell, ArrowLeft, ExternalLink, MapPin, Calendar, Clock, CheckCircle, Layers, RefreshCw, Lock, FilterX } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useAlerts } from '@/hooks/useAlerts'
 import { useProfile } from '@/hooks/useProfile'
 import { AlertCard } from '@/components/alerts/AlertCard'
+import { AlertFilterBar } from '@/components/alerts/AlertFilterBar'
 import { AlertsListSkeleton } from '@/components/ui/Skeleton'
 import { type Alert } from '@/lib/supabase'
 import { SERVICE_TYPES } from '@/lib/locations'
@@ -212,6 +213,34 @@ export function AlertsPage() {
   const { alerts, loading, markRead } = useAlerts()
   const { isPaid } = useProfile()
   const [selectedAlertId, setSelectedAlertId] = useState<string | null>(null)
+  const [serviceFilter, setServiceFilter] = useState<Set<string>>(new Set())
+  const [readFilter, setReadFilter] = useState<'all' | 'unread' | 'read'>('all')
+
+  const filteredAlerts = useMemo(() => {
+    return alerts.filter((a) => {
+      if (serviceFilter.size > 0 && !serviceFilter.has(a.payload.service_type)) return false
+      if (readFilter === 'unread' && a.read_at) return false
+      if (readFilter === 'read' && !a.read_at) return false
+      return true
+    })
+  }, [alerts, serviceFilter, readFilter])
+
+  const filterCounts = useMemo(() => ({
+    total: alerts.length,
+    unread: alerts.filter(a => !a.read_at).length,
+    byService: alerts.reduce((acc, a) => {
+      const st = a.payload.service_type
+      acc[st] = (acc[st] || 0) + 1
+      return acc
+    }, {} as Record<string, number>)
+  }), [alerts])
+
+  const hasActiveFilters = serviceFilter.size > 0 || readFilter !== 'all'
+
+  const clearFilters = () => {
+    setServiceFilter(new Set())
+    setReadFilter('all')
+  }
 
   const selectedAlert = selectedAlertId
     ? alerts.find((a) => a.id === selectedAlertId) ?? null
@@ -248,10 +277,23 @@ export function AlertsPage() {
           <div className="px-4 py-3 flex items-center justify-between">
             <h1 className="text-lg font-semibold text-foreground">Alerts</h1>
             <span className="text-xs font-mono text-foreground-muted">
-              {alerts.length} total
+              {hasActiveFilters ? `${filteredAlerts.length} of ${alerts.length}` : `${alerts.length} total`}
             </span>
           </div>
         </header>
+
+        {/* Filter bar */}
+        {alerts.length > 0 && (
+          <div className="px-4 py-2 border-b border-border bg-background-elevated shrink-0">
+            <AlertFilterBar
+              serviceTypes={serviceFilter}
+              onServiceTypesChange={setServiceFilter}
+              readFilter={readFilter}
+              onReadFilterChange={setReadFilter}
+              counts={filterCounts}
+            />
+          </div>
+        )}
 
         {alerts.length === 0 ? (
           /* Empty state */
@@ -275,11 +317,22 @@ export function AlertsPage() {
               </p>
             </motion.div>
           </div>
+        ) : filteredAlerts.length === 0 ? (
+          /* No filter results */
+          <div className="flex-1 flex flex-col items-center justify-center p-6">
+            <div className="text-center">
+              <FilterX className="w-8 h-8 text-foreground-muted mx-auto mb-3" />
+              <h3 className="font-medium text-foreground mb-2">No alerts match your filters</h3>
+              <button onClick={clearFilters} className="text-sm text-primary hover:text-primary/80 transition-colors">
+                Clear filters
+              </button>
+            </div>
+          </div>
         ) : (
           /* Scrollable alert list */
           <div className="flex-1 overflow-y-auto px-4 py-2">
             <div className="space-y-2">
-              {alerts.map((alert) => (
+              {filteredAlerts.map((alert) => (
                 <AlertCard key={alert.id} alert={alert} />
               ))}
             </div>
@@ -294,9 +347,21 @@ export function AlertsPage() {
           <div className="px-4 py-4 border-b border-border">
             <h1 className="text-lg font-semibold text-foreground">Alerts</h1>
             <p className="text-xs text-foreground-muted mt-0.5">
-              {alerts.length} alert{alerts.length !== 1 ? 's' : ''}
+              {hasActiveFilters ? `${filteredAlerts.length} of ${alerts.length}` : `${alerts.length}`} alert{(hasActiveFilters ? filteredAlerts.length : alerts.length) !== 1 ? 's' : ''}
             </p>
           </div>
+
+          {alerts.length > 0 && (
+            <div className="px-4 py-2 border-b border-border">
+              <AlertFilterBar
+                serviceTypes={serviceFilter}
+                onServiceTypesChange={setServiceFilter}
+                readFilter={readFilter}
+                onReadFilterChange={setReadFilter}
+                counts={filterCounts}
+              />
+            </div>
+          )}
 
           <div className="px-4 py-2">
             {alerts.length === 0 ? (
@@ -309,9 +374,17 @@ export function AlertsPage() {
                   Your alerts will appear here when appointment slots become available.
                 </p>
               </div>
+            ) : filteredAlerts.length === 0 ? (
+              <div className="text-center py-12">
+                <FilterX className="w-8 h-8 text-foreground-muted mx-auto mb-3" />
+                <h3 className="font-medium text-foreground mb-2">No alerts match your filters</h3>
+                <button onClick={clearFilters} className="text-sm text-primary hover:text-primary/80 transition-colors">
+                  Clear filters
+                </button>
+              </div>
             ) : (
               <div className="space-y-2">
-                {alerts.map((alert) => (
+                {filteredAlerts.map((alert) => (
                   <div
                     key={alert.id}
                     className="cursor-pointer"
