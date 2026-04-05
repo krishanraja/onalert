@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { type Alert } from '@/lib/supabase'
 import { SERVICE_TYPES } from '@/lib/locations'
-import { formatDistanceToNow, formatSlotDate, formatSlotTime, minutesSince } from '@/lib/time'
+import { formatDistanceToNow, formatSlotDateShort, minutesSince } from '@/lib/time'
 import { useNavigate } from 'react-router-dom'
 import { haptic } from '@/lib/haptics'
 
@@ -26,6 +26,14 @@ export function AlertCard({ alert, isSelected }: Props) {
   const service = SERVICE_TYPES[serviceType] ?? { abbr: serviceType, label: serviceType }
   const urgency = getUrgencyLevel(alert)
   const isDigest = alert.payload.slots && alert.payload.slots.length > 1
+
+  // Unified: always show the earliest slot as the primary display
+  const primarySlot = isDigest
+    ? [...alert.payload.slots!].sort(
+        (a, b) => new Date(a.slot_timestamp).getTime() - new Date(b.slot_timestamp).getTime()
+      )[0]
+    : { location_name: alert.payload.location_name, slot_timestamp: alert.payload.slot_timestamp }
+  const extraCount = isDigest ? alert.payload.slots!.length - 1 : 0
 
   return (
     <motion.button
@@ -58,49 +66,33 @@ export function AlertCard({ alert, isSelected }: Props) {
         </div>
 
         <div className="flex-1 min-w-0">
-          {/* Service + location */}
+          {/* Row 1: Service badge + location + time ago */}
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-mono font-medium bg-primary/10 text-primary px-2 py-0.5 rounded">
+            <span className="text-[10px] font-mono font-medium bg-primary/10 text-primary px-2 py-0.5 rounded shrink-0">
               {service.abbr}
             </span>
-            {isDigest ? (
-              <span className="text-xs text-foreground-muted truncate flex items-center gap-1">
+            <span className="text-xs text-foreground-muted truncate flex items-center gap-1">
+              <MapPin size={10} className="shrink-0" />
+              {primarySlot.location_name}
+            </span>
+            <div className="shrink-0 flex items-center gap-1 text-foreground-muted ml-auto">
+              <Clock size={10} />
+              <span className="text-[10px] font-mono">{formatDistanceToNow(alert.created_at)}</span>
+            </div>
+          </div>
+
+          {/* Row 2: Date+time + extra slots indicator */}
+          <div className="flex items-center justify-between">
+            <p className="font-mono text-sm font-medium text-foreground">
+              {formatSlotDateShort(primarySlot.slot_timestamp)}
+            </p>
+            {extraCount > 0 && (
+              <span className="text-[10px] font-mono text-foreground-muted flex items-center gap-1 shrink-0 ml-2">
                 <Layers size={10} />
-                {alert.payload.slots!.length} slots available
-              </span>
-            ) : (
-              <span className="text-xs text-foreground-muted truncate flex items-center gap-1">
-                <MapPin size={10} />
-                {alert.payload.location_name}
+                +{extraCount} more
               </span>
             )}
           </div>
-
-          {/* Slot time(s) */}
-          {isDigest ? (
-            <div className="space-y-0.5">
-              {alert.payload.slots!.map((slot, i) => (
-                <p key={i} className="font-mono text-xs text-foreground-secondary truncate">
-                  {slot.location_name} · {formatSlotDate(slot.slot_timestamp)}
-                </p>
-              ))}
-            </div>
-          ) : (
-            <>
-              <p className="font-mono text-sm font-medium text-foreground">
-                {formatSlotDate(alert.payload.slot_timestamp)}
-              </p>
-              <p className="font-mono text-xs text-foreground-secondary">
-                {formatSlotTime(alert.payload.slot_timestamp)}
-              </p>
-            </>
-          )}
-        </div>
-
-        {/* Time ago */}
-        <div className="shrink-0 flex items-center gap-1 text-foreground-muted">
-          <Clock size={10} />
-          <span className="text-[10px] font-mono">{formatDistanceToNow(alert.created_at)}</span>
         </div>
       </div>
     </motion.button>
