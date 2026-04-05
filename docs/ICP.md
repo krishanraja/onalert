@@ -38,7 +38,7 @@
 - "I just got conditionally approved and the wait times are insane"
 
 ### Willingness to Pay
-- **High**: $29 one-time is negligible compared to the value of getting Global Entry weeks or months sooner
+- **High**: $39 one-time is negligible compared to the value of getting Global Entry weeks or months sooner
 - **Clear ROI**: A single caught appointment justifies the entire cost
 - **No subscription friction**: One-time payment means no cancellation needed after booking -- users feel good about the purchase
 
@@ -46,15 +46,15 @@
 
 - Managing applications for 2-4 family members
 - Needs to monitor multiple locations and programs simultaneously
-- Family plan is essential (up to 5 monitors, faster checks)
-- Higher willingness to pay -- $49 one-time for the whole family is obvious value
+- Multi plan is essential (up to 5 monitors, faster checks)
+- Higher willingness to pay -- $59 one-time for the whole family is obvious value
 - Often the most vocal advocate (word-of-mouth referrals)
 
 ## Tertiary Persona: The Business Traveler
 
 - Employer may reimburse the subscription cost
 - Needs Global Entry urgently for frequent international travel
-- Values speed above all -- 10-minute checks are the key selling point
+- Values speed above all -- 5-minute checks are the key selling point
 - Less price-sensitive, more feature-sensitive
 
 ## Acquisition Channels

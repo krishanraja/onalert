@@ -15,9 +15,9 @@ This creates a painful and inequitable situation: the travelers who happen to be
 
 OnAlert automates the manual checking process and levels the playing field:
 
-1. **Monitors** the CBP scheduler API at configurable intervals (every 10 or 60 minutes)
+1. **Monitors** the CBP scheduler API at configurable intervals (every 5 or 60 minutes)
 2. **Detects** newly available slots by comparing against last-known state
-3. **Alerts** users via email (and SMS for premium) within seconds of detection
+3. **Alerts** users via email (and SMS for paid plans) within seconds of detection
 4. **Links** directly to the CBP booking page so users can act immediately
 
 One setup. Always watching. No more manual refreshing.

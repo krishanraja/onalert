@@ -14,13 +14,16 @@
 |                     Supabase Platform                            |
 |                                                                  |
 |  +-----------+  +--------------+  +--------------------------+   |
-|  |   Auth    |  |  PostgreSQL  |  |    Edge Functions         |  |
+|  |   Auth    |  |  PostgreSQL  |  |    Edge Functions (8)     |  |
 |  | (OAuth,   |  |   + RLS      |  |                          |  |
 |  |  Email,   |  |              |  |  poll-appointments       |  |
 |  |  OTP)     |  |              |  |  send-alert              |  |
-|  +-----------+  +--------------+  |  create-checkout         |  |
+|  +-----------+  +--------------+  |  send-digest-alert       |  |
+|                                   |  create-checkout         |  |
 |                                   |  customer-portal         |  |
 |                                   |  stripe-webhook          |  |
+|                                   |  process-delayed-alerts  |  |
+|                                   |  process-rechecks        |  |
 |                                   +------------+-------------+   |
 +-----------------------------------------------|------------------+
                                                 |
@@ -37,7 +40,7 @@
 This is the critical path -- how a user gets notified when a slot opens:
 
 ```
-1. CRON trigger (every 10min) --> poll-appointments edge function
+1. CRON trigger (every 5min) --> poll-appointments edge function
 2. poll-appointments:
    a. SELECT active monitors from DB
    b. Deduplicate location IDs across all monitors
@@ -53,7 +56,7 @@ This is the critical path -- how a user gets notified when a slot opens:
 3. send-alert:
    a. SELECT user profile (email, plan)
    b. Generate branded HTML email (dark theme, crimson header)
-   c. POST to Resend API (from: alerts@themindmaker.ai)
+   c. POST to Resend API (from: alerts@onalert.app)
    d. UPDATE alert.delivered_at
 4. Realtime:
    a. Supabase Realtime pushes INSERT event to browser
@@ -130,15 +133,19 @@ monitors   (1) --> (N) alerts
   /app/alerts/:id -> AlertDetailPage (slot details + booking link)
   /app/add     -> AddMonitorPage (3-step wizard)
   /app/settings -> SettingsPage (plan, billing, notifications, sign out)
-*              -> Redirect to /
+  /app/admin/audit -> AdminAuditPage (poll run history, health checks)
+*              -> NotFoundPage (styled 404 with navigation)
 ```
 
 ### State Management
 
 - **No global store** -- React hooks + Supabase Realtime
-- `useProfile()` -- Current user profile + plan status (isPaid, isFamily)
+- `useProfile()` -- Current user profile + plan status (isPaid, isMulti)
 - `useMonitors()` -- Monitor CRUD + realtime sync + optimistic updates
 - `useAlerts()` -- Alert feed + realtime inserts + mark-read + unread count
+- `useInsights()` -- Location-specific alert analytics (free tier)
+- `useAuditData()` -- Scrape logs and observability data for admin page
+- `useKeyboardShortcuts()` -- Keyboard navigation shortcuts
 - All hooks include null Supabase guards for graceful degradation
 
 ### Component Hierarchy
@@ -159,10 +166,14 @@ main.tsx
 
 | Function | Trigger | Purpose |
 |----------|---------|---------|
-| `poll-appointments` | CRON (every 10min) | Poll CBP API, detect new slots, create alerts |
+| `poll-appointments` | CRON (every 5min) | Poll CBP API, detect new slots, create alerts |
 | `send-alert` | Invoked by poll-appointments | Deliver branded HTML email via Resend |
-| `create-checkout` | User action (upgrade button) | Create Stripe Checkout session (one-time payment for Pro or Family) |
+| `send-digest-alert` | Invoked by poll-appointments | Deliver digest emails bundling multiple slots |
+| `create-checkout` | User action (upgrade button) | Create Stripe Checkout session (one-time payment for Pro or Multi) |
+| `customer-portal` | User action (manage billing) | Redirect to Stripe Customer Portal |
 | `stripe-webhook` | Stripe events | Handle one-time payment completion, upgrade user plan |
+| `process-delayed-alerts` | CRON (every 5min) | Send delayed alerts for free users after 15-min window |
+| `process-rechecks` | CRON (periodic) | Process slot re-check requests, send verification emails |
 
 ## Security
 

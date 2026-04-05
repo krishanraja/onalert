@@ -138,7 +138,7 @@ The `poll-appointments` function needs to be called periodically to detect new s
 ```sql
 SELECT cron.schedule(
   'poll-appointments',
-  '*/10 * * * *',  -- every 10 minutes
+  '*/5 * * * *',  -- every 5 minutes
   $$
   SELECT net.http_post(
     url := 'https://<project-id>.supabase.co/functions/v1/poll-appointments',
@@ -153,7 +153,7 @@ Use cron-job.org, Vercel Cron, or similar:
 - URL: `https://<project-id>.supabase.co/functions/v1/poll-appointments`
 - Method: POST
 - Header: `Authorization: Bearer <service_role_key>`
-- Schedule: Every 10 minutes
+- Schedule: Every 5 minutes
 
 ## Step 8: Run Locally
 
@@ -199,6 +199,6 @@ vercel env add VITE_APP_URL
 - [ ] Alert appears when new slot is detected
 - [ ] Email notification is delivered with booking link
 - [ ] Stripe checkout works (test mode)
-- [ ] Webhook updates plan to premium
+- [ ] Webhook updates plan to pro or multi
 - [ ] Customer portal opens and loads
 - [ ] PWA is installable on mobile

@@ -60,7 +60,7 @@ Key technical and product decisions with rationale.
 - Single source of truth for pricing lives in code, not the Stripe Dashboard
 - No need to sync product IDs between test/staging/production environments
 - Easier to test (no Stripe Dashboard setup required)
-- Acceptable because there are only 2 price points ($19/mo, $149/yr)
+- Acceptable because there are only 2 price points ($39 and $59, both one-time)
 
 **Trade-off**: Cannot use Stripe Dashboard for price management. Acceptable given the simple pricing model.
 
@@ -71,7 +71,7 @@ Key technical and product decisions with rationale.
 **Rationale**:
 - The CBP scheduler API has no webhook or push notification mechanism
 - Polling is the only way to detect newly available appointment slots
-- 10-minute interval balances freshness vs. API load
+- 5-minute interval balances freshness vs. API load
 - Batch deduplication across all monitors reduces total API calls
 - Parallel fetching in batches of 5 with timeouts prevents rate limiting
 

@@ -28,8 +28,8 @@ OnAlert turns months of anxious refreshing into a single 2-minute setup:
 
 ## Why Users Pay
 
-| | Free | Pro ($29) | Family ($49) |
-|---|------|-----------|--------------|
+| | Free | Pro ($39) | Multi ($59) |
+|---|------|-----------|-------------|
 | Active monitors | 1 | 1 | Up to 5 |
 | Locations per monitor | 3 | Unlimited | Unlimited |
 | Check frequency | Every 60 min | Every 5 min (12x faster) | Every 5 min (12x faster) |
@@ -37,10 +37,15 @@ OnAlert turns months of anxious refreshing into a single 2-minute setup:
 | SMS alerts | No | Yes | Yes |
 | Real-time in-app alerts | Yes | Yes | Yes |
 | Direct booking links | Yes | Yes | Yes |
+| Deadline date filter | No | Yes | Yes |
+| Digest alerts | No | Yes | Yes |
+| Location insights | Basic | Advanced | Advanced |
+| Slot re-check alerts | No | Yes | Yes |
+| Monitor change cooldown | None | 24 hours | None |
 | Monitoring window | 7 days | Never expires | Never expires |
 | Payment model | Free forever | One-time | One-time |
 
-**The math is simple**: Slots fill in 5-15 minutes. Free checks every 60 minutes and delays alerts 15 more. By the time a free user sees an alert, the slot is gone. $29 once gets you instant 5-minute monitoring that actually catches slots before they fill.
+**The math is simple**: Slots fill in 5-15 minutes. Free checks every 60 minutes and delays alerts 15 more. By the time a free user sees an alert, the slot is gone. $39 once gets you instant 5-minute monitoring that actually catches slots before they fill.
 
 ## Competitive Landscape
 
