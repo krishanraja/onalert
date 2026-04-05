@@ -15,6 +15,15 @@ import { supabase } from '@/lib/supabase'
 import { showToast } from '@/hooks/useToast'
 import { haptic } from '@/lib/haptics'
 
+type AlertTab = 'live' | 'history'
+
+function isLiveAlert(alert: Alert): boolean {
+  const slotTime = new Date(alert.payload.slot_timestamp).getTime()
+  const now = Date.now()
+  const createdAge = minutesSince(alert.created_at)
+  return slotTime > now && createdAge <= 30
+}
+
 function AlertDetailInline({ alert, onClose, isPaid }: { alert: Alert; onClose: () => void; isPaid: boolean }) {
   const navigate = useNavigate()
   const [recheckLoading, setRecheckLoading] = useState(false)
@@ -210,36 +219,68 @@ function AlertDetailInline({ alert, onClose, isPaid }: { alert: Alert; onClose: 
 }
 
 export function AlertsPage() {
-  const { alerts, loading, markRead } = useAlerts()
+  const { alerts, loading, markRead, toggleStar } = useAlerts()
   const { isPaid } = useProfile()
   const [selectedAlertId, setSelectedAlertId] = useState<string | null>(null)
+  const [tab, setTab] = useState<AlertTab>('live')
   const [serviceFilter, setServiceFilter] = useState<Set<string>>(new Set())
-  const [readFilter, setReadFilter] = useState<'all' | 'unread' | 'read'>('all')
+  const [starredFilter, setStarredFilter] = useState(false)
+  const [locationFilter, setLocationFilter] = useState<string | null>(null)
+
+  // Split alerts into live vs history
+  const liveAlerts = useMemo(() => {
+    return alerts
+      .filter(isLiveAlert)
+      .sort((a, b) =>
+        new Date(a.payload.slot_timestamp).getTime() - new Date(b.payload.slot_timestamp).getTime()
+      )
+  }, [alerts])
+
+  const historyAlerts = useMemo(() => {
+    return alerts
+      .filter((a) => !isLiveAlert(a))
+      .sort((a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      )
+  }, [alerts])
+
+  const currentAlerts = tab === 'live' ? liveAlerts : historyAlerts
+
+  // Derive unique locations from current alerts
+  const locations = useMemo(() => {
+    const locs = new Set<string>()
+    currentAlerts.forEach((a) => {
+      locs.add(a.payload.location_name)
+      a.payload.slots?.forEach((s) => locs.add(s.location_name))
+    })
+    return Array.from(locs).sort()
+  }, [currentAlerts])
 
   const filteredAlerts = useMemo(() => {
-    return alerts.filter((a) => {
+    return currentAlerts.filter((a) => {
       if (serviceFilter.size > 0 && !serviceFilter.has(a.payload.service_type)) return false
-      if (readFilter === 'unread' && a.read_at) return false
-      if (readFilter === 'read' && !a.read_at) return false
+      if (starredFilter && !a.starred_at) return false
+      if (locationFilter && a.payload.location_name !== locationFilter) return false
       return true
     })
-  }, [alerts, serviceFilter, readFilter])
+  }, [currentAlerts, serviceFilter, starredFilter, locationFilter])
 
   const filterCounts = useMemo(() => ({
-    total: alerts.length,
-    unread: alerts.filter(a => !a.read_at).length,
-    byService: alerts.reduce((acc, a) => {
+    total: currentAlerts.length,
+    starred: currentAlerts.filter(a => !!a.starred_at).length,
+    byService: currentAlerts.reduce((acc, a) => {
       const st = a.payload.service_type
       acc[st] = (acc[st] || 0) + 1
       return acc
     }, {} as Record<string, number>)
-  }), [alerts])
+  }), [currentAlerts])
 
-  const hasActiveFilters = serviceFilter.size > 0 || readFilter !== 'all'
+  const hasActiveFilters = serviceFilter.size > 0 || starredFilter || locationFilter !== null
 
   const clearFilters = () => {
     setServiceFilter(new Set())
-    setReadFilter('all')
+    setStarredFilter(false)
+    setLocationFilter(null)
   }
 
   const selectedAlert = selectedAlertId
@@ -268,35 +309,59 @@ export function AlertsPage() {
     )
   }
 
+  const tabButton = (t: AlertTab, label: string, count: number) => (
+    <button
+      onClick={() => { setTab(t); clearFilters() }}
+      className={`px-3 py-1.5 text-xs font-mono font-medium rounded-md transition-colors ${
+        tab === t
+          ? 'bg-primary/15 text-primary'
+          : 'text-foreground-muted hover:text-foreground-secondary'
+      }`}
+    >
+      {label}
+      <span className={`ml-1.5 ${tab === t ? 'text-primary/60' : 'text-foreground-muted/60'}`}>
+        {count}
+      </span>
+    </button>
+  )
+
   return (
     <div className="min-h-full bg-background">
-      {/* ============ MOBILE: Swipeable card stack ============ */}
+      {/* ============ MOBILE: Card list ============ */}
       <div className="lg:hidden flex flex-col" style={{ height: 'calc(100dvh - var(--bottom-nav-height) - var(--safe-area-bottom))' }}>
         {/* Header */}
         <header className="bg-background-elevated border-b border-border safe-top shrink-0">
           <div className="px-4 py-3 flex items-center justify-between">
             <h1 className="text-lg font-semibold text-foreground">Alerts</h1>
             <span className="text-xs font-mono text-foreground-muted">
-              {hasActiveFilters ? `${filteredAlerts.length} of ${alerts.length}` : `${alerts.length} total`}
+              {hasActiveFilters ? `${filteredAlerts.length} of ${currentAlerts.length}` : `${currentAlerts.length}`}
             </span>
+          </div>
+          {/* Tabs */}
+          <div className="px-4 pb-2 flex items-center gap-2">
+            {tabButton('live', 'Live', liveAlerts.length)}
+            {tabButton('history', 'History', historyAlerts.length)}
           </div>
         </header>
 
         {/* Filter bar */}
-        {alerts.length > 0 && (
+        {currentAlerts.length > 0 && (
           <div className="px-4 py-2 border-b border-border bg-background-elevated shrink-0">
             <AlertFilterBar
               serviceTypes={serviceFilter}
               onServiceTypesChange={setServiceFilter}
-              readFilter={readFilter}
-              onReadFilterChange={setReadFilter}
+              starredFilter={starredFilter}
+              onStarredFilterChange={setStarredFilter}
+              locationFilter={locationFilter}
+              onLocationFilterChange={setLocationFilter}
+              locations={locations}
               counts={filterCounts}
             />
           </div>
         )}
 
         {alerts.length === 0 ? (
-          /* Empty state */
+          /* Empty state - no alerts at all */
           <div className="flex-1 flex flex-col items-center justify-center p-6">
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
@@ -317,6 +382,21 @@ export function AlertsPage() {
               </p>
             </motion.div>
           </div>
+        ) : currentAlerts.length === 0 ? (
+          /* Tab has no alerts */
+          <div className="flex-1 flex flex-col items-center justify-center p-6">
+            <div className="text-center">
+              <Bell className="w-8 h-8 text-foreground-muted mx-auto mb-3" />
+              <h3 className="font-medium text-foreground mb-2">
+                {tab === 'live' ? 'No live slots right now' : 'No history yet'}
+              </h3>
+              <p className="text-sm text-foreground-secondary max-w-sm mx-auto">
+                {tab === 'live'
+                  ? 'Live slots appear when new appointments are detected. Check back soon.'
+                  : 'Past alerts will show up here.'}
+              </p>
+            </div>
+          </div>
         ) : filteredAlerts.length === 0 ? (
           /* No filter results */
           <div className="flex-1 flex flex-col items-center justify-center p-6">
@@ -333,7 +413,12 @@ export function AlertsPage() {
           <div className="flex-1 overflow-y-auto px-4 py-2">
             <div className="space-y-2">
               {filteredAlerts.map((alert) => (
-                <AlertCard key={alert.id} alert={alert} />
+                <AlertCard
+                  key={alert.id}
+                  alert={alert}
+                  isHistory={tab === 'history'}
+                  onToggleStar={toggleStar}
+                />
               ))}
             </div>
           </div>
@@ -347,17 +432,26 @@ export function AlertsPage() {
           <div className="px-4 py-4 border-b border-border">
             <h1 className="text-lg font-semibold text-foreground">Alerts</h1>
             <p className="text-xs text-foreground-muted mt-0.5">
-              {hasActiveFilters ? `${filteredAlerts.length} of ${alerts.length}` : `${alerts.length}`} alert{(hasActiveFilters ? filteredAlerts.length : alerts.length) !== 1 ? 's' : ''}
+              {hasActiveFilters ? `${filteredAlerts.length} of ${currentAlerts.length}` : `${currentAlerts.length}`} alert{(hasActiveFilters ? filteredAlerts.length : currentAlerts.length) !== 1 ? 's' : ''}
             </p>
           </div>
 
-          {alerts.length > 0 && (
+          {/* Tabs */}
+          <div className="px-4 py-2 border-b border-border flex items-center gap-2">
+            {tabButton('live', 'Live', liveAlerts.length)}
+            {tabButton('history', 'History', historyAlerts.length)}
+          </div>
+
+          {currentAlerts.length > 0 && (
             <div className="px-4 py-2 border-b border-border">
               <AlertFilterBar
                 serviceTypes={serviceFilter}
                 onServiceTypesChange={setServiceFilter}
-                readFilter={readFilter}
-                onReadFilterChange={setReadFilter}
+                starredFilter={starredFilter}
+                onStarredFilterChange={setStarredFilter}
+                locationFilter={locationFilter}
+                onLocationFilterChange={setLocationFilter}
+                locations={locations}
                 counts={filterCounts}
               />
             </div>
@@ -373,6 +467,13 @@ export function AlertsPage() {
                 <p className="text-sm text-foreground-secondary max-w-sm mx-auto">
                   Your alerts will appear here when appointment slots become available.
                 </p>
+              </div>
+            ) : currentAlerts.length === 0 ? (
+              <div className="text-center py-12">
+                <Bell className="w-8 h-8 text-foreground-muted mx-auto mb-3" />
+                <h3 className="font-medium text-foreground mb-2">
+                  {tab === 'live' ? 'No live slots right now' : 'No history yet'}
+                </h3>
               </div>
             ) : filteredAlerts.length === 0 ? (
               <div className="text-center py-12">
@@ -393,6 +494,8 @@ export function AlertsPage() {
                     <AlertCard
                       alert={alert}
                       isSelected={selectedAlertId === alert.id}
+                      isHistory={tab === 'history'}
+                      onToggleStar={toggleStar}
                     />
                   </div>
                 ))}

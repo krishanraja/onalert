@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plus, Crown, Users, Zap, Bell, ArrowRight, Activity, Clock } from 'lucide-react'
 import { motion } from 'framer-motion'
@@ -7,8 +7,7 @@ import { useMonitors } from '@/hooks/useMonitors'
 import { useAlerts } from '@/hooks/useAlerts'
 import { useInsights, useProInsights } from '@/hooks/useInsights'
 import { MonitorCard } from '@/components/monitors/MonitorCard'
-import { MonitorChip } from '@/components/dashboard/MonitorChip'
-import { HeroAlertCard } from '@/components/dashboard/HeroAlertCard'
+import { MonitorLiveCard } from '@/components/dashboard/MonitorLiveCard'
 import { AllClearCard } from '@/components/dashboard/AllClearCard'
 import { InsightsCard } from '@/components/dashboard/InsightsCard'
 import { ProInsightsCard } from '@/components/dashboard/ProInsightsCard'
@@ -16,7 +15,14 @@ import { QuickStats } from '@/components/dashboard/QuickStats'
 import { ActivityFeed } from '@/components/dashboard/ActivityFeed'
 import { DashboardSkeleton } from '@/components/ui/Skeleton'
 import { haptic } from '@/lib/haptics'
-import { formatDistanceToNow } from '@/lib/time'
+import { formatDistanceToNow, minutesSince } from '@/lib/time'
+
+function isLiveAlert(alert: { payload: { slot_timestamp: string }; created_at: string }): boolean {
+  const slotTime = new Date(alert.payload.slot_timestamp).getTime()
+  const now = Date.now()
+  const createdAge = minutesSince(alert.created_at)
+  return slotTime > now && createdAge <= 30
+}
 
 export function DashboardPage() {
   const navigate = useNavigate()
@@ -41,6 +47,23 @@ export function DashboardPage() {
     }
   }, [monitorsLoading, profileLoading, monitors.length, profile, hasRedirected, navigate])
 
+  // Group live alerts by monitor_id
+  const liveAlertsByMonitor = useMemo(() => {
+    const map: Record<string, typeof alerts> = {}
+    monitors.forEach((m) => { map[m.id] = [] })
+    alerts.filter(isLiveAlert).forEach((a) => {
+      if (map[a.monitor_id]) {
+        map[a.monitor_id].push(a)
+      }
+    })
+    return map
+  }, [alerts, monitors])
+
+  const hasAnyLiveAlerts = useMemo(
+    () => Object.values(liveAlertsByMonitor).some((arr) => arr.length > 0),
+    [liveAlertsByMonitor]
+  )
+
   if (profileLoading || monitorsLoading) {
     return (
       <div className="min-h-full bg-background">
@@ -62,11 +85,7 @@ export function DashboardPage() {
     navigate('/app/add')
   }
 
-  const planLabel = isFamily ? 'FAMILY' : isPaid ? 'PRO' : 'FREE'
-
-  // Get latest unread alert for the hero card
-  const unreadAlerts = alerts.filter((a) => !a.read_at)
-  const latestUnread = unreadAlerts[0] ?? null
+  const planLabel = isFamily ? 'MULTI' : isPaid ? 'PRO' : 'FREE'
 
   // Stats
   const activeMonitors = monitors.filter((m) => m.active).length
@@ -79,8 +98,8 @@ export function DashboardPage() {
 
   return (
     <div className="min-h-full bg-background">
-      {/* ============ MOBILE LAYOUT - No scroll, viewport fit ============ */}
-      <div className="lg:hidden flex flex-col overflow-hidden" style={{ height: 'calc(100dvh - var(--bottom-nav-height) - var(--safe-area-bottom))' }}>
+      {/* ============ MOBILE LAYOUT ============ */}
+      <div className="lg:hidden flex flex-col" style={{ height: 'calc(100dvh - var(--bottom-nav-height) - var(--safe-area-bottom))' }}>
         {/* Header */}
         <header className="bg-background-elevated border-b border-border safe-top shrink-0">
           <div className="px-4 py-3 flex items-center justify-between">
@@ -134,74 +153,70 @@ export function DashboardPage() {
             </motion.div>
           </div>
         ) : (
-          /* Active dashboard - no-scroll layout */
-          <div className="flex-1 flex flex-col p-4 gap-3 min-h-0">
-            {/* Compact stats row */}
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex items-center gap-3 shrink-0"
-            >
-              <div className="flex items-center gap-1.5 bg-surface border border-border rounded-lg px-3 py-2">
-                <Activity size={12} className="text-success" />
-                <span className="text-xs font-mono text-foreground font-semibold">{activeMonitors}</span>
-                <span className="text-[10px] text-foreground-muted">active</span>
-              </div>
-              <div className="flex items-center gap-1.5 bg-surface border border-border rounded-lg px-3 py-2">
-                <Bell size={12} className="text-primary" />
-                <span className="text-xs font-mono text-foreground font-semibold">{todayAlerts}</span>
-                <span className="text-[10px] text-foreground-muted">today</span>
-              </div>
-              <div className="flex items-center gap-1.5 bg-surface border border-border rounded-lg px-3 py-2 ml-auto">
-                <Clock size={12} className="text-foreground-muted" />
-                <span className="text-[10px] font-mono text-foreground-muted">
-                  {lastChecked?.last_checked_at ? formatDistanceToNow(lastChecked.last_checked_at) : '-'}
-                </span>
-              </div>
-            </motion.div>
+          /* Active dashboard — monitor-centric layout */
+          <div className="flex-1 overflow-y-auto">
+            <div className="p-4 space-y-3">
+              {/* Compact stats row */}
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center gap-3"
+              >
+                <div className="flex items-center gap-1.5 bg-surface border border-border rounded-lg px-3 py-2">
+                  <Activity size={12} className="text-success" />
+                  <span className="text-xs font-mono text-foreground font-semibold">{activeMonitors}</span>
+                  <span className="text-[10px] text-foreground-muted">active</span>
+                </div>
+                <div className="flex items-center gap-1.5 bg-surface border border-border rounded-lg px-3 py-2">
+                  <Bell size={12} className="text-primary" />
+                  <span className="text-xs font-mono text-foreground font-semibold">{todayAlerts}</span>
+                  <span className="text-[10px] text-foreground-muted">today</span>
+                </div>
+                <div className="flex items-center gap-1.5 bg-surface border border-border rounded-lg px-3 py-2 ml-auto">
+                  <Clock size={12} className="text-foreground-muted" />
+                  <span className="text-[10px] font-mono text-foreground-muted">
+                    {lastChecked?.last_checked_at ? formatDistanceToNow(lastChecked.last_checked_at) : '-'}
+                  </span>
+                </div>
+              </motion.div>
 
-            {/* Hero card - fills available space */}
-            <div className="flex-1 flex flex-col justify-center min-h-0">
-              {latestUnread ? (
-                <HeroAlertCard alert={latestUnread} />
-              ) : (
+              {/* Monitor cards with live slots */}
+              {monitors.map((monitor, i) => (
+                <motion.div
+                  key={monitor.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                >
+                  <MonitorLiveCard
+                    monitor={monitor}
+                    liveAlerts={liveAlertsByMonitor[monitor.id] || []}
+                  />
+                </motion.div>
+              ))}
+
+              {/* All clear message when no live alerts across all monitors */}
+              {!hasAnyLiveAlerts && monitors.length > 0 && (
                 <AllClearCard monitors={monitors} />
               )}
-            </div>
 
-            {/* Monitor chips - horizontal scroll */}
-            <div className="shrink-0">
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none snap-x snap-mandatory">
-                {monitors.map((monitor, i) => (
-                  <motion.div
-                    key={monitor.id}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.05 }}
-                    className="snap-start"
-                  >
-                    <MonitorChip monitor={monitor} />
-                  </motion.div>
-                ))}
-              </div>
+              {/* Upgrade prompt for free users */}
+              {!isPaid && monitors.length > 0 && (
+                <motion.button
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => navigate('/app/settings', { state: { scrollToUpgrade: true } })}
+                  className="w-full bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-xl px-4 py-3 flex items-center gap-3"
+                >
+                  <Crown className="w-4 h-4 text-primary shrink-0" />
+                  <span className="text-xs text-foreground-secondary flex-1 text-left">
+                    <span className="text-primary font-semibold">Stop missing slots</span> — instant alerts, $39 one-time
+                  </span>
+                  <ArrowRight size={14} className="text-primary shrink-0" />
+                </motion.button>
+              )}
             </div>
-
-            {/* Upgrade prompt for free users - compact */}
-            {!isPaid && monitors.length > 0 && (
-              <motion.button
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => navigate('/app/settings', { state: { scrollToUpgrade: true } })}
-                className="shrink-0 bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-xl px-4 py-3 flex items-center gap-3"
-              >
-                <Crown className="w-4 h-4 text-primary shrink-0" />
-                <span className="text-xs text-foreground-secondary flex-1 text-left">
-                  <span className="text-primary font-semibold">Stop missing slots</span> — instant alerts, $39 one-time
-                </span>
-                <ArrowRight size={14} className="text-primary shrink-0" />
-              </motion.button>
-            )}
           </div>
         )}
       </div>
@@ -259,7 +274,7 @@ export function DashboardPage() {
                   <div className="space-y-2 opacity-60">
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] font-mono bg-primary/10 text-primary px-2 py-0.5 rounded">GE</span>
-                      <span className="text-xs text-success">● Active</span>
+                      <span className="text-xs text-success">&#9679; Active</span>
                     </div>
                     <p className="text-sm text-foreground">JFK International Airport, NY</p>
                     <p className="text-sm text-foreground">Newark Liberty Airport, NJ</p>

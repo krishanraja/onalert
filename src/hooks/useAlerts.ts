@@ -97,5 +97,26 @@ export function useAlerts(limit = 50) {
     }
   }, [])
 
-  return { alerts, loading, unreadCount, markRead, connected }
+  const toggleStar = useCallback(async (id: string) => {
+    if (!supabase) return
+
+    const alert = alerts.find((a) => a.id === id)
+    if (!alert) return
+
+    const isStarred = !!alert.starred_at
+    const newValue = isStarred ? null : new Date().toISOString()
+
+    setAlerts((prev) => prev.map((a) => a.id === id ? { ...a, starred_at: newValue } : a))
+
+    const { error } = await supabase
+      .from('alerts')
+      .update({ starred_at: newValue })
+      .eq('id', id)
+
+    if (error) {
+      setAlerts((prev) => prev.map((a) => a.id === id ? { ...a, starred_at: alert.starred_at } : a))
+    }
+  }, [alerts])
+
+  return { alerts, loading, unreadCount, markRead, toggleStar, connected }
 }

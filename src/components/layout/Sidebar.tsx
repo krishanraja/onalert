@@ -75,7 +75,7 @@ export function Sidebar({ unreadCount = 0 }: Props) {
           {isPaid ? (
             <div className="flex items-center gap-1.5 bg-primary/10 text-primary px-2 py-1 rounded-full">
               {isFamily ? <Users size={11} /> : <Crown size={11} />}
-              <span className="text-[10px] font-medium">{isFamily ? 'FAMILY' : 'PRO'}</span>
+              <span className="text-[10px] font-medium">{isFamily ? 'MULTI' : 'PRO'}</span>
             </div>
           ) : (
             <button
