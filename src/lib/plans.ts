@@ -54,4 +54,21 @@ export const PLANS = {
       'No monitor change cooldown',
     ],
   },
+  express: {
+    name: 'Express',
+    price: 79,
+    interval: null,
+    monitors: 1,
+    checkInterval: 1,
+    cooldown: 0,
+    channels: ['email', 'sms'],
+    features: [
+      '1 monitor, unlimited locations',
+      'Checked every 1 minute',
+      'Priority instant alerts',
+      'Pre-verified slot confirmation',
+      'All Pro features included',
+      'Monitors never expire',
+    ],
+  },
 }

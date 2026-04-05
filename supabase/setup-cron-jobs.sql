@@ -5,11 +5,11 @@
 CREATE EXTENSION IF NOT EXISTS pg_cron;
 CREATE EXTENSION IF NOT EXISTS pg_net;
 
--- Schedule poll-appointments every 5 minutes
--- This polls CBP API for new appointment slots and creates alerts
+-- Schedule poll-appointments every 1 minute (Express tier needs 1-min checks)
+-- The function itself enforces per-plan intervals (free: 60min, pro/multi: 5min, express: 1min)
 SELECT cron.schedule(
-  'poll-appointments-every-5-min',
-  '*/5 * * * *',
+  'poll-appointments-every-1-min',
+  '*/1 * * * *',
   $$
   SELECT net.http_post(
     url := 'https://zcreubinittdqyoxxwtp.supabase.co/functions/v1/poll-appointments',

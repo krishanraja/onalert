@@ -6,6 +6,9 @@ const supabase = createClient(
 )
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!
+const TWILIO_ACCOUNT_SID = Deno.env.get('TWILIO_ACCOUNT_SID') || ''
+const TWILIO_AUTH_TOKEN = Deno.env.get('TWILIO_AUTH_TOKEN') || ''
+const TWILIO_FROM_NUMBER = Deno.env.get('TWILIO_FROM_NUMBER') || ''
 
 interface AlertPayload {
   location_id: number
@@ -36,6 +39,23 @@ async function sendEmail(to: string, subject: string, html: string) {
     throw new Error(`Email send failed (${res.status}): ${error}`)
   }
 
+  return res.json()
+}
+
+async function sendSMS(to: string, body: string) {
+  const url = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Basic ' + btoa(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`),
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams({ To: to, From: TWILIO_FROM_NUMBER, Body: body }),
+  })
+  if (!res.ok) {
+    const error = await res.text()
+    throw new Error(`SMS send failed (${res.status}): ${error}`)
+  }
   return res.json()
 }
 
@@ -132,7 +152,7 @@ Deno.serve(async (req) => {
 
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('email, plan, email_alerts_enabled')
+      .select('email, plan, email_alerts_enabled, sms_alerts_enabled, phone_number')
       .eq('id', userId)
       .single()
 
@@ -161,17 +181,20 @@ Deno.serve(async (req) => {
     await sendEmail(profile.email, subject, html)
     channels.push('email')
 
-    // 2. Send SMS for paid users (if SMS env is configured)
-    // SMS integration point  - add Twilio/SNS here when ready
-    // if (profile.plan === 'pro' || profile.plan === 'family') {
-    //   const TWILIO_SID = Deno.env.get('TWILIO_ACCOUNT_SID')
-    //   const TWILIO_TOKEN = Deno.env.get('TWILIO_AUTH_TOKEN')
-    //   const TWILIO_FROM = Deno.env.get('TWILIO_FROM_NUMBER')
-    //   if (TWILIO_SID && TWILIO_TOKEN && TWILIO_FROM && profile.phone) {
-    //     await sendSMS(profile.phone, smsBody)
-    //     channels.push('sms')
-    //   }
-    // }
+    // 2. Send SMS for paid users (if Twilio is configured)
+    if (
+      TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN && TWILIO_FROM_NUMBER &&
+      profile.sms_alerts_enabled && profile.phone_number &&
+      (profile.plan === 'pro' || profile.plan === 'multi' || profile.plan === 'family' || profile.plan === 'express')
+    ) {
+      try {
+        const smsBody = `OnAlert: ${payload.service_type} slot at ${payload.location_name}. Book now: ${payload.book_url}`
+        await sendSMS(profile.phone_number, smsBody)
+        channels.push('sms')
+      } catch (smsErr) {
+        console.error('SMS send failed:', smsErr)
+      }
+    }
 
     // 3. Mark alert as delivered with channel info
     await supabase

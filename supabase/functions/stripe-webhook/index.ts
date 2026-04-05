@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
         }
 
         // Validate plan value (accept 'family' for backwards compatibility)
-        if (plan !== 'pro' && plan !== 'multi' && plan !== 'family') {
+        if (plan !== 'pro' && plan !== 'multi' && plan !== 'family' && plan !== 'express') {
           console.error('Invalid plan in metadata:', plan)
           break
         }

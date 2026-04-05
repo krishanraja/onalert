@@ -21,6 +21,11 @@ const PLANS = {
     name: 'OnAlert Multi',
     description: 'Up to 5 monitors, SMS alerts, 5-minute checks, unlimited locations',
   },
+  express: {
+    price: 7900, // $79.00 one-time
+    name: 'OnAlert Express',
+    description: '1-minute checks, pre-verified slots, priority alerts, unlimited locations',
+  },
 }
 
 const corsHeaders = {
