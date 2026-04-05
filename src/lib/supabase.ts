@@ -24,10 +24,13 @@ export type Profile = {
   id: string
   email: string
   stripe_customer_id: string | null
-  plan: 'free' | 'pro' | 'family' | 'multi'
+  plan: 'free' | 'pro' | 'family' | 'multi' | 'express'
   email_alerts_enabled: boolean
   sms_alerts_enabled: boolean
+  phone_number: string | null
   is_admin: boolean
+  referral_code: string | null
+  organization_id: string | null
   created_at: string
   updated_at: string
 }

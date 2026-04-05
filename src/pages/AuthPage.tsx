@@ -20,6 +20,10 @@ export function AuthPage() {
   useEffect(() => {
     if (!supabase) return
 
+    // Store referral code from URL for checkout flow
+    const ref = searchParams.get('ref')
+    if (ref) localStorage.setItem('onalert_referral', ref)
+
     // Check if already authenticated
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) navigate('/app')

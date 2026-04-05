@@ -66,7 +66,29 @@ export function SettingsPage() {
     }
   }
 
-  const handleUpgrade = async (plan: 'pro' | 'multi') => {
+  const [phoneNumber, setPhoneNumber] = useState('')
+  const [phoneSaving, setPhoneSaving] = useState(false)
+
+  useEffect(() => {
+    if (profile?.phone_number) setPhoneNumber(profile.phone_number)
+  }, [profile?.phone_number])
+
+  const handleSavePhone = async () => {
+    if (!phoneNumber.match(/^\+1\d{10}$/)) {
+      showToast('Enter a valid US number: +1XXXXXXXXXX', 'error')
+      return
+    }
+    setPhoneSaving(true)
+    try {
+      await updateProfile({ phone_number: phoneNumber })
+      showToast('Phone number saved', 'success')
+    } catch {
+      showToast('Failed to save phone number', 'error')
+    }
+    setPhoneSaving(false)
+  }
+
+  const handleUpgrade = async (plan: 'pro' | 'multi' | 'express') => {
     // Track upgrade click
     trackEvent(AnalyticsEvents.UPGRADE_CLICKED, { plan })
 
@@ -175,6 +197,28 @@ export function SettingsPage() {
                 aria-label="Toggle SMS alerts"
               />
             </div>
+
+            {smsAlerts && isPaid && (
+              <div className="px-4 pb-4 -mt-2">
+                <label className="text-xs text-foreground-muted mb-1 block">Phone number (US)</label>
+                <div className="flex gap-2">
+                  <input
+                    type="tel"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    placeholder="+1XXXXXXXXXX"
+                    className="flex-1 bg-background border border-border rounded-lg px-3 py-1.5 text-sm text-foreground placeholder:text-foreground-muted"
+                  />
+                  <button
+                    onClick={handleSavePhone}
+                    disabled={phoneSaving}
+                    className="bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-primary/90 disabled:opacity-50"
+                  >
+                    {phoneSaving ? '...' : 'Save'}
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div className="p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -296,6 +340,36 @@ export function SettingsPage() {
                 </div>
                 <ul className="space-y-1">
                   {PLANS.multi.features.map((feature) => (
+                    <li key={feature} className="text-sm text-foreground-secondary">
+                      • {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Express */}
+              <div className="bg-surface border border-warning/30 rounded-lg p-4 relative">
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                  <span className="bg-warning text-black px-3 py-1 rounded-full text-xs font-medium">Fastest alerts</span>
+                </div>
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <h3 className="font-semibold text-foreground">Express</h3>
+                    <p className="text-2xl font-bold text-foreground">
+                      ${PLANS.express.price}
+                      <span className="text-sm font-normal text-foreground-secondary"> one-time</span>
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleUpgrade('express')}
+                    disabled={loading === 'express'}
+                    className="bg-warning text-black px-4 py-2 rounded-lg text-sm font-medium hover:bg-warning/90 transition-colors disabled:opacity-50"
+                  >
+                    {loading === 'express' ? 'Loading...' : 'Buy Express'}
+                  </button>
+                </div>
+                <ul className="space-y-1">
+                  {PLANS.express.features.map((feature) => (
                     <li key={feature} className="text-sm text-foreground-secondary">
                       • {feature}
                     </li>

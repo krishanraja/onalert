@@ -6,6 +6,7 @@ import { TOP_LOCATIONS, SERVICE_TYPES } from '@/lib/locations'
 import { formatSlotDateShort, formatDistanceToNow } from '@/lib/time'
 import { CBP_BOOK_URL } from '@/lib/cbpApi'
 import { haptic } from '@/lib/haptics'
+import { trackBookingClick } from '@/lib/tracking'
 
 interface Props {
   monitor: Monitor
@@ -94,6 +95,7 @@ export function MonitorLiveCard({ monitor, liveAlerts }: Props) {
                 onClick={(e) => {
                   e.stopPropagation()
                   haptic('success')
+                  trackBookingClick(alert.id, alert.payload.location_id)
                   window.open(alert.payload.book_url || CBP_BOOK_URL, '_blank')
                 }}
                 className="bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 shrink-0 hover:bg-primary/90 transition-colors"
