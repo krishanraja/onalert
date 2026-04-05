@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, Check, Search, MapPin, Zap, Star, Navigation, CalendarClock, Lock, Clock } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Search, MapPin, Zap, Star, Navigation, CalendarClock, Lock, Clock, ChevronDown, Info } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useProfile } from '@/hooks/useProfile'
 import { useMonitors } from '@/hooks/useMonitors'
 import { SERVICE_TYPES, TOP_LOCATIONS, searchLocations, type ServiceType } from '@/lib/locations'
+import { PROGRAMS } from '@/lib/programs'
 import { getRecommendations, getNearestLocations } from '@/lib/recommendations'
 import { getUserLocation, guessLocationFromTimezone } from '@/lib/geolocation'
 import { haptic } from '@/lib/haptics'
@@ -13,6 +14,166 @@ import { cn } from '@/lib/utils'
 import { SuccessScreen } from '@/components/monitors/SuccessScreen'
 
 const POPULAR_LOCATION_IDS = [5140, 5003, 5006, 5002, 5007, 5004, 5030, 5008]
+
+function JourneyTimeline({ serviceType }: { serviceType: ServiceType }) {
+  const program = PROGRAMS[serviceType]
+  return (
+    <div className="space-y-2 py-2">
+      {program.journeySteps.map((step, i) => (
+        <div key={i} className="flex gap-3">
+          <div className="flex flex-col items-center">
+            <div className={cn(
+              'w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0',
+              step.isOnAlertStep
+                ? 'bg-primary text-white'
+                : 'bg-surface-muted text-foreground-muted border border-border'
+            )}>
+              {i + 1}
+            </div>
+            {i < program.journeySteps.length - 1 && (
+              <div className={cn('w-px flex-1 min-h-[12px]', step.isOnAlertStep ? 'bg-primary/30' : 'bg-border')} />
+            )}
+          </div>
+          <div className="pb-2 -mt-0.5">
+            <p className={cn('text-xs font-medium', step.isOnAlertStep ? 'text-primary' : 'text-foreground')}>
+              {step.label}
+              {step.isOnAlertStep && <span className="ml-1.5 text-[9px] font-semibold bg-primary/10 text-primary px-1.5 py-0.5 rounded">OnAlert</span>}
+            </p>
+            <p className="text-[11px] text-foreground-muted leading-relaxed">{step.detail}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function ServiceTypeStep({ serviceType, onSelect }: { serviceType: ServiceType | null, onSelect: (key: ServiceType) => void }) {
+  const [expandedJourney, setExpandedJourney] = useState<ServiceType | null>(null)
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h2 className="text-lg font-semibold text-foreground mb-2">Choose service type</h2>
+        <p className="text-sm text-foreground-secondary">
+          Which trusted traveler program do you want to monitor?
+        </p>
+      </div>
+
+      <div className="flex items-start gap-2 bg-surface border border-border rounded-lg p-3">
+        <Info size={14} className="text-foreground-muted shrink-0 mt-0.5" />
+        <p className="text-xs text-foreground-secondary leading-relaxed">
+          OnAlert monitors interview and enrollment appointment slots. You'll need to have applied and been conditionally approved for your chosen program before you can use a slot.
+        </p>
+      </div>
+
+      <div className="space-y-3">
+        {Object.entries(SERVICE_TYPES).map(([key, service], i) => {
+          const program = PROGRAMS[key as ServiceType]
+          const isSelected = serviceType === key
+          const isJourneyExpanded = expandedJourney === key
+
+          return (
+            <motion.div
+              key={key}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+            >
+              <motion.button
+                whileTap={{ scale: 0.98 }}
+                onClick={() => onSelect(key as ServiceType)}
+                className={cn(
+                  'w-full p-4 rounded-lg border text-left transition-all',
+                  isSelected
+                    ? 'border-primary bg-primary/5'
+                    : 'border-border bg-surface hover:border-border/60'
+                )}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="font-semibold text-foreground">{service.label}</h3>
+                  {key === 'GE' && (
+                    <span className="text-[9px] font-medium bg-warning/10 text-warning px-1.5 py-0.5 rounded">Popular</span>
+                  )}
+                </div>
+                <p className="text-xs text-foreground-secondary leading-relaxed mb-2">
+                  {service.description}
+                </p>
+                <div className="flex items-center gap-3 text-[11px] text-foreground-muted">
+                  <span>{program.cost}</span>
+                  <span className="w-px h-3 bg-border" />
+                  <span>{program.validity}</span>
+                  <span className="w-px h-3 bg-border" />
+                  <span>{program.whoItsFor}</span>
+                </div>
+              </motion.button>
+
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setExpandedJourney(isJourneyExpanded ? null : key as ServiceType)
+                }}
+                className="mt-1 ml-1 text-[11px] text-primary/70 hover:text-primary font-medium flex items-center gap-1 transition-colors"
+              >
+                How does {service.label} work?
+                <motion.span animate={{ rotate: isJourneyExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                  <ChevronDown size={10} />
+                </motion.span>
+              </button>
+
+              <AnimatePresence>
+                {isJourneyExpanded && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="mt-1 ml-1 bg-background/50 rounded-lg p-3 border border-border/50">
+                      <JourneyTimeline serviceType={key as ServiceType} />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function QuickStartJourney() {
+  const [expanded, setExpanded] = useState(false)
+  return (
+    <div className="mt-2 mb-1">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="text-[11px] text-primary hover:text-primary/80 font-medium flex items-center gap-1 transition-colors"
+      >
+        Not applied yet? Here's how Global Entry works
+        <motion.span animate={{ rotate: expanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
+          <ChevronDown size={12} />
+        </motion.span>
+      </button>
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="mt-2 bg-background/50 rounded-lg p-3 border border-border/50">
+              <JourneyTimeline serviceType="GE" />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
 
 const stepVariants = {
   enter: (dir: number) => ({ x: dir > 0 ? '30%' : '-30%', opacity: 0 }),
@@ -250,9 +411,11 @@ export function AddMonitorPage() {
               <Zap size={18} className="text-primary" />
               <h2 className="text-lg font-semibold text-foreground">Quick Start</h2>
             </div>
-            <p className="text-sm text-foreground-secondary mb-4">
-              Monitor Global Entry at {nearestLocations.length > 0 ? 'your nearest' : 'the most popular'} airports. One tap to start.
+            <p className="text-sm text-foreground-secondary mb-1">
+              Already conditionally approved for Global Entry? We'll watch for interview slots at {nearestLocations.length > 0 ? 'your nearest' : 'the most popular'} airports.
             </p>
+            <QuickStartJourney />
+            <div className="mb-4" />
 
             <div className="space-y-2 mb-4">
               {quickLocationNames.map((loc, i) => loc && (
@@ -374,43 +537,10 @@ export function AddMonitorPage() {
           >
             {/* Step 1: Service Type */}
             {step === 1 && (
-              <div className="space-y-4">
-                <div>
-                  <h2 className="text-lg font-semibold text-foreground mb-2">Choose service type</h2>
-                  <p className="text-sm text-foreground-secondary">
-                    Which trusted traveler program do you want to monitor?
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  {Object.entries(SERVICE_TYPES).map(([key, service], i) => (
-                    <motion.button
-                      key={key}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => { setServiceType(key as ServiceType); haptic('selection') }}
-                      className={cn(
-                        'p-4 rounded-lg border text-left transition-all',
-                        serviceType === key
-                          ? 'border-primary bg-primary/5'
-                          : 'border-border bg-surface hover:border-border/60'
-                      )}
-                    >
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-foreground">{service.label}</h3>
-                        {key === 'GE' && (
-                          <span className="text-[9px] font-medium bg-warning/10 text-warning px-1.5 py-0.5 rounded">Popular</span>
-                        )}
-                      </div>
-                      <p className="text-xs text-foreground-secondary leading-relaxed">
-                        {service.description}
-                      </p>
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
+              <ServiceTypeStep
+                serviceType={serviceType}
+                onSelect={(key) => { setServiceType(key); haptic('selection') }}
+              />
             )}
 
             {/* Step 2: Locations */}
