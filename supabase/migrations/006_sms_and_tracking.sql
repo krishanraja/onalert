@@ -18,11 +18,14 @@ CREATE INDEX IF NOT EXISTS idx_booking_clicks_time ON public.booking_clicks(clic
 
 ALTER TABLE public.booking_clicks ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can insert own clicks" ON public.booking_clicks
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can read own clicks" ON public.booking_clicks
-  FOR SELECT USING (auth.uid() = user_id);
-
-CREATE POLICY "Service role can read all clicks" ON public.booking_clicks
-  FOR SELECT USING (true);
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'booking_clicks' AND policyname = 'Users can insert own clicks') THEN
+    CREATE POLICY "Users can insert own clicks" ON public.booking_clicks FOR INSERT WITH CHECK (auth.uid() = user_id);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'booking_clicks' AND policyname = 'Users can read own clicks') THEN
+    CREATE POLICY "Users can read own clicks" ON public.booking_clicks FOR SELECT USING (auth.uid() = user_id);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'booking_clicks' AND policyname = 'Service role can read all clicks') THEN
+    CREATE POLICY "Service role can read all clicks" ON public.booking_clicks FOR SELECT USING (true);
+  END IF;
+END $$;
