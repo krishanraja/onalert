@@ -1,14 +1,16 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { ArrowLeft, ExternalLink, MapPin, Calendar, Clock, RefreshCw, Lock, Layers } from 'lucide-react'
+import { ArrowLeft, ExternalLink, MapPin, Calendar, Clock, RefreshCw, Lock, Layers, ChevronDown } from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { supabase, type Alert } from '@/lib/supabase'
 import { useAlerts } from '@/hooks/useAlerts'
 import { useProfile } from '@/hooks/useProfile'
-import { SERVICE_TYPES } from '@/lib/locations'
+import { SERVICE_TYPES, type ServiceType } from '@/lib/locations'
+import { PROGRAMS } from '@/lib/programs'
 import { formatSlotDate, formatSlotTime, minutesSince } from '@/lib/time'
 import { CBP_BOOK_URL } from '@/lib/cbpApi'
 import { haptic } from '@/lib/haptics'
+import { cn } from '@/lib/utils'
 import { showToast } from '@/hooks/useToast'
 import { trackEvent, AnalyticsEvents } from '@/lib/analytics'
 import { trackBookingClick } from '@/lib/tracking'
@@ -22,6 +24,7 @@ export function AlertDetailPage() {
   const [loading, setLoading] = useState(true)
   const [recheckLoading, setRecheckLoading] = useState(false)
   const [recheckSent, setRecheckSent] = useState(false)
+  const [showBookingGuide, setShowBookingGuide] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -267,9 +270,39 @@ export function AlertDetailPage() {
               className="w-full bg-primary text-white py-4 rounded-lg font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
             >
               <ExternalLink size={18} />
-              Book this slot
+              Book on CBP site
             </button>
           )}
+
+          {/* Collapsible booking guidance */}
+          {(() => {
+            const program = PROGRAMS[serviceType as ServiceType]
+            if (!program) return null
+            return (
+              <div className="border border-border rounded-lg overflow-hidden">
+                <button
+                  onClick={() => setShowBookingGuide(!showBookingGuide)}
+                  className="w-full px-4 py-3 flex items-center justify-between text-sm text-foreground-secondary hover:text-foreground transition-colors"
+                >
+                  <span className="font-medium">How to book this slot</span>
+                  <ChevronDown size={14} className={cn('transition-transform', showBookingGuide && 'rotate-180')} />
+                </button>
+                {showBookingGuide && (
+                  <div className="px-4 pb-4 space-y-2 border-t border-border pt-3">
+                    {program.bookingSteps.map((step, i) => (
+                      <div key={i} className="flex gap-2.5">
+                        <span className="text-[11px] font-bold text-foreground-muted bg-surface-muted w-5 h-5 rounded-full flex items-center justify-center shrink-0">{i + 1}</span>
+                        <p className="text-xs text-foreground-secondary leading-relaxed pt-0.5">{step}</p>
+                      </div>
+                    ))}
+                    <p className="text-[11px] text-foreground-muted mt-2 pt-2 border-t border-border/50">
+                      {program.prerequisite}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )
+          })()}
 
           {/* Re-check button (paid users, single alerts only) */}
           {!isDigest && isPaid ? (

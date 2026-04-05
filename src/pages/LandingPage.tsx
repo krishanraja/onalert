@@ -54,10 +54,10 @@ export function LandingPage() {
           className="h-[141px] md:h-[317px] mx-auto mb-3"
         />
         <p className="text-lg md:text-xl font-medium tracking-tight text-foreground text-center max-w-md mx-auto mb-2">
-          Be first in line for a US Govt appointment
+          Never miss a Trusted Traveler appointment
         </p>
         <p className="text-xs md:text-sm text-foreground-secondary text-center max-w-sm mx-auto mb-6">
-          OnAlert monitors government appointment systems and alerts you within minutes when a slot opens.
+          OnAlert monitors Global Entry, TSA PreCheck, NEXUS & SENTRI appointment slots and alerts you within minutes when one opens from a cancellation.
         </p>
         <button
           onClick={() => navigate('/auth')}
@@ -135,8 +135,8 @@ export function LandingPage() {
             <div className="w-9 h-9 rounded-lg bg-surface-muted flex items-center justify-center mb-1.5">
               <Shield className="w-4 h-4 text-primary" />
             </div>
-            <span className="text-[11px] md:text-xs font-medium text-foreground">All programs</span>
-            <p className="hidden md:block text-xs text-foreground-secondary mt-1">Global Entry · TSA PreCheck · NEXUS · SENTRI</p>
+            <span className="text-[11px] md:text-xs font-medium text-foreground">4 programs</span>
+            <p className="hidden md:block text-xs text-foreground-secondary mt-1">Global Entry ($100) · TSA PreCheck ($78) · NEXUS ($50) · SENTRI ($122)</p>
           </div>
         </div>
       </section>
