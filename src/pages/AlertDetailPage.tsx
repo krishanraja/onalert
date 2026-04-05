@@ -11,6 +11,7 @@ import { CBP_BOOK_URL } from '@/lib/cbpApi'
 import { haptic } from '@/lib/haptics'
 import { showToast } from '@/hooks/useToast'
 import { trackEvent, AnalyticsEvents } from '@/lib/analytics'
+import { trackBookingClick } from '@/lib/tracking'
 
 export function AlertDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -182,7 +183,10 @@ export function AlertDetailPage() {
                       </p>
                     </div>
                     <button
-                      onClick={() => window.open(slot.book_url || CBP_BOOK_URL, '_blank')}
+                      onClick={() => {
+                        trackBookingClick(alert.id, slot.location_id)
+                        window.open(slot.book_url || CBP_BOOK_URL, '_blank')
+                      }}
                       className="bg-primary text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-1.5 shrink-0"
                     >
                       <ExternalLink size={14} />
@@ -255,7 +259,10 @@ export function AlertDetailPage() {
         <div className="space-y-3 pt-6">
           {!isDigest && (
             <button
-              onClick={() => window.open(CBP_BOOK_URL, '_blank')}
+              onClick={() => {
+                trackBookingClick(alert.id, alert.payload.location_id)
+                window.open(alert.payload.book_url || CBP_BOOK_URL, '_blank')
+              }}
               aria-label="Book this appointment slot (opens in new tab)"
               className="w-full bg-primary text-white py-4 rounded-lg font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
             >
