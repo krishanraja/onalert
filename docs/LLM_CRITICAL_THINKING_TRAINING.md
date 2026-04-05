@@ -10,7 +10,7 @@ OnAlert is a **production SaaS application** -- not a tutorial, prototype, or ho
 - Monitors CBP Trusted Traveler Program appointment schedulers (Global Entry, TSA PreCheck, NEXUS, SENTRI)
 - Detects newly available slots by polling the CBP API and comparing against last-known state
 - Delivers instant email alerts with direct booking links
-- Freemium model: free (1 monitor, 60min checks) and premium ($19/mo, unlimited, 10min checks)
+- Freemium model: Free (1 monitor, 60min checks), Pro ($39 one-time, 5min checks), Multi ($59 one-time, 5 monitors)
 
 ### Critical Path
 The most important flow in the entire application:
@@ -55,7 +55,8 @@ The `poll-appointments` function directly invokes `send-alert` via Supabase func
 
 ### Plan Limits
 - Free users: 1 active monitor, 3 locations per monitor, 60-minute check interval
-- Premium users: Unlimited monitors and locations, 10-minute check interval
+- Pro users: 1 monitor, unlimited locations, 5-minute check interval, 24h cooldown on changes
+- Multi users: Up to 5 monitors, unlimited locations, 5-minute check interval, no cooldown
 - These limits are enforced in the frontend (AddMonitorPage) and should also be validated server-side
 
 ## Code Style and Conventions

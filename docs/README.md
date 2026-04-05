@@ -13,6 +13,8 @@ Comprehensive documentation for the OnAlert platform.
 | [ICP](./ICP.md) | Ideal customer profile and acquisition channels |
 | [OUTCOMES](./OUTCOMES.md) | Success metrics, KPIs, and revenue milestones |
 
+| [STRATEGY](./STRATEGY.md) | Competitive differentiation strategy and growth roadmap |
+
 ### Product & Design
 | Document | Description |
 |----------|-------------|

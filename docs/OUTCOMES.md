@@ -34,13 +34,12 @@
 
 | Metric | Target | How to Measure |
 |--------|--------|----------------|
-| Monthly Recurring Revenue (MRR) | Growing | Stripe Dashboard |
-| Free-to-premium conversion | >5% | `profiles WHERE plan='premium' / total profiles` |
-| Monthly churn rate | <10% | Stripe subscription cancellations / active subscribers |
-| ARPU (monthly) | $19 | MRR / paying customers |
-| Customer LTV | >$100 | ARPU / monthly churn rate |
-| Annual plan adoption | >30% of premium | Annual subscriptions / total premium subscribers |
-| Payback period | <1 month | Acquisition cost / ARPU |
+| Total revenue | Growing | Stripe Dashboard (cumulative one-time payments) |
+| Paid users | Growing monthly | `profiles WHERE plan IN ('pro', 'multi')` |
+| Free-to-paid conversion | >5% | Paid users / total profiles |
+| Revenue per paid user | $39-$59 | Total revenue / paid users |
+| Multi plan adoption | >20% of paid | Multi users / total paid users |
+| Payback period | <1 month | Acquisition cost / average revenue per user |
 
 ### Growth Indicators
 
@@ -61,8 +60,8 @@ Before each release:
 - [ ] All auth flows work end-to-end (Google OAuth, email/password, magic link)
 - [ ] Monitor creation wizard completes successfully
 - [ ] Alert email delivery works (Resend sends correctly)
-- [ ] Stripe checkout creates subscription and upgrades plan
-- [ ] Stripe webhook correctly handles subscription lifecycle events
+- [ ] Stripe checkout creates one-time payment and upgrades plan
+- [ ] Stripe webhook correctly handles `checkout.session.completed`
 - [ ] Customer portal opens and loads billing info
 - [ ] ErrorBoundary catches and displays errors gracefully
 - [ ] PWA manifest validates in Chrome DevTools
@@ -70,10 +69,11 @@ Before each release:
 
 ## Revenue Milestones
 
-| Milestone | MRR | Significance |
-|-----------|-----|-------------|
-| First paying customer | $19 | Product-market signal |
-| Break even (hosting costs) | ~$50 | Self-sustaining infrastructure |
-| 50 premium users | $950 | Validates pricing model |
-| $5K MRR | $5,000 | Meaningful recurring revenue |
-| $10K MRR | $10,000 | Full-time viable |
+| Milestone | Revenue | Significance |
+|-----------|---------|-------------|
+| First paying customer | $39 | Product-market signal |
+| Break even (hosting costs) | ~$100 | Self-sustaining infrastructure |
+| 50 paid users | ~$2,450 | Validates pricing model |
+| 100 paid users | ~$4,900 | Strong product-market fit |
+| 500 paid users | ~$24,500 | Meaningful one-time revenue |
+| 1,000 paid users | ~$49,000 | Full-time viable |

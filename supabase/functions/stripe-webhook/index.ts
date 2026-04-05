@@ -45,19 +45,22 @@ Deno.serve(async (req) => {
           break
         }
 
-        // Validate plan value
-        if (plan !== 'pro' && plan !== 'family') {
+        // Validate plan value (accept 'family' for backwards compatibility)
+        if (plan !== 'pro' && plan !== 'multi' && plan !== 'family') {
           console.error('Invalid plan in metadata:', plan)
           break
         }
 
+        // Normalize legacy 'family' to 'multi'
+        const normalizedPlan = plan === 'family' ? 'multi' : plan
+
         // Upgrade user plan (permanent -- one-time purchase)
         await supabase
           .from('profiles')
-          .update({ plan })
+          .update({ plan: normalizedPlan })
           .eq('id', userId)
 
-        console.log(`Upgraded user ${userId} to ${plan} plan`)
+        console.log(`Upgraded user ${userId} to ${normalizedPlan} plan`)
         break
       }
 

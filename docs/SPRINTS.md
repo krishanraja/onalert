@@ -33,6 +33,26 @@
 - [x] UX audit and fixes
 - [x] Replace em dashes with hyphens across codebase
 
+### Sprint 3: Observability, Redesign & Analytics (Completed)
+
+**Goal**: Add operational visibility, redesign core pages, and integrate analytics.
+
+- [x] Admin audit & observability page (poll runs, location fetches, health checks)
+- [x] Humblytics analytics integration with custom event tracking
+- [x] Redesigned alerts page with unified card layout and filter bar
+- [x] Redesigned homepage and pricing strategy
+- [x] Government agency logos on landing page (DHS, CBP, TSA)
+- [x] Email sender domain fix (alerts@onalert.app)
+- [x] Dedicated 404 page with navigation
+- [x] UX touch target improvements for mobile accessibility
+- [x] Plan pricing update (Pro $39, Multi $59)
+- [x] Replaced mobile Tinder-style swipe with scrollable alert list
+- [x] Show all monitor slots inline on settings page
+- [x] Smart digest alerts (send-digest-alert edge function)
+- [x] Slot re-check alerts (process-rechecks edge function)
+- [x] Delayed alert processing for free users (process-delayed-alerts edge function)
+- [x] UX test report and production readiness verification
+
 ## Current Sprint: Notifications & Growth
 
 **Goal**: Expand notification channels and lay groundwork for user acquisition.
@@ -55,7 +75,7 @@
 - [ ] Referral system for organic growth
 
 ### Features (Medium Priority)
-- [ ] Custom check intervals (beyond 10/60min)
+- [ ] Custom check intervals (beyond 5/60min)
 - [ ] Historical slot availability charts
 - [ ] Multi-language support (Spanish, French)
 - [ ] Email preference center
@@ -65,7 +85,7 @@
 - [ ] CI/CD pipeline (GitHub Actions)
 - [ ] Automated testing (Vitest + React Testing Library)
 - [ ] Error tracking (Sentry)
-- [ ] Analytics (PostHog or Plausible)
+- [x] Analytics (Humblytics -- integrated)
 - [ ] Uptime monitoring (Checkly or UptimeRobot)
 - [ ] Database backups automation
 - [ ] Staging environment

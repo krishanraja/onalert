@@ -95,6 +95,40 @@ Major authentication and user experience improvements:
 - Improved mobile layout and spacing
 - Enhanced visual hierarchy on landing page
 
+### v0.4.0 -- Observability, Redesign & Analytics (April 2026)
+
+**Commits**: Multiple PRs (#19-#28)
+
+Major operational and UX improvements:
+
+**Observability & audit**:
+- Added admin audit page with poll run history, per-location fetch logs, and health checks
+- Enhanced scrape_logs with detailed telemetry (anomaly flags, latency metrics, run correlation IDs)
+- Added location_fetch_logs table for per-location polling details
+
+**Redesigned core pages**:
+- Redesigned alerts page with unified card layout and filter bar (live/history tabs)
+- Redesigned homepage and pricing strategy
+- Replaced mobile Tinder-style swipe cards with scrollable alert list
+- Show all monitor slots inline on settings page
+
+**New edge functions** (3 added, total now 8):
+- `send-digest-alert` -- bundled multi-slot email notifications
+- `process-delayed-alerts` -- 15-minute delay pipeline for free users
+- `process-rechecks` -- slot verification re-check requests
+
+**Landing page improvements**:
+- Government agency logos (DHS, CBP, TSA) with proper rendering
+- Updated pricing display (Pro $39, Multi $59, one-time)
+
+**Infrastructure**:
+- Humblytics analytics integration with custom event tracking
+- Email sender domain fix (alerts@onalert.app)
+- Dedicated 404 page with navigation
+- UX touch target improvements for mobile accessibility (44px minimum)
+- Deprecated meta tag cleanup
+- Production readiness verification (UX test report)
+
 ## Architecture Decisions
 
 See [DECISIONS_LOG.md](./DECISIONS_LOG.md) for detailed rationale behind key technical choices.

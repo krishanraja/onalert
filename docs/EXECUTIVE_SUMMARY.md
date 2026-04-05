@@ -21,10 +21,10 @@ OnAlert uses a one-time payment model aligned with how users actually use the pr
 | Tier | Price | Model | Monitors | Check Frequency | Alert Delivery | Window |
 |------|-------|-------|----------|-----------------|----------------|--------|
 | Free | $0 | Free | 1 (3 locations) | Every 60 min | Delayed 15 min | 7 days |
-| Pro | $29 | One-time | 1 (unlimited) | Every 5 min | Instant | Forever |
-| Family | $49 | One-time | Up to 5 | Every 5 min | Instant | Forever |
+| Pro | $39 | One-time | 1 (unlimited) | Every 5 min | Instant | Forever |
+| Multi | $59 | One-time | Up to 5 | Every 5 min | Instant | Forever |
 
-**ROI**: Slots fill in 5-15 minutes. Free tier proves the product works but can't catch slots fast enough. $29 once gets instant alerts that actually land before the slot fills.
+**ROI**: Slots fill in 5-15 minutes. Free tier proves the product works but can't catch slots fast enough. $39 once gets instant alerts that actually land before the slot fills.
 
 ## Tech Stack
 
@@ -32,7 +32,7 @@ OnAlert uses a one-time payment model aligned with how users actually use the pr
 |-------|-----------|-----|
 | Frontend | React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui | Fast, type-safe, component-driven |
 | Backend | Supabase (PostgreSQL, Auth, Edge Functions, Realtime) | Full backend in one platform with RLS |
-| Payments | Stripe (one-time payments via Checkout) | Industry-standard billing |
+| Payments | Stripe (one-time payments via Checkout) | Industry-standard, no subscription overhead |
 | Email | Resend (transactional alerts) | Developer-first email delivery |
 | Hosting | Vercel (static SPA + global CDN) | Zero-config deploys, edge performance |
 | PWA | Workbox service worker, installable on mobile | Native app feel, no app store needed |

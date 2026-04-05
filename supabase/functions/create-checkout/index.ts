@@ -16,9 +16,9 @@ const PLANS = {
     name: 'OnAlert Pro',
     description: '1 monitor, SMS alerts, 5-minute checks, unlimited locations',
   },
-  family: {
+  multi: {
     price: 5900, // $59.00 one-time
-    name: 'OnAlert Family',
+    name: 'OnAlert Multi',
     description: 'Up to 5 monitors, SMS alerts, 5-minute checks, unlimited locations',
   },
 }

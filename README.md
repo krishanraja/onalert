@@ -13,7 +13,7 @@ Millions of conditionally approved travelers wait 3-12 months for enrollment int
 ## How It Works
 
 1. **Create a monitor** -- choose your program (GE, TSA, NEXUS, SENTRI) and enrollment centers
-2. **We poll the CBP API** -- every 10 min (premium) or 60 min (free), 24/7
+2. **We poll the CBP API** -- every 5 min (paid) or 60 min (free), 24/7
 3. **Get alerted instantly** -- branded email notification with slot details and direct booking link
 4. **Book before it fills** -- slots typically fill in 5-15 minutes, so speed matters
 
@@ -23,7 +23,7 @@ Millions of conditionally approved travelers wait 3-12 months for enrollment int
 |-------|-----------|
 | Frontend | React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui |
 | Backend | Supabase (PostgreSQL, Auth, Edge Functions, Realtime) |
-| Payments | Stripe (subscriptions via Checkout + Customer Portal) |
+| Payments | Stripe (one-time payments via Checkout) |
 | Email | Resend (transactional alerts) |
 | Hosting | Vercel (static SPA + global CDN) |
 | PWA | Workbox service worker, installable on mobile |
@@ -67,7 +67,7 @@ See [docs/REPLICATION_GUIDE.md](docs/REPLICATION_GUIDE.md) for full setup instru
 
 ```
 src/
-  pages/          # 9 page components (Landing, Auth, Dashboard, Alerts, etc.)
+  pages/          # 11 page components (Landing, Auth, Dashboard, Alerts, etc.)
   components/     # UI components (layout, monitors, alerts, ui/)
   hooks/          # useProfile, useMonitors, useAlerts
   lib/            # supabase, stripe, plans, cbpApi, locations, time, utils
@@ -76,15 +76,18 @@ src/
   index.css       # Design system (CSS custom properties)
 
 supabase/
-  functions/      # 5 edge functions (Deno)
+  functions/      # 8 edge functions (Deno)
     poll-appointments/   # CRON: poll CBP API for new slots
-    send-alert/          # Deliver email notifications via Resend
+    send-alert/          # Deliver individual email notifications via Resend
+    send-digest-alert/   # Deliver digest emails for multiple slots
     create-checkout/     # Create Stripe checkout session
-    customer-portal/     # Stripe billing portal
-    stripe-webhook/      # Handle subscription lifecycle events
+    customer-portal/     # Stripe billing portal redirect
+    stripe-webhook/      # Handle one-time payment completion
+    process-delayed-alerts/ # CRON: send delayed alerts for free users
+    process-rechecks/    # Process slot recheck requests
   migrations/     # Database schema + RLS policies
 
-docs/             # Comprehensive project documentation (17 documents)
+docs/             # Comprehensive project documentation (18 documents)
 ```
 
 ## Scripts
@@ -102,8 +105,8 @@ npm run preview  # Preview production build
 - **4 programs**: Global Entry, TSA PreCheck, NEXUS, SENTRI
 - **50+ locations**: Searchable enrollment centers across the US
 - **Real-time alerts**: Email notifications + in-app realtime feed
-- **Freemium model**: Free tier (1 monitor, 60min) + Premium ($19/mo, unlimited, 10min)
-- **Stripe billing**: Checkout, customer portal, webhook-driven plan sync
+- **Freemium model**: Free (1 monitor, 60min) / Pro ($39, 5min) / Multi ($59, 5 monitors) -- all one-time
+- **Stripe billing**: One-time payments via Checkout, webhook-driven plan sync
 - **PWA**: Installable on mobile, offline-capable
 - **Dark terminal UI**: Bloomberg-inspired design with crimson accents
 
@@ -117,6 +120,7 @@ Full documentation is in the [`docs/`](docs/) directory:
 - **[Value Proposition](docs/VALUE_PROP.md)** -- Market positioning and competitive advantage
 - **[Ideal Customer Profile](docs/ICP.md)** -- Target users and acquisition channels
 - **[Outcomes](docs/OUTCOMES.md)** -- Success metrics and KPIs
+- **[Strategy](docs/STRATEGY.md)** -- Competitive differentiation and growth roadmap
 
 ### Product & Design
 - **[Features](docs/FEATURES.md)** -- Complete feature inventory

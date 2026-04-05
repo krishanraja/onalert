@@ -8,7 +8,7 @@
 - **50+ enrollment centers**: Searchable by name, city, or state
 - **Pause/resume**: Toggle monitor active state without deleting configuration
 - **Delete**: Confirmation dialog before permanent removal
-- **Plan-based limits**: Free = 1 monitor (3 locations), Pro = 1 monitor (unlimited locations), Family = 5 monitors (unlimited locations)
+- **Plan-based limits**: Free = 1 monitor (3 locations), Pro = 1 monitor (unlimited locations), Multi = 5 monitors (unlimited locations)
 
 ### Alert System
 - **Real-time detection**: Polls CBP API every 5min (paid) or 60min (free)
@@ -35,9 +35,16 @@
 
 ### Payments & Billing
 - **Stripe Checkout**: Hosted payment page for one-time purchase
-- **Three plans**: Free, Pro ($29 one-time), Family ($49 one-time)
+- **Three plans**: Free, Pro ($39 one-time), Multi ($59 one-time)
 - **Webhook-driven sync**: Auto-upgrade on successful payment
 - **No subscription management needed**: One-time purchase model eliminates cancellation friction
+
+### Pro/Multi Exclusive Features
+- **Deadline date filter**: Set a latest acceptable appointment date to filter out slots too far in the future
+- **Smart digest alerts**: Multiple slots across locations bundled into a single email notification
+- **Advanced location insights**: Historical alert frequency, fill time estimates, trending locations
+- **Slot re-check alerts**: Request a verification email ~2 minutes after an alert to confirm slot availability before booking
+- **Admin observability**: Audit page with poll run history, per-location fetch logs, health checks, and performance metrics
 
 ### Progressive Web App (PWA)
 - **Installable**: Add to home screen on iOS, Android, and desktop
@@ -48,13 +55,13 @@
 ### Landing Page
 - **Hero section**: Clear value proposition with program badges
 - **Feature highlights**: Three key benefits with icons
-- **Pricing display**: Three-tier comparison (Free, Pro, Family) with one-time pricing
+- **Pricing display**: Three-tier comparison (Free, Pro, Multi) with one-time pricing
 - **Social proof ready**: Infrastructure for testimonials and metrics
 
 ## Feature Matrix
 
-| Feature | Free | Pro ($29) | Family ($49) |
-|---------|------|-----------|--------------|
+| Feature | Free | Pro ($39) | Multi ($59) |
+|---------|------|-----------|-------------|
 | Active monitors | 1 | 1 | Up to 5 |
 | Locations per monitor | 3 | Unlimited | Unlimited |
 | Check interval | 60 min (enforced) | 5 min (12x faster) | 5 min (12x faster) |
@@ -62,6 +69,11 @@
 | SMS alerts | -- | Yes (planned) | Yes (planned) |
 | Real-time in-app alerts | Yes | Yes | Yes |
 | Direct booking links | Yes | Yes | Yes |
+| Deadline date filter | -- | Yes | Yes |
+| Smart digest alerts | -- | Yes | Yes |
+| Location insights | Basic | Advanced | Advanced |
+| Slot re-check alerts | -- | Yes | Yes |
+| Monitor change cooldown | None | 24 hours | None |
 | Monitoring window | 7 days | Never expires | Never expires |
 | Payment model | Free forever | One-time | One-time |
 
@@ -70,7 +82,6 @@
 - [ ] SMS notifications via Twilio (paid)
 - [ ] Push notifications via Web Push API
 - [ ] Slack/Discord webhook integration
-- [ ] Custom check intervals
 - [ ] Historical slot availability charts
 - [ ] Multi-language support (Spanish, French)
 - [ ] Email delivery status tracking via Resend webhooks

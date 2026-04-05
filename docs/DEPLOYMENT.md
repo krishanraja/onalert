@@ -78,21 +78,23 @@ Vercel serves `index.html` for all routes (SPA fallback). This is automatic with
 4. **Redirect URLs**: `https://onalert.app/app`, `https://onalert.app/auth`
 
 ### Edge Functions
-Deploy all five functions:
+Deploy all eight functions:
 ```bash
 supabase functions deploy poll-appointments
 supabase functions deploy send-alert
+supabase functions deploy send-digest-alert
 supabase functions deploy create-checkout
 supabase functions deploy customer-portal
 supabase functions deploy stripe-webhook
 supabase functions deploy process-delayed-alerts
+supabase functions deploy process-rechecks
 ```
 
 ### CRON Setup
 Set up two CRON jobs:
 
 **1. poll-appointments** -- runs every 5 minutes
-- The function itself enforces per-plan check intervals (free: 60min, pro/family: 5min)
+- The function itself enforces per-plan check intervals (free: 60min, pro/multi: 5min)
 - Also auto-pauses free monitors older than 7 days
 - Method: POST
 - URL: `https://<project-id>.supabase.co/functions/v1/poll-appointments`
@@ -114,8 +116,8 @@ Enable Realtime for these tables:
 
 ### Products
 No pre-created products needed -- `create-checkout` creates inline price data:
-- Pro: $29 one-time (2900 cents)
-- Family: $49 one-time (4900 cents)
+- Pro: $39 one-time (3900 cents)
+- Multi: $59 one-time (5900 cents)
 
 ### Webhook
 1. Create webhook endpoint in Stripe Dashboard -> Developers -> Webhooks
@@ -152,8 +154,8 @@ AND created_at > now() - interval '1 hour';
 -- Active monitors count
 SELECT count(*) FROM monitors WHERE active = true;
 
--- Premium user count
-SELECT count(*) FROM profiles WHERE plan = 'premium';
+-- Paid user count
+SELECT count(*) FROM profiles WHERE plan IN ('pro', 'multi');
 
 -- Alert volume (last 24h)
 SELECT count(*) FROM alerts
