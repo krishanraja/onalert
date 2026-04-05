@@ -5,6 +5,7 @@ export const PLANS = {
     interval: null,
     monitors: 1,
     checkInterval: 60,
+    cooldown: 0,
     channels: ['email'],
     features: [
       '1 monitor, 3 locations',
@@ -19,6 +20,7 @@ export const PLANS = {
     interval: null,
     monitors: 1,
     checkInterval: 5,
+    cooldown: 24,
     channels: ['email', 'sms'],
     features: [
       '1 monitor, unlimited locations',
@@ -29,17 +31,19 @@ export const PLANS = {
       'Advanced location insights',
       'Slot re-check alerts',
       'Monitors never expire',
+      '24h cooldown on monitor changes',
     ],
   },
-  family: {
-    name: 'Family',
+  multi: {
+    name: 'Multi',
     price: 59,
     interval: null,
-    monitors: 5,
+    monitors: 3,
     checkInterval: 5,
+    cooldown: 0,
     channels: ['email', 'sms'],
     features: [
-      'Up to 5 monitors',
+      'Up to 3 monitors',
       'Checked every 5 minutes',
       'Instant email + SMS alerts',
       'Date deadline filter',
@@ -47,6 +51,7 @@ export const PLANS = {
       'Advanced location insights',
       'Slot re-check alerts',
       'Monitors never expire',
+      'No monitor change cooldown',
     ],
   },
 }

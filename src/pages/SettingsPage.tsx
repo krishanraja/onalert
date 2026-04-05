@@ -66,10 +66,10 @@ export function SettingsPage() {
     }
   }
 
-  const handleUpgrade = async (plan: 'pro' | 'family') => {
+  const handleUpgrade = async (plan: 'pro' | 'multi') => {
     // Track upgrade click
     trackEvent(AnalyticsEvents.UPGRADE_CLICKED, { plan })
-    
+
     setLoading(plan)
     setError('')
     try {
@@ -91,7 +91,7 @@ export function SettingsPage() {
     navigate('/')
   }
 
-  const planLabel = isFamily ? 'FAMILY' : isPaid ? 'PRO' : 'FREE'
+  const planLabel = isFamily ? 'MULTI' : isPaid ? 'PRO' : 'FREE'
 
   return (
     <div className="min-h-full bg-background">
@@ -271,7 +271,7 @@ export function SettingsPage() {
                 </ul>
               </div>
 
-              {/* Family */}
+              {/* Multi */}
               <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-4 relative">
                 <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                   <span className="bg-primary text-white px-3 py-1 rounded-full text-xs font-medium">
@@ -280,22 +280,22 @@ export function SettingsPage() {
                 </div>
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <h3 className="font-semibold text-foreground">Family</h3>
+                    <h3 className="font-semibold text-foreground">Multi</h3>
                     <p className="text-2xl font-bold text-foreground">
-                      ${PLANS.family.price}
+                      ${PLANS.multi.price}
                       <span className="text-sm font-normal text-foreground-secondary"> one-time</span>
                     </p>
                   </div>
                   <button
-                    onClick={() => handleUpgrade('family')}
-                    disabled={loading === 'family'}
+                    onClick={() => handleUpgrade('multi')}
+                    disabled={loading === 'multi'}
                     className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
                   >
-                    {loading === 'family' ? 'Loading...' : 'Buy Family'}
+                    {loading === 'multi' ? 'Loading...' : 'Buy Multi'}
                   </button>
                 </div>
                 <ul className="space-y-1">
-                  {PLANS.family.features.map((feature) => (
+                  {PLANS.multi.features.map((feature) => (
                     <li key={feature} className="text-sm text-foreground-secondary">
                       • {feature}
                     </li>
@@ -315,26 +315,26 @@ export function SettingsPage() {
           </div>
         )}
 
-        {/* Upgrade from Pro to Family */}
+        {/* Upgrade from Pro to Multi */}
         {isPaid && !isFamily && (
           <div className="space-y-3">
             <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">Upgrade</h2>
             <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-4">
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <h3 className="font-semibold text-foreground">Upgrade to Family</h3>
-                  <p className="text-sm text-foreground-secondary">Monitor up to 5 programs for the whole family.</p>
+                  <h3 className="font-semibold text-foreground">Upgrade to Multi</h3>
+                  <p className="text-sm text-foreground-secondary">Monitor up to 3 programs simultaneously. No cooldown on changes.</p>
                   <p className="text-2xl font-bold text-foreground mt-1">
-                    ${PLANS.family.price}
+                    ${PLANS.multi.price}
                     <span className="text-sm font-normal text-foreground-secondary"> one-time</span>
                   </p>
                 </div>
                 <button
-                  onClick={() => handleUpgrade('family')}
-                  disabled={loading === 'family'}
+                  onClick={() => handleUpgrade('multi')}
+                  disabled={loading === 'multi'}
                   className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
                 >
-                  {loading === 'family' ? 'Loading...' : 'Upgrade'}
+                  {loading === 'multi' ? 'Loading...' : 'Upgrade'}
                 </button>
               </div>
             </div>

@@ -47,8 +47,8 @@ export function useProfile() {
     }
   }, [profile])
 
-  const isPaid = profile?.plan === 'pro' || profile?.plan === 'family'
-  const isFamily = profile?.plan === 'family'
+  const isPaid = profile?.plan === 'pro' || profile?.plan === 'family' || profile?.plan === 'multi'
+  const isFamily = profile?.plan === 'family' || profile?.plan === 'multi'
 
   return { profile, loading, isPaid, isFamily, updateProfile }
 }

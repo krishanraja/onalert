@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, Check, Search, MapPin, Zap, Star, Navigation, CalendarClock, Lock } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Search, MapPin, Zap, Star, Navigation, CalendarClock, Lock, Clock } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useProfile } from '@/hooks/useProfile'
 import { useMonitors } from '@/hooks/useMonitors'
@@ -23,7 +23,7 @@ const stepVariants = {
 export function AddMonitorPage() {
   const navigate = useNavigate()
   const { profile, isPaid, isFamily } = useProfile()
-  const { monitors, createMonitor } = useMonitors()
+  const { monitors, createMonitor, cooldownExpiry, refreshCooldown } = useMonitors()
   const [step, setStep] = useState<0 | 1 | 2 | 3>(0)
   const [stepDirection, setStepDirection] = useState(1)
   const [serviceType, setServiceType] = useState<ServiceType | null>('GE')
@@ -38,8 +38,15 @@ export function AddMonitorPage() {
 
   const filteredLocations = searchLocations(locationSearch)
   const maxLocations = isPaid ? Infinity : 3
-  const maxMonitors = isFamily ? 5 : 1
+  const maxMonitors = isFamily ? 3 : 1
   const canAddMore = monitors.length < maxMonitors
+
+  // Check cooldown on mount for Pro users
+  useEffect(() => {
+    if (isPaid && !isFamily) {
+      refreshCooldown()
+    }
+  }, [isPaid, isFamily, refreshCooldown])
 
   useEffect(() => {
     async function detectNearest() {
@@ -71,11 +78,11 @@ export function AddMonitorPage() {
   }
 
   if (!canAddMore) {
-    const upgradeTarget = isPaid ? 'Family' : 'Pro or Family'
+    const upgradeTarget = isPaid ? 'Multi' : 'Pro or Multi'
     const limitText = isFamily
-      ? 'Family accounts can have up to 5 active monitors.'
+      ? 'Multi accounts can have up to 3 active monitors.'
       : isPaid
-        ? 'Pro accounts can have 1 active monitor. Upgrade to Family for up to 5.'
+        ? 'Pro accounts can have 1 active monitor. Upgrade to Multi for up to 3.'
         : 'Free accounts can have 1 active monitor.'
 
     return (
@@ -100,6 +107,17 @@ export function AddMonitorPage() {
       </div>
     )
   }
+
+  // Cooldown check for Pro users (not Multi/Family)
+  const hasCooldown = isPaid && !isFamily && cooldownExpiry && cooldownExpiry > new Date()
+  const cooldownRemaining = hasCooldown
+    ? (() => {
+        const diff = cooldownExpiry!.getTime() - Date.now()
+        const hours = Math.floor(diff / (1000 * 60 * 60))
+        const minutes = Math.ceil((diff % (1000 * 60 * 60)) / (1000 * 60))
+        return `${hours}h ${minutes}m`
+      })()
+    : null
 
   const handleQuickSetup = async () => {
     const locationIds = nearestLocations.length > 0
@@ -206,6 +224,27 @@ export function AddMonitorPage() {
           transition={{ type: 'spring', stiffness: 300, damping: 25 }}
           className="p-6 space-y-8 max-w-lg mx-auto"
         >
+          {/* Cooldown banner */}
+          {hasCooldown && (
+            <div className="bg-warning/10 border border-warning/20 rounded-xl p-4 mb-2">
+              <div className="flex items-start gap-3">
+                <Clock size={16} className="text-warning shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">Monitor cooldown active</p>
+                  <p className="text-xs text-foreground-secondary mt-1">
+                    You recently deleted a monitor. New monitors can be created in <span className="font-mono font-semibold text-warning">{cooldownRemaining}</span>.
+                  </p>
+                  <button
+                    onClick={() => navigate('/app/settings', { state: { scrollToUpgrade: true } })}
+                    className="text-xs text-primary hover:text-primary/80 font-medium mt-2 inline-block"
+                  >
+                    Upgrade to Multi for instant switching →
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-xl p-6">
             <div className="flex items-center gap-2 mb-3">
               <Zap size={18} className="text-primary" />
@@ -241,7 +280,7 @@ export function AddMonitorPage() {
             <motion.button
               whileTap={{ scale: 0.97 }}
               onClick={handleQuickSetup}
-              disabled={loading}
+              disabled={loading || !!hasCooldown}
               className="w-full bg-primary text-white py-3.5 rounded-lg font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? 'Activating...' : (
@@ -624,7 +663,7 @@ export function AddMonitorPage() {
             <motion.button
               whileTap={{ scale: 0.97 }}
               onClick={handleCreate}
-              disabled={loading}
+              disabled={loading || !!hasCooldown}
               className="w-full bg-primary text-white py-4 rounded-lg font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Activating...' : 'Activate Monitor'}
