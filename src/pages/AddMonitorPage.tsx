@@ -12,6 +12,9 @@ import { haptic } from '@/lib/haptics'
 import { showToast } from '@/hooks/useToast'
 import { cn } from '@/lib/utils'
 import { SuccessScreen } from '@/components/monitors/SuccessScreen'
+import { createCheckoutSession } from '@/lib/stripe'
+import { PLANS } from '@/lib/plans'
+import { trackEvent, AnalyticsEvents } from '@/lib/analytics'
 
 const POPULAR_LOCATION_IDS = [5140, 5003, 5006, 5002, 5007, 5004, 5030, 5008]
 
@@ -196,10 +199,12 @@ export function AddMonitorPage() {
   const [nearestLocations, setNearestLocations] = useState<number[]>([])
   const [geoLoading, setGeoLoading] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
+  const [upgradeLoading, setUpgradeLoading] = useState(false)
+  const [upgradeError, setUpgradeError] = useState('')
 
   const filteredLocations = searchLocations(locationSearch)
   const maxLocations = isPaid ? Infinity : 3
-  const maxMonitors = isFamily ? 3 : 1
+  const maxMonitors = isFamily ? PLANS.multi.monitors : 1
   const canAddMore = monitors.length < maxMonitors
 
   // Check cooldown on mount for Pro users
@@ -238,13 +243,27 @@ export function AddMonitorPage() {
     return <SuccessScreen />
   }
 
+  const handleUpgradeCheckout = async (plan: 'pro' | 'multi' | 'express') => {
+    trackEvent(AnalyticsEvents.UPGRADE_CLICKED, { plan, source: 'monitor_limit' })
+    setUpgradeLoading(true)
+    setUpgradeError('')
+    try {
+      const url = await createCheckoutSession(plan)
+      trackEvent(AnalyticsEvents.CHECKOUT_STARTED, { plan })
+      window.location.href = url
+    } catch (err) {
+      setUpgradeError(err instanceof Error ? err.message : 'Upgrade failed. Please try again.')
+    } finally {
+      setUpgradeLoading(false)
+    }
+  }
+
   if (!canAddMore) {
-    const upgradeTarget = isPaid ? 'Multi' : 'Pro or Multi'
     const limitText = isFamily
-      ? 'Multi accounts can have up to 3 active monitors.'
+      ? `Multi accounts can have up to ${PLANS.multi.monitors} active monitors.`
       : isPaid
-        ? 'Pro accounts can have 1 active monitor. Upgrade to Multi for up to 3.'
-        : 'Free accounts can have 1 active monitor.'
+        ? `You've reached the Pro limit of 1 monitor. Upgrade to Multi to monitor up to ${PLANS.multi.monitors} programs — just $${PLANS.multi.price} one-time.`
+        : 'Free accounts are limited to 1 monitor with hourly checks. Upgrade for faster alerts, more monitors, and SMS notifications.'
 
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -255,13 +274,26 @@ export function AddMonitorPage() {
         >
           <h1 className="text-lg font-semibold text-foreground mb-2">Monitor limit reached</h1>
           <p className="text-sm text-foreground-secondary mb-4">{limitText}</p>
-          {!isFamily && (
+          {upgradeError && (
+            <p className="text-sm text-destructive mb-3">{upgradeError}</p>
+          )}
+          {!isFamily && isPaid && (
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={() => handleUpgradeCheckout('multi')}
+              disabled={upgradeLoading}
+              className="bg-primary text-white px-4 py-2 rounded-lg disabled:opacity-50"
+            >
+              {upgradeLoading ? 'Loading...' : 'Upgrade to Multi'}
+            </motion.button>
+          )}
+          {!isPaid && (
             <motion.button
               whileTap={{ scale: 0.97 }}
               onClick={() => navigate('/app/settings', { state: { scrollToUpgrade: true } })}
               className="bg-primary text-white px-4 py-2 rounded-lg"
             >
-              Upgrade to {upgradeTarget}
+              View upgrade options
             </motion.button>
           )}
         </motion.div>
@@ -396,10 +428,11 @@ export function AddMonitorPage() {
                     You recently deleted a monitor. New monitors can be created in <span className="font-mono font-semibold text-warning">{cooldownRemaining}</span>.
                   </p>
                   <button
-                    onClick={() => navigate('/app/settings', { state: { scrollToUpgrade: true } })}
-                    className="text-xs text-primary hover:text-primary/80 font-medium mt-2 inline-block"
+                    onClick={() => handleUpgradeCheckout('multi')}
+                    disabled={upgradeLoading}
+                    className="text-xs text-primary hover:text-primary/80 font-medium mt-2 inline-block disabled:opacity-50"
                   >
-                    Upgrade to Multi for instant switching →
+                    {upgradeLoading ? 'Loading...' : `Upgrade to Multi — no cooldowns, up to ${PLANS.multi.monitors} monitors →`}
                   </button>
                 </div>
               </div>
