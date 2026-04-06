@@ -391,13 +391,13 @@ export function SettingsPage() {
 
         {/* Upgrade from Pro to Multi */}
         {isPaid && !isFamily && (
-          <div className="space-y-3">
+          <div ref={upgradeRef} className="space-y-3 scroll-mt-4">
             <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">Upgrade</h2>
             <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-4">
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <h3 className="font-semibold text-foreground">Upgrade to Multi</h3>
-                  <p className="text-sm text-foreground-secondary">Monitor up to 3 programs simultaneously. No cooldown on changes.</p>
+                  <p className="text-sm text-foreground-secondary">Monitor up to {PLANS.multi.monitors} programs simultaneously. No cooldown on changes.</p>
                   <p className="text-2xl font-bold text-foreground mt-1">
                     ${PLANS.multi.price}
                     <span className="text-sm font-normal text-foreground-secondary"> one-time</span>

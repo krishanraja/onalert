@@ -251,6 +251,8 @@ const CHECK_INTERVALS: Record<string, number> = {
   free: 60,
   pro: 5,
   family: 5,
+  multi: 5,
+  express: 1,
 }
 
 // Free monitoring window (in days)
@@ -454,12 +456,12 @@ Deno.serve(async (req) => {
         locations_checked: monitor.config.location_ids.length,
         new_slots_found: allNewSlotsForMonitor.length,
         alert_decision: allNewSlotsForMonitor.length === 0 ? 'none' :
-          (allNewSlotsForMonitor.length > 1 && (planMap.get(monitor.user_id) === 'pro' || planMap.get(monitor.user_id) === 'family')) ? 'digest' : 'individual',
+          (allNewSlotsForMonitor.length > 1 && planMap.get(monitor.user_id) !== 'free') ? 'digest' : 'individual',
       })
 
       // Process collected new slots: digest (2+) or individual alerts
       const userPlan = planMap.get(monitor.user_id) || 'free'
-      const isPaidUser = userPlan === 'pro' || userPlan === 'family'
+      const isPaidUser = userPlan !== 'free'
 
       if (allNewSlotsForMonitor.length > 1 && isPaidUser) {
         // Digest alert: batch multiple slots into a single alert
