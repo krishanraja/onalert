@@ -16,7 +16,7 @@ import { trackEvent, AnalyticsEvents } from '@/lib/analytics'
 export function SettingsPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { profile, isPaid, isFamily, updateProfile } = useProfile()
+  const { profile, isPaid, isFamily, isExpress, updateProfile } = useProfile()
   const { monitors, loading: monitorsLoading, toggleMonitor, deleteMonitor } = useMonitors()
   const [loading, setLoading] = useState('')
   const [error, setError] = useState('')
@@ -113,7 +113,7 @@ export function SettingsPage() {
     navigate('/')
   }
 
-  const planLabel = isFamily ? 'MULTI' : isPaid ? 'PRO' : 'FREE'
+  const planLabel = isFamily ? 'MULTI' : isExpress ? 'EXPRESS' : isPaid ? 'PRO' : 'FREE'
 
   return (
     <div className="min-h-full bg-background">
@@ -390,7 +390,7 @@ export function SettingsPage() {
         )}
 
         {/* Upgrade from Pro to Multi */}
-        {isPaid && !isFamily && (
+        {isPaid && !isFamily && !isExpress && (
           <div ref={upgradeRef} className="space-y-3 scroll-mt-4">
             <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">Upgrade</h2>
             <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-4">
@@ -412,6 +412,76 @@ export function SettingsPage() {
                 </button>
               </div>
             </div>
+
+            {/* Express upgrade */}
+            <div className="bg-surface border border-warning/30 rounded-lg p-4 relative">
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                <span className="bg-warning text-black px-3 py-1 rounded-full text-xs font-medium">Fastest alerts</span>
+              </div>
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <h3 className="font-semibold text-foreground">Upgrade to Express</h3>
+                  <p className="text-sm text-foreground-secondary">1-minute checks with priority alerts and pre-verified slots.</p>
+                  <p className="text-2xl font-bold text-foreground mt-1">
+                    ${PLANS.express.price}
+                    <span className="text-sm font-normal text-foreground-secondary"> one-time</span>
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleUpgrade('express')}
+                  disabled={loading === 'express'}
+                  className="bg-warning text-black px-4 py-2 rounded-lg text-sm font-medium hover:bg-warning/90 transition-colors disabled:opacity-50"
+                >
+                  {loading === 'express' ? 'Loading...' : 'Upgrade'}
+                </button>
+              </div>
+            </div>
+
+            {error && (
+              <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
+                <p className="text-sm text-destructive">{error}</p>
+              </div>
+            )}
+            <p className="text-xs text-foreground-muted text-center">
+              One-time payment. No subscription. Yours forever.
+            </p>
+          </div>
+        )}
+
+        {/* Upgrade from Multi to Express */}
+        {isFamily && !isExpress && (
+          <div ref={upgradeRef} className="space-y-3 scroll-mt-4">
+            <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">Upgrade</h2>
+            <div className="bg-surface border border-warning/30 rounded-lg p-4 relative">
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                <span className="bg-warning text-black px-3 py-1 rounded-full text-xs font-medium">Fastest alerts</span>
+              </div>
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <h3 className="font-semibold text-foreground">Upgrade to Express</h3>
+                  <p className="text-sm text-foreground-secondary">1-minute checks with priority alerts and pre-verified slots.</p>
+                  <p className="text-2xl font-bold text-foreground mt-1">
+                    ${PLANS.express.price}
+                    <span className="text-sm font-normal text-foreground-secondary"> one-time</span>
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleUpgrade('express')}
+                  disabled={loading === 'express'}
+                  className="bg-warning text-black px-4 py-2 rounded-lg text-sm font-medium hover:bg-warning/90 transition-colors disabled:opacity-50"
+                >
+                  {loading === 'express' ? 'Loading...' : 'Upgrade'}
+                </button>
+              </div>
+            </div>
+            {error && (
+              <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
+                <p className="text-sm text-destructive">{error}</p>
+              </div>
+            )}
+            <p className="text-xs text-foreground-muted text-center">
+              One-time payment. No subscription. Yours forever.
+            </p>
           </div>
         )}
 
