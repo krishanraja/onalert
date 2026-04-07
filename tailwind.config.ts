@@ -112,7 +112,7 @@ export default {
         "slide-up": "slide-up 0.3s ease-out",
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "ticker-scroll": "ticker-scroll 30s linear infinite",
+        "ticker-scroll": "ticker-scroll 12s linear infinite",
       },
     },
   },
