@@ -94,7 +94,7 @@ export function AlertCard({ alert, isSelected, isHistory, onToggleStar }: Props)
             {/* Row 2: Date+time + likely gone badge + extra slots */}
             <div className="flex items-center justify-between">
               <p className={cn(
-                'font-mono text-sm font-medium',
+                'font-mono text-sm font-medium truncate',
                 isHistory ? 'text-foreground-muted' : 'text-foreground'
               )}>
                 {formatSlotDateShort(primarySlot.slot_timestamp)}
