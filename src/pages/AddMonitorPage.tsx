@@ -186,7 +186,7 @@ const stepVariants = {
 
 export function AddMonitorPage() {
   const navigate = useNavigate()
-  const { profile, isPaid, isFamily } = useProfile()
+  const { profile, isPaid, isFamily, isExpress } = useProfile()
   const { monitors, createMonitor, cooldownExpiry, refreshCooldown } = useMonitors()
   const [step, setStep] = useState<0 | 1 | 2 | 3>(0)
   const [stepDirection, setStepDirection] = useState(1)
@@ -203,7 +203,9 @@ export function AddMonitorPage() {
   const [upgradeError, setUpgradeError] = useState('')
 
   const filteredLocations = searchLocations(locationSearch)
-  const maxLocations = isPaid ? Infinity : 3
+  const currentPlanKey = (isExpress ? 'express' : isFamily ? 'multi' : isPaid ? 'pro' : 'free') as keyof typeof PLANS
+  const checkInterval = PLANS[currentPlanKey].checkInterval
+  const maxLocations = PLANS[currentPlanKey].maxLocations
   const maxMonitors = isFamily ? PLANS.multi.monitors : 1
   const canAddMore = monitors.length < maxMonitors
 
@@ -513,8 +515,8 @@ export function AddMonitorPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="bg-background-elevated border-b border-border safe-top">
+    <div className="h-screen bg-background flex flex-col">
+      <header className="sticky top-0 z-10 bg-background-elevated border-b border-border safe-top shrink-0">
         <div className="px-4 py-4 flex items-center gap-3">
           <motion.button
             whileTap={{ scale: 0.9 }}
@@ -530,7 +532,8 @@ export function AddMonitorPage() {
         </div>
       </header>
 
-      <div className="p-6 space-y-6 max-w-lg mx-auto">
+      <div className="flex-1 overflow-y-auto">
+      <div className="p-6 space-y-6 max-w-lg mx-auto pb-4">
         {/* Animated progress bar */}
         <div className="flex items-center gap-2">
           {[1, 2, 3].map((s) => (
@@ -583,7 +586,7 @@ export function AddMonitorPage() {
                   <h2 className="text-lg font-semibold text-foreground mb-2">Select locations</h2>
                   <p className="text-sm text-foreground-secondary">
                     Choose which enrollment centers to monitor.
-                    {!isPaid && ` Free accounts can select up to ${maxLocations} locations.`}
+                    {maxLocations < Infinity && ` ${PLANS[currentPlanKey].name} accounts can select up to ${maxLocations} locations.`}
                   </p>
                 </div>
 
@@ -603,8 +606,8 @@ export function AddMonitorPage() {
                   <span className="text-foreground-secondary">
                     {selectedLocations.length} location{selectedLocations.length !== 1 ? 's' : ''} selected
                   </span>
-                  {selectedLocations.length >= maxLocations && !isPaid && (
-                    <span className="text-warning">Limit reached</span>
+                  {selectedLocations.length >= maxLocations && maxLocations < Infinity && (
+                    <span className="text-warning">Limit reached ({maxLocations})</span>
                   )}
                   {selectedLocations.length === 0 && (
                     <span className="text-foreground-muted text-xs" role="alert">Select at least one location to continue</span>
@@ -647,7 +650,7 @@ export function AddMonitorPage() {
                   </div>
                 )}
 
-                <div className="space-y-2 max-h-96 overflow-y-auto">
+                <div className="space-y-2">
                   {filteredLocations.length === 0 && locationSearch && (
                     <p className="text-sm text-foreground-secondary text-center py-4">
                       No locations found for "{locationSearch}". Try a different search.
@@ -749,9 +752,22 @@ export function AddMonitorPage() {
 
                   <div>
                     <h3 className="font-medium text-foreground mb-1">Check frequency</h3>
-                    <p className="text-sm text-foreground-secondary">
-                      Every {isPaid ? '5' : '60'} minutes
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <Clock size={14} className={isExpress ? 'text-warning' : 'text-foreground-muted'} />
+                      <p className="text-sm text-foreground-secondary">
+                        Every {checkInterval} minute{checkInterval !== 1 ? 's' : ''}
+                      </p>
+                    </div>
+                    {!isPaid && (
+                      <p className="text-xs text-foreground-muted mt-1.5">
+                        <button onClick={() => navigate('/app/settings', { state: { scrollToUpgrade: true } })} className="text-primary hover:text-primary/80">Upgrade to Pro</button> for 5-minute checks and instant alerts.
+                      </p>
+                    )}
+                    {isPaid && !isExpress && (
+                      <p className="text-xs text-foreground-muted mt-1.5">
+                        <button onClick={() => navigate('/app/settings', { state: { scrollToUpgrade: true } })} className="text-primary hover:text-primary/80">Upgrade to Express</button> for 1-minute checks and priority alerts.
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -798,9 +814,12 @@ export function AddMonitorPage() {
             <p className="text-sm text-destructive">{error}</p>
           </div>
         )}
+      </div>
+      </div>
 
-        {/* Actions */}
-        <div className="flex gap-3 pt-6">
+      {/* Sticky bottom action bar */}
+      <div className="sticky bottom-0 z-10 border-t border-border bg-background safe-bottom shrink-0">
+        <div className="px-6 py-4 max-w-lg mx-auto flex gap-3">
           {step < 3 ? (
             <>
               <motion.button
