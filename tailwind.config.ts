@@ -101,6 +101,10 @@ export default {
           from: { height: "var(--radix-accordion-content-height)", opacity: "1" },
           to: { height: "0", opacity: "0" },
         },
+        "ticker-scroll": {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
       },
       animation: {
         "fade-in": "fade-in 0.25s ease-out",
@@ -108,6 +112,7 @@ export default {
         "slide-up": "slide-up 0.3s ease-out",
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "ticker-scroll": "ticker-scroll 30s linear infinite",
       },
     },
   },
