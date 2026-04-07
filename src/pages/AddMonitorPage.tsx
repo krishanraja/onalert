@@ -515,7 +515,7 @@ export function AddMonitorPage() {
   }
 
   return (
-    <div className="h-screen bg-background flex flex-col">
+    <div className="h-full bg-background flex flex-col">
       <header className="sticky top-0 z-10 bg-background-elevated border-b border-border safe-top shrink-0">
         <div className="px-4 py-4 flex items-center gap-3">
           <motion.button

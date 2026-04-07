@@ -68,18 +68,17 @@ export function AppLayout() {
   if (!authed) return <Navigate to="/auth" replace />
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="h-[100dvh] bg-background flex overflow-hidden">
       {/* Desktop sidebar */}
       <Sidebar unreadCount={unreadCount} />
 
       {/* Main content */}
       <div
-        className="flex-1 flex flex-col min-h-screen overflow-hidden"
+        className="flex-1 flex flex-col h-full overflow-hidden"
         style={{ paddingTop: 'var(--safe-area-top)' }}
       >
         <main
           className="flex-1 overflow-y-auto"
-          style={{ paddingBottom: 'calc(var(--bottom-nav-height) + var(--safe-area-bottom))' }}
         >
           <AnimatePresence mode="wait" initial={false}>
             <PageTransition key={location.pathname} direction={direction}>

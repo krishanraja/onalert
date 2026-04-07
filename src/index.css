@@ -200,9 +200,3 @@
   overflow: hidden;
 }
 
-/* Desktop sidebar layout - prevent bottom nav padding on large screens */
-@media (min-width: 1024px) {
-  main {
-    padding-bottom: 0 !important;
-  }
-}

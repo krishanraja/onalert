@@ -14,7 +14,7 @@ export function BottomNav({ unreadCount = 0 }: Props) {
   return (
     <nav
       aria-label="Main navigation"
-      className="fixed bottom-0 left-0 right-0 bg-background-elevated/95 backdrop-blur-md border-t border-border z-50 lg:hidden"
+      className="shrink-0 bg-background-elevated/95 backdrop-blur-md border-t border-border lg:hidden"
       style={{ height: 'calc(var(--bottom-nav-height) + var(--safe-area-bottom))', paddingBottom: 'var(--safe-area-bottom)' }}
     >
       <div className="flex items-center justify-around h-[var(--bottom-nav-height)] px-2">
