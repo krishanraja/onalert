@@ -328,7 +328,7 @@ export function AlertsPage() {
   return (
     <div className="min-h-full bg-background">
       {/* ============ MOBILE: Card list ============ */}
-      <div className="lg:hidden flex flex-col" style={{ height: 'calc(100dvh - var(--bottom-nav-height) - var(--safe-area-bottom))' }}>
+      <div className="lg:hidden flex flex-col h-full">
         {/* Header */}
         <header className="bg-background-elevated border-b border-border safe-top shrink-0">
           <div className="px-4 py-3 flex items-center justify-between">
