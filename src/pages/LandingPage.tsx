@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Clock, Smartphone, Shield, ShieldCheck, Users } from 'lucide-react'
+import { ShieldCheck, Users } from 'lucide-react'
 import { getBookingCount } from '@/lib/tracking'
 import { supabase } from '@/lib/supabase'
 
@@ -27,6 +27,15 @@ export function LandingPage() {
         .then(({ data }) => { if (data) setStories(data) })
     }
   }, [])
+
+  const benefits = [
+    'Scans every 5 minutes',
+    'Instant email & SMS alerts',
+    'Global Entry · TSA PreCheck · NEXUS · SENTRI',
+    'Slots found in minutes, not months',
+    '30-day money-back guarantee',
+    'No app install required',
+  ]
 
   return (
     <div className="h-dvh overflow-hidden flex flex-col bg-background relative">
@@ -115,28 +124,25 @@ export function LandingPage() {
           </div>
         </div>
 
-        {/* Compact features row */}
-        <div className="grid grid-cols-3 gap-2 mt-8 w-full max-w-sm md:max-w-2xl">
-          <div className="flex flex-col items-center text-center">
-            <div className="w-9 h-9 rounded-lg bg-surface-muted flex items-center justify-center mb-1.5">
-              <Clock className="w-4 h-4 text-primary" />
-            </div>
-            <span className="text-[11px] md:text-xs font-medium text-foreground">Every 5 min</span>
-            <p className="hidden md:block text-xs text-foreground-secondary mt-1">Slots fill in under 10 minutes. Pro catches them before they're gone.</p>
-          </div>
-          <div className="flex flex-col items-center text-center">
-            <div className="w-9 h-9 rounded-lg bg-surface-muted flex items-center justify-center mb-1.5">
-              <Smartphone className="w-4 h-4 text-primary" />
-            </div>
-            <span className="text-[11px] md:text-xs font-medium text-foreground">Email + SMS</span>
-            <p className="hidden md:block text-xs text-foreground-secondary mt-1">Alerts delivered the moment a slot opens. Not 15 minutes later.</p>
-          </div>
-          <div className="flex flex-col items-center text-center">
-            <div className="w-9 h-9 rounded-lg bg-surface-muted flex items-center justify-center mb-1.5">
-              <Shield className="w-4 h-4 text-primary" />
-            </div>
-            <span className="text-[11px] md:text-xs font-medium text-foreground">4 programs</span>
-            <p className="hidden md:block text-xs text-foreground-secondary mt-1">Global Entry ($100) · TSA PreCheck ($78) · NEXUS ($50) · SENTRI ($122)</p>
+        {/* Benefits ticker */}
+        <div
+          className="mt-6 w-full overflow-hidden"
+          style={{
+            maskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)',
+            WebkitMaskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)',
+          }}
+        >
+          <div className="flex animate-ticker-scroll motion-reduce:animate-none whitespace-nowrap" aria-label="Benefits">
+            {[0, 1].map((setIndex) => (
+              <div key={setIndex} className="flex shrink-0" aria-hidden={setIndex > 0 || undefined}>
+                {benefits.map((benefit, i) => (
+                  <span key={i} className="inline-flex items-center px-4 text-xs text-foreground-secondary">
+                    <span className="text-primary mr-2">✦</span>
+                    {benefit}
+                  </span>
+                ))}
+              </div>
+            ))}
           </div>
         </div>
       </section>
