@@ -296,7 +296,7 @@ export function AlertsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-full bg-background">
+      <div className="h-full bg-background">
         <header className="bg-background-elevated border-b border-border safe-top lg:hidden">
           <div className="px-4 py-4">
             <h1 className="text-lg font-semibold text-foreground">Alerts</h1>
@@ -326,7 +326,7 @@ export function AlertsPage() {
   )
 
   return (
-    <div className="min-h-full bg-background">
+    <div className="h-full bg-background">
       {/* ============ MOBILE: Card list ============ */}
       <div className="lg:hidden flex flex-col h-full">
         {/* Header */}

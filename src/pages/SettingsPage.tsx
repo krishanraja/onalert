@@ -116,15 +116,15 @@ export function SettingsPage() {
   const planLabel = isFamily ? 'MULTI' : isExpress ? 'EXPRESS' : isPaid ? 'PRO' : 'FREE'
 
   return (
-    <div className="min-h-full bg-background">
+    <div className="h-full bg-background flex flex-col">
       {/* Header */}
-      <header className="bg-background-elevated border-b border-border safe-top lg:hidden">
+      <header className="bg-background-elevated border-b border-border safe-top lg:hidden shrink-0">
         <div className="px-4 py-4">
           <h1 className="text-lg font-semibold text-foreground">Settings</h1>
         </div>
       </header>
 
-      <div className="px-4 lg:px-6 py-6 space-y-6 max-w-2xl lg:mx-0">
+      <div className="flex-1 overflow-y-auto px-4 lg:px-6 py-6 space-y-6 max-w-2xl lg:mx-0">
         {/* Desktop title */}
         <div className="hidden lg:block">
           <h1 className="text-2xl font-bold text-foreground">Settings</h1>
