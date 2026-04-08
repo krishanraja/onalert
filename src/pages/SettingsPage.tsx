@@ -349,7 +349,7 @@ export function SettingsPage() {
 
               {/* Express */}
               <div className="bg-surface border border-warning/30 rounded-lg p-4 relative">
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                <div className="absolute -top-3 left-4">
                   <span className="bg-warning text-black px-3 py-1 rounded-full text-xs font-medium">Fastest alerts</span>
                 </div>
                 <div className="flex items-start justify-between mb-3">
@@ -415,7 +415,7 @@ export function SettingsPage() {
 
             {/* Express upgrade */}
             <div className="bg-surface border border-warning/30 rounded-lg p-4 relative">
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+              <div className="absolute -top-3 left-4">
                 <span className="bg-warning text-black px-3 py-1 rounded-full text-xs font-medium">Fastest alerts</span>
               </div>
               <div className="flex items-start justify-between mb-3">
@@ -453,7 +453,7 @@ export function SettingsPage() {
           <div ref={upgradeRef} className="space-y-3 scroll-mt-4">
             <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">Upgrade</h2>
             <div className="bg-surface border border-warning/30 rounded-lg p-4 relative">
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+              <div className="absolute -top-3 left-4">
                 <span className="bg-warning text-black px-3 py-1 rounded-full text-xs font-medium">Fastest alerts</span>
               </div>
               <div className="flex items-start justify-between mb-3">
