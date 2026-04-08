@@ -79,8 +79,8 @@ export function InterviewPrepPage() {
   const program = PROGRAMS[activeTab]
 
   return (
-    <div className="min-h-dvh bg-background pb-24">
-      <header className="sticky top-0 z-10 bg-background-elevated border-b border-border px-4 py-3">
+    <div className="h-full bg-background flex flex-col">
+      <header className="bg-background-elevated border-b border-border px-4 py-3 shrink-0">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="p-1 text-foreground-muted hover:text-foreground">
             <ArrowLeft className="w-5 h-5" />
@@ -90,7 +90,7 @@ export function InterviewPrepPage() {
       </header>
 
       {/* Tabs */}
-      <div className="flex border-b border-border overflow-x-auto">
+      <div className="flex border-b border-border overflow-x-auto shrink-0">
         {(Object.keys(PROGRAMS) as ProgramKey[]).map((key) => (
           <button
             key={key}
@@ -106,7 +106,7 @@ export function InterviewPrepPage() {
         ))}
       </div>
 
-      <main className="px-4 py-5 max-w-2xl mx-auto space-y-6">
+      <main className="flex-1 overflow-y-auto px-4 py-5 max-w-2xl mx-auto space-y-6">
         {/* What to expect */}
         <section>
           <h2 className="text-sm font-semibold text-foreground mb-2">What to Expect</h2>

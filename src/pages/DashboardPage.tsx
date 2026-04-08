@@ -66,7 +66,7 @@ export function DashboardPage() {
 
   if (profileLoading || monitorsLoading) {
     return (
-      <div className="min-h-full bg-background">
+      <div className="h-full bg-background">
         <header className="bg-background-elevated border-b border-border safe-top lg:hidden">
           <div className="px-4 py-4 flex items-center justify-between">
             <img src="/brand/icon-light.svg" alt="OnAlert" className="h-8 w-8" />
@@ -97,7 +97,7 @@ export function DashboardPage() {
     .sort((a, b) => new Date(b.last_checked_at!).getTime() - new Date(a.last_checked_at!).getTime())[0]
 
   return (
-    <div className="min-h-full bg-background">
+    <div className="h-full bg-background">
       {/* ============ MOBILE LAYOUT ============ */}
       <div className="lg:hidden flex flex-col h-full">
         {/* Header */}

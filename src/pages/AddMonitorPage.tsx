@@ -403,8 +403,8 @@ export function AddMonitorPage() {
       .filter(Boolean)
 
     return (
-      <div className="min-h-screen bg-background">
-        <header className="bg-background-elevated border-b border-border safe-top">
+      <div className="h-full bg-background flex flex-col">
+        <header className="bg-background-elevated border-b border-border safe-top shrink-0">
           <div className="px-4 py-4 flex items-center gap-3">
             <motion.button whileTap={{ scale: 0.9 }} onClick={() => navigate('/app')} className="p-2 -ml-2 text-foreground-muted hover:text-foreground transition-colors">
               <ArrowLeft size={20} />
@@ -413,6 +413,7 @@ export function AddMonitorPage() {
           </div>
         </header>
 
+        <div className="flex-1 overflow-y-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -510,6 +511,7 @@ export function AddMonitorPage() {
             </button>
           </div>
         </motion.div>
+        </div>
       </div>
     )
   }

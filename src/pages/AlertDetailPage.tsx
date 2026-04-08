@@ -81,7 +81,7 @@ export function AlertDetailPage() {
 
   if (!alert) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="h-full bg-background flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-lg font-semibold text-foreground mb-2">Alert not found</h1>
           <button onClick={() => navigate('/app/alerts')} className="text-primary hover:underline">
@@ -124,9 +124,9 @@ export function AlertDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-full bg-background flex flex-col">
       {/* Header */}
-      <header className="bg-background-elevated border-b border-border safe-top">
+      <header className="bg-background-elevated border-b border-border safe-top shrink-0">
         <div className="px-4 py-4 flex items-center gap-3">
           <button
             onClick={() => navigate('/app/alerts')}
@@ -139,7 +139,7 @@ export function AlertDetailPage() {
         </div>
       </header>
 
-      <div className="p-6 space-y-6">
+      <div className="flex-1 overflow-y-auto p-6 space-y-6">
         {/* Service badge */}
         <div className="flex items-center gap-2">
           <span className="text-xs font-mono font-medium bg-primary/10 text-primary px-2 py-1 rounded">
