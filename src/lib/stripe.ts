@@ -21,7 +21,8 @@ export async function createCheckoutSession(
   })
   if (error) {
     console.error('Checkout error:', error)
-    throw new Error('Payment service unavailable. Please try again in a moment.')
+    const detail = typeof error === 'object' && error.message ? `: ${error.message}` : ''
+    throw new Error(`Payment service unavailable${detail}. Please try again in a moment.`)
   }
   if (!data?.url) {
     throw new Error('Could not create checkout session. Please try again.')

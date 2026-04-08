@@ -69,11 +69,16 @@ Deno.serve(async (req) => {
     let customerId = profile?.stripe_customer_id
 
     if (!customerId) {
-      const customer = await stripe.customers.create({
-        email: profile?.email || user.email!,
-        metadata: { supabase_user_id: user.id },
-      })
-      customerId = customer.id
+      try {
+        const customer = await stripe.customers.create({
+          email: profile?.email || user.email!,
+          metadata: { supabase_user_id: user.id },
+        })
+        customerId = customer.id
+      } catch (err) {
+        console.error('stripe.customers.create failed:', err.type, err.message)
+        throw new Error(`Stripe customer creation failed: ${err.message}`)
+      }
 
       // Update profile
       await supabase
@@ -84,30 +89,36 @@ Deno.serve(async (req) => {
 
     // Create one-time payment checkout session
     const planConfig = PLANS[plan as keyof typeof PLANS]
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      payment_method_types: ['card'],
-      mode: 'payment',
-      line_items: [
-        {
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: planConfig.name,
-              description: planConfig.description,
+    let session
+    try {
+      session = await stripe.checkout.sessions.create({
+        customer: customerId,
+        payment_method_types: ['card'],
+        mode: 'payment',
+        line_items: [
+          {
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: planConfig.name,
+                description: planConfig.description,
+              },
+              unit_amount: planConfig.price,
             },
-            unit_amount: planConfig.price,
+            quantity: 1,
           },
-          quantity: 1,
+        ],
+        success_url: `${Deno.env.get('APP_URL')}/app?upgraded=true`,
+        cancel_url: `${Deno.env.get('APP_URL')}/app/settings`,
+        metadata: {
+          supabase_user_id: user.id,
+          plan,
         },
-      ],
-      success_url: `${Deno.env.get('APP_URL')}/app?upgraded=true`,
-      cancel_url: `${Deno.env.get('APP_URL')}/app/settings`,
-      metadata: {
-        supabase_user_id: user.id,
-        plan,
-      },
-    })
+      })
+    } catch (err) {
+      console.error('stripe.checkout.sessions.create failed:', err.type, err.message)
+      throw new Error(`Stripe checkout session failed: ${err.message}`)
+    }
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
