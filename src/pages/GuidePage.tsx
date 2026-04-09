@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import { ArrowLeft, Clock, Zap, Shield, ExternalLink } from 'lucide-react'
 
 export function GuidePage() {
@@ -6,6 +7,11 @@ export function GuidePage() {
 
   return (
     <div className="min-h-dvh bg-background">
+      <Helmet>
+        <title>How to Get a Global Entry Appointment Faster | OnAlert</title>
+        <meta name="description" content="4 proven strategies to get Global Entry, TSA PreCheck, NEXUS & SENTRI appointments faster. Learn how automated monitoring catches cancellation slots in minutes." />
+        <link rel="canonical" href="https://onalert.app/guide" />
+      </Helmet>
       <header className="sticky top-0 z-10 bg-background-elevated border-b border-border px-4 py-3">
         <div className="max-w-3xl mx-auto flex items-center gap-3">
           <button onClick={() => navigate('/')} className="p-1 text-foreground-muted hover:text-foreground">

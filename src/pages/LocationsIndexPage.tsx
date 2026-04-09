@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import { MapPin, Search, ArrowLeft } from 'lucide-react'
 import { TOP_LOCATIONS, searchLocations } from '@/lib/locations'
 
@@ -11,6 +12,11 @@ export function LocationsIndexPage() {
 
   return (
     <div className="min-h-dvh bg-background">
+      <Helmet>
+        <title>CBP Enrollment Centers - Browse All Locations | OnAlert</title>
+        <meta name="description" content="Browse CBP enrollment centers nationwide. Search Global Entry, TSA PreCheck, NEXUS & SENTRI interview locations by name, city, or state." />
+        <link rel="canonical" href="https://onalert.app/locations" />
+      </Helmet>
       <header className="sticky top-0 z-10 bg-background-elevated border-b border-border px-4 py-3">
         <div className="max-w-3xl mx-auto flex items-center gap-3">
           <button onClick={() => navigate('/')} className="p-1 text-foreground-muted hover:text-foreground">

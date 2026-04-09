@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import { Home, ArrowLeft } from 'lucide-react'
 
 export default function NotFoundPage() {
@@ -6,6 +7,10 @@ export default function NotFoundPage() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
+      <Helmet>
+        <title>Page Not Found | OnAlert</title>
+        <meta name="robots" content="noindex" />
+      </Helmet>
       <div className="text-center max-w-md">
         <div className="text-8xl font-bold text-accent mb-2">404</div>
         <h1 className="text-2xl font-semibold text-foreground mb-2">Page not found</h1>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import { ShieldCheck, Users } from 'lucide-react'
 import { getBookingCount } from '@/lib/tracking'
 import { supabase } from '@/lib/supabase'
@@ -39,6 +40,11 @@ export function LandingPage() {
 
   return (
     <div className="h-dvh overflow-hidden flex flex-col bg-background relative">
+      <Helmet>
+        <title>OnAlert - Global Entry, TSA PreCheck, NEXUS & SENTRI Appointment Alerts</title>
+        <meta name="description" content="Get instant alerts when Global Entry, TSA PreCheck, NEXUS & SENTRI appointment slots open from cancellations. Scans every 5 minutes. Book in days, not months." />
+        <link rel="canonical" href="https://onalert.app/" />
+      </Helmet>
       {/* Ambient crimson glow */}
       <div
         className="absolute inset-0 pointer-events-none"
