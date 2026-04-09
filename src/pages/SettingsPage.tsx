@@ -1,12 +1,12 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Crown, Mail, Smartphone, LogOut, Bell, Users, Activity } from 'lucide-react'
+import { Crown, Mail, Smartphone, LogOut, Bell, Users, Activity, CreditCard } from 'lucide-react'
 import { useProfile } from '@/hooks/useProfile'
 import { supabase } from '@/lib/supabase'
 import { useMonitors } from '@/hooks/useMonitors'
-import { MonitorCard } from '@/components/monitors/MonitorCard'
-import { createCheckoutSession } from '@/lib/stripe'
-import { PLANS } from '@/lib/plans'
+import { MonitorRow } from '@/components/settings/MonitorRow'
+import { UpgradeOverlay } from '@/components/settings/UpgradeOverlay'
+import { createPortalSession } from '@/lib/stripe'
 import { Switch } from '@/components/ui/switch'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { showToast } from '@/hooks/useToast'
@@ -18,28 +18,16 @@ export function SettingsPage() {
   const location = useLocation()
   const { profile, isPaid, isFamily, isExpress, updateProfile } = useProfile()
   const { monitors, loading: monitorsLoading, toggleMonitor, deleteMonitor } = useMonitors()
-  const [loading, setLoading] = useState('')
-  const [error, setError] = useState('')
   const [showSignOutDialog, setShowSignOutDialog] = useState(false)
-  const upgradeRef = useRef<HTMLDivElement>(null)
-  const hasScrolled = useRef(false)
+  const [upgradeOpen, setUpgradeOpen] = useState(false)
+  const [portalLoading, setPortalLoading] = useState(false)
 
-  const scrollToUpgrade = useCallback(() => {
-    if (hasScrolled.current || !upgradeRef.current) return
-    hasScrolled.current = true
-    // Wait for page transition animation to complete
-    setTimeout(() => {
-      upgradeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }, 500)
-  }, [])
-
-  // Scroll to upgrade section when navigated here with state or hash
+  // Open upgrade overlay when navigated here with state or hash
   useEffect(() => {
-    const shouldScroll = location.state?.scrollToUpgrade || location.hash === '#upgrade'
-    if (shouldScroll && upgradeRef.current) {
-      scrollToUpgrade()
+    if (location.state?.scrollToUpgrade || location.hash === '#upgrade') {
+      setUpgradeOpen(true)
     }
-  }, [location.state, location.hash, isPaid, scrollToUpgrade])
+  }, [location.state, location.hash])
 
   // Derive notification prefs from profile with fallbacks
   const emailAlerts = profile?.email_alerts_enabled ?? true
@@ -88,22 +76,15 @@ export function SettingsPage() {
     setPhoneSaving(false)
   }
 
-  const handleUpgrade = async (plan: 'pro' | 'multi' | 'express') => {
-    // Track upgrade click
-    trackEvent(AnalyticsEvents.UPGRADE_CLICKED, { plan })
-
-    setLoading(plan)
-    setError('')
+  const handleManageBilling = async () => {
+    setPortalLoading(true)
     try {
-      const url = await createCheckoutSession(plan)
-      // Track checkout started
-      trackEvent(AnalyticsEvents.CHECKOUT_STARTED, { plan })
+      const url = await createPortalSession()
       window.location.href = url
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Upgrade failed. Please try again.')
-    } finally {
-      setLoading('')
+    } catch {
+      showToast('Could not open billing portal', 'error')
     }
+    setPortalLoading(false)
   }
 
   const handleSignOut = async () => {
@@ -124,53 +105,55 @@ export function SettingsPage() {
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-4 lg:px-6 py-6 space-y-6 max-w-2xl lg:mx-0">
+      <div className="flex-1 flex flex-col overflow-hidden px-4 lg:px-6 py-4 space-y-4 max-w-2xl lg:mx-0">
         {/* Desktop title */}
-        <div className="hidden lg:block">
+        <div className="hidden lg:block shrink-0">
           <h1 className="text-2xl font-bold text-foreground">Settings</h1>
           <p className="text-sm text-foreground-secondary mt-1">Manage your account and notifications</p>
         </div>
 
         {/* Account */}
-        <div className="space-y-3">
-          <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">Account</h2>
-          <div className="bg-surface border border-border rounded-lg p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <p className="font-medium text-foreground">{profile?.email}</p>
-                <div className="flex items-center gap-2 mt-1">
-                  {isPaid ? (
-                    <div className="flex items-center gap-1.5 bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                      {isFamily ? <Users size={10} /> : <Crown size={10} />}
-                      <span className="text-xs font-medium">{planLabel}</span>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        hasScrolled.current = false
-                        upgradeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                      }}
-                      className="text-xs text-foreground-muted bg-surface-muted px-2 py-0.5 rounded-full hover:text-primary hover:bg-primary/10 transition-colors"
-                    >
-                      FREE
-                    </button>
-                  )}
-                </div>
-              </div>
+        <div className="bg-surface border border-border rounded-lg p-3 flex items-center justify-between shrink-0">
+          <div className="min-w-0">
+            <p className="font-medium text-foreground text-sm truncate">{profile?.email}</p>
+            {isPaid && (
+              <button
+                onClick={handleManageBilling}
+                disabled={portalLoading}
+                className="flex items-center gap-1 text-[11px] text-foreground-muted hover:text-primary transition-colors mt-0.5 disabled:opacity-50"
+              >
+                <CreditCard size={11} />
+                {portalLoading ? 'Opening...' : 'Manage billing'}
+              </button>
+            )}
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-1.5 bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+              {isFamily ? <Users size={10} /> : isPaid ? <Crown size={10} /> : null}
+              <span className="text-xs font-medium">{planLabel}</span>
             </div>
+            {!isExpress && (
+              <button
+                onClick={() => setUpgradeOpen(true)}
+                className="w-7 h-7 rounded-full bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-colors"
+                aria-label="Upgrade plan"
+              >
+                <Crown size={13} className="text-primary" />
+              </button>
+            )}
           </div>
         </div>
 
         {/* Notifications */}
-        <div className="space-y-3">
-          <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">Notifications</h2>
+        <div className="space-y-2 shrink-0">
+          <h2 className="text-xs font-semibold text-foreground-muted uppercase tracking-wide">Notifications</h2>
           <div className="bg-surface border border-border rounded-lg divide-y divide-border">
-            <div className="p-4 flex items-center justify-between">
+            <div className="px-3 py-2.5 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Mail size={18} className="text-foreground-muted" />
+                <Mail size={16} className="text-foreground-muted" />
                 <div>
-                  <p className="font-medium text-foreground">Email alerts</p>
-                  <p className="text-xs text-foreground-secondary">Get notified via email</p>
+                  <p className="text-sm font-medium text-foreground">Email alerts</p>
+                  <p className="text-[11px] text-foreground-secondary">Get notified via email</p>
                 </div>
               </div>
               <Switch
@@ -180,12 +163,12 @@ export function SettingsPage() {
               />
             </div>
 
-            <div className="p-4 flex items-center justify-between">
+            <div className="px-3 py-2.5 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Smartphone size={18} className="text-foreground-muted" />
+                <Smartphone size={16} className="text-foreground-muted" />
                 <div>
-                  <p className="font-medium text-foreground">SMS alerts</p>
-                  <p className="text-xs text-foreground-secondary">
+                  <p className="text-sm font-medium text-foreground">SMS alerts</p>
+                  <p className="text-[11px] text-foreground-secondary">
                     {isPaid ? 'Get notified via text message' : 'Paid feature'}
                   </p>
                 </div>
@@ -199,8 +182,8 @@ export function SettingsPage() {
             </div>
 
             {smsAlerts && isPaid && (
-              <div className="px-4 pb-4 -mt-2">
-                <label className="text-xs text-foreground-muted mb-1 block">Phone number (US)</label>
+              <div className="px-3 pb-3 -mt-1">
+                <label className="text-[11px] text-foreground-muted mb-1 block">Phone number (US)</label>
                 <div className="flex gap-2">
                   <input
                     type="tel"
@@ -220,12 +203,12 @@ export function SettingsPage() {
               </div>
             )}
 
-            <div className="p-4 flex items-center justify-between">
+            <div className="px-3 py-2.5 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Bell size={18} className="text-foreground-muted" />
+                <Bell size={16} className="text-foreground-muted" />
                 <div>
-                  <p className="font-medium text-foreground">Push notifications</p>
-                  <p className="text-xs text-foreground-secondary">
+                  <p className="text-sm font-medium text-foreground">Push notifications</p>
+                  <p className="text-[11px] text-foreground-secondary">
                     Browser push when slots open
                   </p>
                 </div>
@@ -253,246 +236,41 @@ export function SettingsPage() {
         </div>
 
         {/* Monitors */}
-        <div className="space-y-3">
-          <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">Monitors</h2>
-          {monitorsLoading ? (
-            <div className="bg-surface border border-border rounded-lg p-4">
-              <p className="text-sm text-foreground-muted">Loading monitors...</p>
-            </div>
-          ) : monitors.length === 0 ? (
-            <div className="bg-surface border border-border rounded-lg p-4">
-              <div className="flex items-center gap-3">
-                <Activity size={18} className="text-foreground-muted" />
-                <p className="text-sm text-foreground-muted">No monitors set up yet.</p>
+        <div className="flex-1 min-h-0 flex flex-col">
+          <h2 className="text-xs font-semibold text-foreground-muted uppercase tracking-wide shrink-0 mb-2">Monitors</h2>
+          <div className="flex-1 overflow-y-auto space-y-2">
+            {monitorsLoading ? (
+              <div className="bg-surface border border-border rounded-lg p-3">
+                <p className="text-xs text-foreground-muted">Loading monitors...</p>
               </div>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {monitors.map((monitor) => (
-                <MonitorCard
+            ) : monitors.length === 0 ? (
+              <div className="bg-surface border border-border rounded-lg p-3">
+                <div className="flex items-center gap-3">
+                  <Activity size={16} className="text-foreground-muted" />
+                  <p className="text-xs text-foreground-muted">No monitors set up yet.</p>
+                </div>
+              </div>
+            ) : (
+              monitors.map((monitor) => (
+                <MonitorRow
                   key={monitor.id}
                   monitor={monitor}
                   onToggle={toggleMonitor}
                   onDelete={deleteMonitor}
                 />
-              ))}
-            </div>
-          )}
+              ))
+            )}
+          </div>
         </div>
 
-        {/* Upgrade */}
-        {!isPaid && (
-          <div ref={upgradeRef} className="space-y-3 scroll-mt-4">
-            <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">Upgrade</h2>
-            <div className="space-y-3">
-              {/* Pro */}
-              <div className="bg-surface border border-primary rounded-lg p-4 relative">
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-primary text-white px-3 py-1 rounded-full text-xs font-medium">Most popular</span>
-                </div>
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="font-semibold text-foreground">Pro</h3>
-                    <p className="text-2xl font-bold text-foreground">
-                      ${PLANS.pro.price}
-                      <span className="text-sm font-normal text-foreground-secondary"> one-time</span>
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => handleUpgrade('pro')}
-                    disabled={loading === 'pro'}
-                    className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
-                  >
-                    {loading === 'pro' ? 'Loading...' : 'Buy Pro'}
-                  </button>
-                </div>
-                <ul className="space-y-1">
-                  {PLANS.pro.features.map((feature) => (
-                    <li key={feature} className="text-sm text-foreground-secondary">
-                      • {feature}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Multi */}
-              <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-4 relative">
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-primary text-white px-3 py-1 rounded-full text-xs font-medium">
-                    Best for families
-                  </span>
-                </div>
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="font-semibold text-foreground">Multi</h3>
-                    <p className="text-2xl font-bold text-foreground">
-                      ${PLANS.multi.price}
-                      <span className="text-sm font-normal text-foreground-secondary"> one-time</span>
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => handleUpgrade('multi')}
-                    disabled={loading === 'multi'}
-                    className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
-                  >
-                    {loading === 'multi' ? 'Loading...' : 'Buy Multi'}
-                  </button>
-                </div>
-                <ul className="space-y-1">
-                  {PLANS.multi.features.map((feature) => (
-                    <li key={feature} className="text-sm text-foreground-secondary">
-                      • {feature}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Express */}
-              <div className="bg-surface border border-warning/30 rounded-lg p-4 relative">
-                <div className="absolute -top-3 left-4">
-                  <span className="bg-warning text-black px-3 py-1 rounded-full text-xs font-medium">Fastest alerts</span>
-                </div>
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="font-semibold text-foreground">Express</h3>
-                    <p className="text-2xl font-bold text-foreground">
-                      ${PLANS.express.price}
-                      <span className="text-sm font-normal text-foreground-secondary"> one-time</span>
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => handleUpgrade('express')}
-                    disabled={loading === 'express'}
-                    className="bg-warning text-black px-4 py-2 rounded-lg text-sm font-medium hover:bg-warning/90 transition-colors disabled:opacity-50"
-                  >
-                    {loading === 'express' ? 'Loading...' : 'Buy Express'}
-                  </button>
-                </div>
-                <ul className="space-y-1">
-                  {PLANS.express.features.map((feature) => (
-                    <li key={feature} className="text-sm text-foreground-secondary">
-                      • {feature}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {error && (
-                <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
-                  <p className="text-sm text-destructive">{error}</p>
-                </div>
-              )}
-              <p className="text-xs text-foreground-muted text-center">
-                One-time payment. No subscription. Yours forever.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Upgrade from Pro to Multi */}
-        {isPaid && !isFamily && !isExpress && (
-          <div ref={upgradeRef} className="space-y-3 scroll-mt-4">
-            <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">Upgrade</h2>
-            <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-4">
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <h3 className="font-semibold text-foreground">Upgrade to Multi</h3>
-                  <p className="text-sm text-foreground-secondary">Monitor up to {PLANS.multi.monitors} programs simultaneously. No cooldown on changes.</p>
-                  <p className="text-2xl font-bold text-foreground mt-1">
-                    ${PLANS.multi.price}
-                    <span className="text-sm font-normal text-foreground-secondary"> one-time</span>
-                  </p>
-                </div>
-                <button
-                  onClick={() => handleUpgrade('multi')}
-                  disabled={loading === 'multi'}
-                  className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
-                >
-                  {loading === 'multi' ? 'Loading...' : 'Upgrade'}
-                </button>
-              </div>
-            </div>
-
-            {/* Express upgrade */}
-            <div className="bg-surface border border-warning/30 rounded-lg p-4 relative">
-              <div className="absolute -top-3 left-4">
-                <span className="bg-warning text-black px-3 py-1 rounded-full text-xs font-medium">Fastest alerts</span>
-              </div>
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <h3 className="font-semibold text-foreground">Upgrade to Express</h3>
-                  <p className="text-sm text-foreground-secondary">1-minute checks with priority alerts and pre-verified slots.</p>
-                  <p className="text-2xl font-bold text-foreground mt-1">
-                    ${PLANS.express.price}
-                    <span className="text-sm font-normal text-foreground-secondary"> one-time</span>
-                  </p>
-                </div>
-                <button
-                  onClick={() => handleUpgrade('express')}
-                  disabled={loading === 'express'}
-                  className="bg-warning text-black px-4 py-2 rounded-lg text-sm font-medium hover:bg-warning/90 transition-colors disabled:opacity-50"
-                >
-                  {loading === 'express' ? 'Loading...' : 'Upgrade'}
-                </button>
-              </div>
-            </div>
-
-            {error && (
-              <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
-                <p className="text-sm text-destructive">{error}</p>
-              </div>
-            )}
-            <p className="text-xs text-foreground-muted text-center">
-              One-time payment. No subscription. Yours forever.
-            </p>
-          </div>
-        )}
-
-        {/* Upgrade from Multi to Express */}
-        {isFamily && !isExpress && (
-          <div ref={upgradeRef} className="space-y-3 scroll-mt-4">
-            <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">Upgrade</h2>
-            <div className="bg-surface border border-warning/30 rounded-lg p-4 relative">
-              <div className="absolute -top-3 left-4">
-                <span className="bg-warning text-black px-3 py-1 rounded-full text-xs font-medium">Fastest alerts</span>
-              </div>
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <h3 className="font-semibold text-foreground">Upgrade to Express</h3>
-                  <p className="text-sm text-foreground-secondary">1-minute checks with priority alerts and pre-verified slots.</p>
-                  <p className="text-2xl font-bold text-foreground mt-1">
-                    ${PLANS.express.price}
-                    <span className="text-sm font-normal text-foreground-secondary"> one-time</span>
-                  </p>
-                </div>
-                <button
-                  onClick={() => handleUpgrade('express')}
-                  disabled={loading === 'express'}
-                  className="bg-warning text-black px-4 py-2 rounded-lg text-sm font-medium hover:bg-warning/90 transition-colors disabled:opacity-50"
-                >
-                  {loading === 'express' ? 'Loading...' : 'Upgrade'}
-                </button>
-              </div>
-            </div>
-            {error && (
-              <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
-                <p className="text-sm text-destructive">{error}</p>
-              </div>
-            )}
-            <p className="text-xs text-foreground-muted text-center">
-              One-time payment. No subscription. Yours forever.
-            </p>
-          </div>
-        )}
-
         {/* Sign out */}
-        <div className="pt-6">
+        <div className="shrink-0 pb-2">
           <button
             onClick={() => setShowSignOutDialog(true)}
-            className="flex items-center gap-2 text-foreground-muted hover:text-destructive transition-colors"
+            className="flex items-center gap-2 text-sm text-foreground-muted hover:text-destructive transition-colors"
             aria-label="Sign out"
           >
-            <LogOut size={16} />
+            <LogOut size={14} />
             Sign out
           </button>
         </div>
@@ -522,6 +300,12 @@ export function SettingsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <UpgradeOverlay
+        open={upgradeOpen}
+        onClose={() => setUpgradeOpen(false)}
+        currentPlan={profile?.plan ?? 'free'}
+      />
     </div>
   )
 }
