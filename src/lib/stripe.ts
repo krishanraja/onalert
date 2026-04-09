@@ -42,3 +42,28 @@ export async function createCheckoutSession(
   }
   return data.url
 }
+
+export async function createPortalSession(): Promise<string> {
+  if (!supabase) throw new Error('Not connected. Please refresh and try again.')
+  const { data, error } = await supabase.functions.invoke('customer-portal')
+  if (error) {
+    console.error('Portal error:', error)
+    let detail = ''
+    try {
+      const ctx = error.context
+      if (ctx && typeof ctx.json === 'function') {
+        const body = await ctx.json()
+        detail = body?.error || ''
+      } else if (ctx && typeof ctx === 'object') {
+        detail = ctx.error || ''
+      }
+    } catch {
+      // extraction failed
+    }
+    throw new Error(detail || 'Could not open billing portal. Please try again.')
+  }
+  if (!data?.url) {
+    throw new Error('Could not create billing session. Please try again.')
+  }
+  return data.url
+}
