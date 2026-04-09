@@ -64,7 +64,7 @@ export function UpgradeOverlay({ open, onClose, currentPlan }: Props) {
             animate={{ y: 0 }}
             exit={{ y: 50 }}
             onClick={(e) => e.stopPropagation()}
-            className="bg-surface-elevated border border-border rounded-xl p-5 w-full max-w-md"
+            className="bg-surface border border-border rounded-xl p-5 w-full max-w-md"
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base font-semibold text-foreground">Upgrade your plan</h3>
