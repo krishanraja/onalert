@@ -105,9 +105,9 @@ export function SettingsPage() {
         </div>
       </header>
 
-      <div className="flex-1 flex flex-col overflow-hidden px-4 lg:px-6 py-4 space-y-4 max-w-2xl lg:mx-0">
+      <div className="flex-1 flex flex-col overflow-hidden px-4 lg:px-6 pt-3 pb-2 gap-3 max-w-2xl lg:mx-0">
         {/* Desktop title */}
-        <div className="hidden lg:block shrink-0">
+        <div className="hidden lg:flex flex-col shrink-0">
           <h1 className="text-2xl font-bold text-foreground">Settings</h1>
           <p className="text-sm text-foreground-secondary mt-1">Manage your account and notifications</p>
         </div>

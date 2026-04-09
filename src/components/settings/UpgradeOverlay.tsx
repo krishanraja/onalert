@@ -56,7 +56,7 @@ export function UpgradeOverlay({ open, onClose, currentPlan }: Props) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-4"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4"
           onClick={onClose}
         >
           <motion.div
@@ -64,7 +64,7 @@ export function UpgradeOverlay({ open, onClose, currentPlan }: Props) {
             animate={{ y: 0 }}
             exit={{ y: 50 }}
             onClick={(e) => e.stopPropagation()}
-            className="bg-surface-elevated border border-border rounded-xl p-5 w-full max-w-md"
+            className="bg-surface border border-border rounded-xl p-5 w-full max-w-md"
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base font-semibold text-foreground">Upgrade your plan</h3>
