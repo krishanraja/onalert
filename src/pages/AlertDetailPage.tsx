@@ -8,7 +8,7 @@ import { useProfile } from '@/hooks/useProfile'
 import { SERVICE_TYPES, type ServiceType } from '@/lib/locations'
 import { PROGRAMS } from '@/lib/programs'
 import { formatSlotDate, formatSlotTime, minutesSince } from '@/lib/time'
-import { CBP_BOOK_URL } from '@/lib/cbpApi'
+import { CBP_BOOK_URL, buildBookUrl } from '@/lib/cbpApi'
 import { haptic } from '@/lib/haptics'
 import { cn } from '@/lib/utils'
 import { showToast } from '@/hooks/useToast'
@@ -188,7 +188,7 @@ export function AlertDetailPage() {
                     <button
                       onClick={() => {
                         trackBookingClick(alert.id, slot.location_id)
-                        window.open(slot.book_url || CBP_BOOK_URL, '_blank')
+                        window.open(slot.book_url || buildBookUrl(slot.location_id, alert.payload.service_type), '_blank')
                       }}
                       className="bg-primary text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-1.5 shrink-0"
                     >
@@ -264,7 +264,7 @@ export function AlertDetailPage() {
             <button
               onClick={() => {
                 trackBookingClick(alert.id, alert.payload.location_id)
-                window.open(alert.payload.book_url || CBP_BOOK_URL, '_blank')
+                window.open(alert.payload.book_url || buildBookUrl(alert.payload.location_id, alert.payload.service_type), '_blank')
               }}
               aria-label="Book this appointment slot (opens in new tab)"
               className="w-full bg-primary text-white py-4 rounded-lg font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"

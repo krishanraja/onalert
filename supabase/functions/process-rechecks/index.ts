@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { buildBookUrl } from '../_shared/buildBookUrl.ts'
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -34,7 +35,7 @@ async function getSlots(locationId: number): Promise<CBPSlot[]> {
   }
 }
 
-async function sendRecheckEmail(to: string, available: boolean, locationName: string, slotTime: string) {
+async function sendRecheckEmail(to: string, available: boolean, locationName: string, slotTime: string, locationId?: number, serviceType?: string) {
   const date = new Date(slotTime).toLocaleDateString('en-US', {
     weekday: 'long', month: 'long', day: 'numeric',
     timeZone: 'America/New_York',
@@ -76,7 +77,7 @@ async function sendRecheckEmail(to: string, available: boolean, locationName: st
           </div>
           ${available
             ? `<p>The slot is still open — book it now before someone else does!</p>
-               <a href="https://ttp.cbp.dhs.gov/" class="cta">Book Now →</a>`
+               <a href="${buildBookUrl(locationId, serviceType)}" class="cta">Book Now →</a>`
             : `<p style="color: #888;">This slot has been taken. Don't worry — we'll keep monitoring and alert you when the next one opens.</p>`
           }
         </div>
@@ -165,7 +166,9 @@ Deno.serve(async (req) => {
             profile.email,
             stillAvailable,
             locationName,
-            request.slot_timestamp
+            request.slot_timestamp,
+            request.location_id,
+            alert?.payload?.service_type
           )
         }
 
