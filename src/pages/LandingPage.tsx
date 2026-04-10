@@ -98,8 +98,8 @@ export function LandingPage() {
 
         {/* Government agency logos */}
         <div className="mt-6 mb-2 flex flex-col items-center">
-          <p className="text-[10px] md:text-xs text-foreground-muted mb-3 tracking-wide uppercase">Programs monitored from</p>
-          <div className="flex items-center justify-center gap-8 md:gap-12">
+          <p className="text-[10px] md:text-xs text-foreground-muted mb-3 tracking-wide uppercase">Monitoring appointments from</p>
+          <div className="flex items-center justify-center gap-6">
             {[
               {
                 name: 'DHS',
@@ -116,7 +116,7 @@ export function LandingPage() {
                 <img
                   src={agency.src}
                   alt={agency.full}
-                  className="h-10 md:h-12 w-auto object-contain rounded-full"
+                  className="h-11 md:h-14 w-auto object-contain rounded-full"
                   loading="lazy"
                 />
                 <span className="text-[9px] md:text-[10px] text-foreground-muted text-center">{agency.full}</span>
