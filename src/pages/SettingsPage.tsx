@@ -120,9 +120,9 @@ export function SettingsPage() {
               <button
                 onClick={handleManageBilling}
                 disabled={portalLoading}
-                className="flex items-center gap-1 text-[11px] text-foreground-muted hover:text-primary transition-colors mt-0.5 disabled:opacity-50"
+                className="flex items-center gap-1.5 text-xs text-foreground-secondary hover:text-primary transition-colors mt-1 disabled:opacity-50"
               >
-                <CreditCard size={11} />
+                <CreditCard size={14} />
                 {portalLoading ? 'Opening...' : 'Manage billing'}
               </button>
             )}
@@ -135,10 +135,10 @@ export function SettingsPage() {
             {!isExpress && (
               <button
                 onClick={() => setUpgradeOpen(true)}
-                className="w-7 h-7 rounded-full bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-colors"
-                aria-label="Upgrade plan"
+                className="flex items-center gap-1.5 bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-primary/90 transition-colors"
               >
-                <Crown size={13} className="text-primary" />
+                <Crown size={14} />
+                Upgrade
               </button>
             )}
           </div>

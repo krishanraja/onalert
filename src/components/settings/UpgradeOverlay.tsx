@@ -64,7 +64,7 @@ export function UpgradeOverlay({ open, onClose, currentPlan }: Props) {
             animate={{ y: 0 }}
             exit={{ y: 50 }}
             onClick={(e) => e.stopPropagation()}
-            className="bg-surface border border-border rounded-xl p-5 w-full max-w-md"
+            className="bg-surface border border-border rounded-xl p-6 w-full max-w-md"
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base font-semibold text-foreground">Upgrade your plan</h3>
@@ -86,7 +86,7 @@ export function UpgradeOverlay({ open, onClose, currentPlan }: Props) {
                   return (
                     <div
                       key={planKey}
-                      className="bg-surface border border-border rounded-lg p-3 flex items-center gap-3"
+                      className="bg-surface border border-border rounded-lg p-4 flex items-center gap-3"
                     >
                       <div className={`w-8 h-8 rounded-lg ${meta.color} flex items-center justify-center shrink-0`}>
                         <Icon size={16} className={meta.textColor} />
@@ -95,14 +95,14 @@ export function UpgradeOverlay({ open, onClose, currentPlan }: Props) {
                         <div className="flex items-baseline gap-2">
                           <span className="font-semibold text-foreground text-sm">{meta.label}</span>
                           <span className="text-foreground font-bold text-sm">${plan.price}</span>
-                          <span className="text-[10px] text-foreground-muted">one-time</span>
+                          <span className="text-xs text-foreground-muted">one-time</span>
                         </div>
-                        <p className="text-xs text-foreground-secondary truncate">{meta.tagline}</p>
+                        <p className="text-xs text-foreground-secondary line-clamp-2">{meta.tagline}</p>
                       </div>
                       <button
                         onClick={() => handleUpgrade(planKey)}
                         disabled={loading === planKey}
-                        className={`${meta.color} ${meta.textColor} px-3 py-1.5 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity disabled:opacity-50 shrink-0`}
+                        className={`${meta.color} ${meta.textColor} px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 shrink-0`}
                       >
                         {loading === planKey ? '...' : 'Buy'}
                       </button>
@@ -118,7 +118,7 @@ export function UpgradeOverlay({ open, onClose, currentPlan }: Props) {
               </div>
             )}
 
-            <p className="text-[10px] text-foreground-muted text-center mt-4">
+            <p className="text-xs text-foreground-muted text-center mt-4">
               One-time payment. No subscription. Yours forever.
             </p>
           </motion.div>
