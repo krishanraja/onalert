@@ -6,28 +6,28 @@
     "payload": {
       "slots": [
         {
-          "book_url": "https://ttp.cbp.dhs.gov/",
+          "book_url": "https://ttp.cbp.dhs.gov/schedulerui/schedule-interview/location?id=5140&lang=en&serviceType=GE",
           "narrative": "Global Entry appointment slot opened at JFK International Airport, NY.",
           "location_id": 5140,
           "location_name": "JFK International Airport, NY",
           "slot_timestamp": "2026-04-04T12:30"
         },
         {
-          "book_url": "https://ttp.cbp.dhs.gov/",
+          "book_url": "https://ttp.cbp.dhs.gov/schedulerui/schedule-interview/location?id=5140&lang=en&serviceType=GE",
           "narrative": "Global Entry appointment slot opened at JFK International Airport, NY.",
           "location_id": 5140,
           "location_name": "JFK International Airport, NY",
           "slot_timestamp": "2026-04-04T17:50"
         },
         {
-          "book_url": "https://ttp.cbp.dhs.gov/",
+          "book_url": "https://ttp.cbp.dhs.gov/schedulerui/schedule-interview/location?id=5446&lang=en&serviceType=GE",
           "narrative": "Global Entry appointment slot opened at 26 Federal Plaza, New York, NY.",
           "location_id": 5446,
           "location_name": "26 Federal Plaza, New York, NY",
           "slot_timestamp": "2026-04-15T14:50"
         }
       ],
-      "book_url": "https://ttp.cbp.dhs.gov/",
+      "book_url": "https://ttp.cbp.dhs.gov/schedulerui/schedule-interview/location?id=5140&lang=en&serviceType=GE",
       "narrative": "3 appointment slots just opened.",
       "location_id": 5140,
       "service_type": "GE",

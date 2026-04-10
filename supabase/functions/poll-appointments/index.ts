@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { buildBookUrl } from '../_shared/buildBookUrl.ts'
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -437,7 +438,7 @@ Deno.serve(async (req) => {
               location_id: locationId,
               location_name: locationName,
               slot_timestamp: slotTimestamp,
-              book_url: 'https://ttp.cbp.dhs.gov/',
+              book_url: buildBookUrl(locationId, monitor.config.service_type),
               service_type: monitor.config.service_type,
               narrative,
               delay_until: delayUntil,
@@ -473,7 +474,7 @@ Deno.serve(async (req) => {
           location_id: firstSlot.location_id,
           location_name: `${sortedSlots.length} slots across ${new Set(sortedSlots.map(s => s.location_id)).size} location(s)`,
           slot_timestamp: firstSlot.slot_timestamp,
-          book_url: 'https://ttp.cbp.dhs.gov/',
+          book_url: buildBookUrl(firstSlot.location_id, monitor.config.service_type),
           service_type: monitor.config.service_type,
           narrative: `${sortedSlots.length} appointment slots just opened. Soonest: ${firstSlot.location_name} on ${new Date(firstSlot.slot_timestamp).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'America/New_York' })}.`,
           slots: sortedSlots.map(s => ({

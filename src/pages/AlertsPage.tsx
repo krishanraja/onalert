@@ -10,7 +10,8 @@ import { AlertsListSkeleton } from '@/components/ui/Skeleton'
 import { type Alert } from '@/lib/supabase'
 import { SERVICE_TYPES } from '@/lib/locations'
 import { formatSlotDate, formatSlotTime, minutesSince } from '@/lib/time'
-import { CBP_BOOK_URL } from '@/lib/cbpApi'
+import { CBP_BOOK_URL, buildBookUrl } from '@/lib/cbpApi'
+import { trackBookingClick } from '@/lib/tracking'
 import { supabase } from '@/lib/supabase'
 import { showToast } from '@/hooks/useToast'
 import { haptic } from '@/lib/haptics'
@@ -115,7 +116,10 @@ function AlertDetailInline({ alert, onClose, isPaid }: { alert: Alert; onClose: 
                       </p>
                     </div>
                     <button
-                      onClick={() => window.open(slot.book_url || CBP_BOOK_URL, '_blank')}
+                      onClick={() => {
+                        trackBookingClick(alert.id, slot.location_id)
+                        window.open(slot.book_url || buildBookUrl(slot.location_id, alert.payload.service_type), '_blank')
+                      }}
                       className="bg-primary text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-1.5 shrink-0"
                     >
                       <ExternalLink size={14} />
@@ -185,7 +189,10 @@ function AlertDetailInline({ alert, onClose, isPaid }: { alert: Alert; onClose: 
         {/* Book button (single alert only - digest has per-slot buttons) */}
         {!isDigest && (
           <button
-            onClick={() => window.open(CBP_BOOK_URL, '_blank')}
+            onClick={() => {
+              trackBookingClick(alert.id, alert.payload.location_id)
+              window.open(alert.payload.book_url || buildBookUrl(alert.payload.location_id, alert.payload.service_type), '_blank')
+            }}
             aria-label="Book this appointment slot (opens in new tab)"
             className="w-full bg-primary text-white py-4 rounded-lg font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
           >
