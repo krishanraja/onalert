@@ -28,8 +28,8 @@ export function LocationPage() {
   return (
     <div className="min-h-dvh bg-background">
       <Helmet>
-        <title>{`${location.name} - Global Entry & TSA PreCheck Appointments | OnAlert`}</title>
-        <meta name="description" content={`Monitor appointment slots at ${location.name} in ${location.city}, ${location.state}. Get instant alerts when Global Entry, TSA PreCheck, NEXUS or SENTRI cancellations open.`} />
+        <title>{`${location.name} - Global Entry, NEXUS & SENTRI Appointments | OnAlert`}</title>
+        <meta name="description" content={`Monitor appointment slots at ${location.name} in ${location.city}, ${location.state}. Get instant alerts when Global Entry, NEXUS or SENTRI cancellations open.`} />
         <link rel="canonical" href={`https://onalert.app/locations/${location.id}`} />
       </Helmet>
       <header className="bg-background-elevated border-b border-border px-4 py-3">
@@ -49,10 +49,7 @@ export function LocationPage() {
         <section>
           <h2 className="text-sm font-semibold text-foreground mb-2">Programs Available</h2>
           <div className="flex flex-wrap gap-2">
-            {(location.serviceType === 'ALL'
-              ? (['GE', 'TSA', 'NEXUS', 'SENTRI'] as const)
-              : [location.serviceType]
-            ).map((st) => (
+            {location.services.map((st) => (
               <span key={st} className="bg-surface border border-border rounded-lg px-3 py-1.5 text-xs font-medium text-foreground">
                 {SERVICE_TYPES[st].label}
               </span>

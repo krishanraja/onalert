@@ -32,7 +32,7 @@ export function LandingPage() {
   const benefits = [
     'Scans every 5 minutes',
     'Instant email & SMS alerts',
-    'Global Entry · TSA PreCheck · NEXUS · SENTRI',
+    'Global Entry · NEXUS · SENTRI · All include TSA PreCheck',
     'Slots found in minutes, not months',
     '30-day money-back guarantee',
     'No app install required',
@@ -41,8 +41,8 @@ export function LandingPage() {
   return (
     <div className="h-dvh overflow-hidden flex flex-col bg-background relative">
       <Helmet>
-        <title>OnAlert - Global Entry, TSA PreCheck, NEXUS & SENTRI Appointment Alerts</title>
-        <meta name="description" content="Get instant alerts when Global Entry, TSA PreCheck, NEXUS & SENTRI appointment slots open from cancellations. Scans every 5 minutes. Book in days, not months." />
+        <title>OnAlert - Global Entry, NEXUS & SENTRI Appointment Alerts</title>
+        <meta name="description" content="Get instant alerts when Global Entry, NEXUS & SENTRI (all include TSA PreCheck) appointment slots open from cancellations. Scans every 5 minutes. Book in days, not months." />
         <link rel="canonical" href="https://onalert.app/" />
       </Helmet>
       {/* Ambient crimson glow */}
@@ -72,7 +72,7 @@ export function LandingPage() {
           Never miss a Trusted Traveler appointment
         </p>
         <p className="text-xs md:text-sm text-foreground-secondary text-center max-w-sm mx-auto mb-6">
-          OnAlert monitors Global Entry, TSA PreCheck, NEXUS & SENTRI appointment slots and alerts you within minutes when one opens from a cancellation.
+          OnAlert monitors Global Entry, NEXUS & SENTRI appointment slots and alerts you within minutes when one opens from a cancellation.
         </p>
         <button
           onClick={() => navigate('/auth')}
@@ -110,11 +110,6 @@ export function LandingPage() {
                 name: 'CBP',
                 full: 'Customs & Border Protection',
                 src: '/cbp-logo.png',
-              },
-              {
-                name: 'TSA',
-                full: 'Transportation Security Admin.',
-                src: '/tsa-logo.png',
               },
             ].map((agency) => (
               <div key={agency.name} className="flex flex-col items-center gap-1.5">

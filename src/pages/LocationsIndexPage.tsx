@@ -14,7 +14,7 @@ export function LocationsIndexPage() {
     <div className="min-h-dvh bg-background">
       <Helmet>
         <title>CBP Enrollment Centers - Browse All Locations | OnAlert</title>
-        <meta name="description" content="Browse CBP enrollment centers nationwide. Search Global Entry, TSA PreCheck, NEXUS & SENTRI interview locations by name, city, or state." />
+        <meta name="description" content="Browse CBP enrollment centers nationwide. Search Global Entry, NEXUS & SENTRI interview locations by name, city, or state." />
         <link rel="canonical" href="https://onalert.app/locations" />
       </Helmet>
       <header className="sticky top-0 z-10 bg-background-elevated border-b border-border px-4 py-3">

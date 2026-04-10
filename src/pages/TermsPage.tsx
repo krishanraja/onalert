@@ -31,7 +31,7 @@ export function TermsPage() {
         <section className="space-y-3">
           <h2 className="text-lg font-semibold text-foreground">Service description</h2>
           <p className="text-foreground-secondary leading-relaxed">
-            OnAlert is a monitoring service that checks government appointment systems (such as Global Entry, TSA PreCheck, NEXUS, and SENTRI) for available slots and notifies you when openings are found. OnAlert does not guarantee appointment availability or booking success.
+            OnAlert is a monitoring service that checks government appointment systems (such as Global Entry, NEXUS, and SENTRI) for available slots and notifies you when openings are found. OnAlert does not guarantee appointment availability or booking success.
           </p>
         </section>
 

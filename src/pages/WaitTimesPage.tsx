@@ -41,8 +41,8 @@ export function WaitTimesPage() {
   return (
     <div className="min-h-dvh bg-background">
       <Helmet>
-        <title>Global Entry & TSA PreCheck Wait Times by Location | OnAlert</title>
-        <meta name="description" content="Check real-time estimated wait times at CBP enrollment centers. See appointment availability based on actual cancellation patterns for Global Entry, TSA PreCheck & more." />
+        <title>Global Entry, NEXUS & SENTRI Wait Times by Location | OnAlert</title>
+        <meta name="description" content="Check real-time estimated wait times at CBP enrollment centers. See appointment availability based on actual cancellation patterns for Global Entry, NEXUS & SENTRI." />
         <link rel="canonical" href="https://onalert.app/wait-times" />
       </Helmet>
       <header className="sticky top-0 z-10 bg-background-elevated border-b border-border px-4 py-3">

@@ -76,7 +76,6 @@ function generateEmailHTML(payload: AlertPayload): string {
   })
 
   const serviceEmoji = payload.service_type === 'GE' ? '✈️' :
-                       payload.service_type === 'TSA' ? '🛂' :
                        payload.service_type === 'NEXUS' ? '🇨🇦' : '🇲🇽'
 
   return `
