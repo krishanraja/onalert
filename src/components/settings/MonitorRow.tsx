@@ -20,7 +20,7 @@ export function MonitorRow({ monitor, onToggle, onDelete }: Props) {
   const locations = monitor.config.location_ids
     .map((id) => TOP_LOCATIONS.find((l) => l.id === id))
     .filter(Boolean)
-  const service = SERVICE_TYPES[monitor.config.service_type]
+  const service = SERVICE_TYPES[monitor.config.service_type as keyof typeof SERVICE_TYPES] ?? { abbr: monitor.config.service_type, label: monitor.config.service_type }
   const firstLoc = locations[0]
 
   return (

@@ -3,77 +3,75 @@ export type CBPLocation = {
   name: string
   city: string
   state: string
-  serviceType: 'GE' | 'TSA' | 'NEXUS' | 'SENTRI' | 'ALL'
+  services: readonly ServiceType[]
 }
 
-// Top 50 CBP TTP enrollment locations
-// Full list available at: https://ttp.cbp.dhs.gov/schedulerapi/locations/?operationName=GE&lang=en&reasonCode=AP&serviceName=Global%20Entry
+// CBP TTP enrollment locations — IDs verified against live CBP schedulerapi
+// Full list: https://ttp.cbp.dhs.gov/schedulerapi/locations/?operationName=GE&lang=en&reasonCode=AP&serviceName=Global%20Entry
 export const TOP_LOCATIONS: CBPLocation[] = [
-  { id: 5140, name: 'New York  - JFK International Airport', city: 'New York', state: 'NY', serviceType: 'ALL' },
-  { id: 5446, name: 'New York  - 26 Federal Plaza', city: 'New York', state: 'NY', serviceType: 'ALL' },
-  { id: 5447, name: 'Newark Liberty International Airport', city: 'Newark', state: 'NJ', serviceType: 'ALL' },
-  { id: 5003, name: 'Los Angeles International Airport', city: 'Los Angeles', state: 'CA', serviceType: 'ALL' },
-  { id: 5006, name: 'San Francisco International Airport', city: 'San Francisco', state: 'CA', serviceType: 'ALL' },
-  { id: 5002, name: "Chicago O'Hare International Airport", city: 'Chicago', state: 'IL', serviceType: 'ALL' },
-  { id: 5007, name: 'Miami International Airport', city: 'Miami', state: 'FL', serviceType: 'ALL' },
-  { id: 5023, name: 'Seattle-Tacoma International Airport', city: 'Seattle', state: 'WA', serviceType: 'ALL' },
-  { id: 5021, name: 'Boston Logan International Airport', city: 'Boston', state: 'MA', serviceType: 'ALL' },
-  { id: 5004, name: 'Atlanta  - Hartsfield-Jackson Airport', city: 'Atlanta', state: 'GA', serviceType: 'ALL' },
-  { id: 5030, name: 'Dallas/Fort Worth International Airport', city: 'Dallas', state: 'TX', serviceType: 'ALL' },
-  { id: 5011, name: 'Denver International Airport', city: 'Denver', state: 'CO', serviceType: 'ALL' },
-  { id: 5009, name: 'Las Vegas  - Harry Reid International Airport', city: 'Las Vegas', state: 'NV', serviceType: 'ALL' },
-  { id: 5013, name: 'Phoenix Sky Harbor International Airport', city: 'Phoenix', state: 'AZ', serviceType: 'ALL' },
-  { id: 5008, name: 'Washington Dulles International Airport', city: 'Dulles', state: 'VA', serviceType: 'ALL' },
-  { id: 5010, name: 'Houston  - George Bush Intercontinental', city: 'Houston', state: 'TX', serviceType: 'ALL' },
-  { id: 5012, name: 'Minneapolis-St. Paul International Airport', city: 'Minneapolis', state: 'MN', serviceType: 'ALL' },
-  { id: 5014, name: 'Portland International Airport', city: 'Portland', state: 'OR', serviceType: 'ALL' },
-  { id: 5015, name: 'San Diego International Airport', city: 'San Diego', state: 'CA', serviceType: 'ALL' },
-  { id: 5016, name: 'San Juan  - Luis Muñoz Marín International', city: 'San Juan', state: 'PR', serviceType: 'ALL' },
-  { id: 5017, name: 'Philadelphia International Airport', city: 'Philadelphia', state: 'PA', serviceType: 'ALL' },
-  { id: 5018, name: 'Detroit Metro Wayne County Airport', city: 'Detroit', state: 'MI', serviceType: 'ALL' },
-  { id: 5019, name: 'Charlotte Douglas International Airport', city: 'Charlotte', state: 'NC', serviceType: 'ALL' },
-  { id: 5020, name: 'Salt Lake City International Airport', city: 'Salt Lake City', state: 'UT', serviceType: 'ALL' },
-  { id: 5022, name: 'Tampa International Airport', city: 'Tampa', state: 'FL', serviceType: 'ALL' },
-  { id: 5024, name: 'Orlando International Airport', city: 'Orlando', state: 'FL', serviceType: 'ALL' },
-  { id: 5025, name: 'Kansas City International Airport', city: 'Kansas City', state: 'MO', serviceType: 'ALL' },
-  { id: 5026, name: 'Sacramento International Airport', city: 'Sacramento', state: 'CA', serviceType: 'ALL' },
-  { id: 5027, name: 'Raleigh-Durham International Airport', city: 'Raleigh', state: 'NC', serviceType: 'ALL' },
-  { id: 5028, name: 'Indianapolis International Airport', city: 'Indianapolis', state: 'IN', serviceType: 'ALL' },
-  { id: 5029, name: 'Pittsburgh International Airport', city: 'Pittsburgh', state: 'PA', serviceType: 'ALL' },
-  { id: 5031, name: 'New Orleans International Airport', city: 'New Orleans', state: 'LA', serviceType: 'ALL' },
-  { id: 5032, name: 'Memphis International Airport', city: 'Memphis', state: 'TN', serviceType: 'ALL' },
-  { id: 5033, name: 'Nashville International Airport', city: 'Nashville', state: 'TN', serviceType: 'ALL' },
-  { id: 5034, name: 'Austin-Bergstrom International Airport', city: 'Austin', state: 'TX', serviceType: 'ALL' },
-  { id: 5035, name: 'San Antonio International Airport', city: 'San Antonio', state: 'TX', serviceType: 'ALL' },
-  { id: 5036, name: 'El Paso International Airport', city: 'El Paso', state: 'TX', serviceType: 'ALL' },
-  { id: 5037, name: 'Honolulu  - Daniel K. Inouye International', city: 'Honolulu', state: 'HI', serviceType: 'ALL' },
-  { id: 5038, name: 'Anchorage  - Ted Stevens International', city: 'Anchorage', state: 'AK', serviceType: 'ALL' },
-  { id: 5039, name: 'Baltimore/Washington International Airport', city: 'Baltimore', state: 'MD', serviceType: 'ALL' },
-  { id: 5040, name: 'Columbus International Airport', city: 'Columbus', state: 'OH', serviceType: 'ALL' },
-  { id: 5041, name: 'Cleveland Hopkins International Airport', city: 'Cleveland', state: 'OH', serviceType: 'ALL' },
-  { id: 5042, name: 'St. Louis Lambert International Airport', city: 'St. Louis', state: 'MO', serviceType: 'ALL' },
-  { id: 5043, name: 'Cincinnati/Northern Kentucky International', city: 'Cincinnati', state: 'OH', serviceType: 'ALL' },
-  { id: 5044, name: 'Milwaukee Mitchell International Airport', city: 'Milwaukee', state: 'WI', serviceType: 'ALL' },
-  { id: 5045, name: 'Richmond International Airport', city: 'Richmond', state: 'VA', serviceType: 'ALL' },
-  { id: 5046, name: 'Jacksonville International Airport', city: 'Jacksonville', state: 'FL', serviceType: 'ALL' },
-  { id: 5047, name: 'Tucson International Airport', city: 'Tucson', state: 'AZ', serviceType: 'ALL' },
-  { id: 5048, name: 'Albuquerque International Airport', city: 'Albuquerque', state: 'NM', serviceType: 'ALL' },
-  { id: 5049, name: 'Oklahoma City  - Will Rogers World Airport', city: 'Oklahoma City', state: 'OK', serviceType: 'ALL' },
+  { id: 5140, name: 'New York - JFK International Airport', city: 'New York', state: 'NY', services: ['GE'] },
+  { id: 6480, name: 'New York - Bowling Green', city: 'New York', state: 'NY', services: ['GE'] },
+  { id: 5444, name: 'Newark Liberty International Airport', city: 'Newark', state: 'NJ', services: ['GE'] },
+  { id: 5180, name: 'Los Angeles International Airport', city: 'Los Angeles', state: 'CA', services: ['GE'] },
+  { id: 5446, name: 'San Francisco Enrollment Center', city: 'San Francisco', state: 'CA', services: ['GE'] },
+  { id: 5183, name: "Chicago O'Hare International Airport", city: 'Chicago', state: 'IL', services: ['GE'] },
+  { id: 5181, name: 'Miami International Airport', city: 'Miami', state: 'FL', services: ['GE'] },
+  { id: 5420, name: 'Seattle-Tacoma International Airport', city: 'Seattle', state: 'WA', services: ['GE'] },
+  { id: 5441, name: 'Boston-Logan International Airport', city: 'Boston', state: 'MA', services: ['GE'] },
+  { id: 5182, name: 'Atlanta - Hartsfield-Jackson Airport', city: 'Atlanta', state: 'GA', services: ['GE'] },
+  { id: 5300, name: 'Dallas/Fort Worth International Airport', city: 'Dallas', state: 'TX', services: ['GE'] },
+  { id: 6940, name: 'Denver International Airport', city: 'Denver', state: 'CO', services: ['GE'] },
+  { id: 5360, name: 'Las Vegas Enrollment Center', city: 'Las Vegas', state: 'NV', services: ['GE'] },
+  { id: 7160, name: 'Phoenix Sky Harbor International Airport', city: 'Phoenix', state: 'AZ', services: ['GE', 'SENTRI'] },
+  { id: 5142, name: 'Washington Dulles International Airport', city: 'Dulles', state: 'VA', services: ['GE'] },
+  { id: 5141, name: 'Houston - George Bush Intercontinental', city: 'Houston', state: 'TX', services: ['GE'] },
+  { id: 6840, name: 'Minneapolis-St. Paul International Airport', city: 'Minneapolis', state: 'MN', services: ['GE'] },
+  { id: 7960, name: 'Portland International Airport', city: 'Portland', state: 'OR', services: ['GE'] },
+  { id: 16547, name: 'San Diego International Airport', city: 'San Diego', state: 'CA', services: ['GE'] },
+  { id: 5400, name: 'San Juan - Luis Munoz Marin International', city: 'San Juan', state: 'PR', services: ['GE'] },
+  { id: 5445, name: 'Philadelphia International Airport', city: 'Philadelphia', state: 'PA', services: ['GE'] },
+  { id: 5320, name: 'Detroit Metro Wayne County Airport', city: 'Detroit', state: 'MI', services: ['GE'] },
+  { id: 14321, name: 'Charlotte Douglas International Airport', city: 'Charlotte', state: 'NC', services: ['GE'] },
+  { id: 7600, name: 'Salt Lake City International Airport', city: 'Salt Lake City', state: 'UT', services: ['GE'] },
+  { id: 8020, name: 'Tampa Enrollment Center', city: 'Tampa', state: 'FL', services: ['GE'] },
+  { id: 5380, name: 'Orlando International Airport', city: 'Orlando', state: 'FL', services: ['GE'] },
+  { id: 12781, name: 'Kansas City Enrollment Center', city: 'Kansas City', state: 'MO', services: ['GE'] },
+  { id: 16970, name: 'Indianapolis Enrollment Center', city: 'Indianapolis', state: 'IN', services: ['GE'] },
+  { id: 9200, name: 'Pittsburgh International Airport', city: 'Pittsburgh', state: 'PA', services: ['GE'] },
+  { id: 9740, name: 'New Orleans Enrollment Center', city: 'New Orleans', state: 'LA', services: ['GE'] },
+  { id: 13621, name: 'Memphis International Airport', city: 'Memphis', state: 'TN', services: ['GE'] },
+  { id: 10260, name: 'Nashville Enrollment Center', city: 'Nashville', state: 'TN', services: ['GE'] },
+  { id: 7820, name: 'Austin-Bergstrom International Airport', city: 'Austin', state: 'TX', services: ['GE'] },
+  { id: 7520, name: 'San Antonio International Airport', city: 'San Antonio', state: 'TX', services: ['GE'] },
+  { id: 5005, name: 'El Paso Enrollment Center', city: 'El Paso', state: 'TX', services: ['GE', 'SENTRI'] },
+  { id: 5340, name: 'Honolulu - Daniel K. Inouye International', city: 'Honolulu', state: 'HI', services: ['GE'] },
+  { id: 7540, name: 'Anchorage Enrollment Center', city: 'Anchorage', state: 'AK', services: ['GE'] },
+  { id: 7940, name: 'Baltimore/Washington International Airport', city: 'Baltimore', state: 'MD', services: ['GE'] },
+  { id: 9180, name: 'Cleveland Enrollment Center', city: 'Cleveland', state: 'OH', services: ['GE'] },
+  { id: 12021, name: 'St. Louis Enrollment Center', city: 'St. Louis', state: 'MO', services: ['GE'] },
+  { id: 7680, name: 'Cincinnati Enrollment Center', city: 'Cincinnati', state: 'OH', services: ['GE'] },
+  { id: 7740, name: 'Milwaukee Enrollment Center', city: 'Milwaukee', state: 'WI', services: ['GE'] },
+  { id: 14981, name: 'Richmond Enrollment Center', city: 'Richmond', state: 'VA', services: ['GE'] },
+  { id: 9240, name: 'Tucson Enrollment Center', city: 'Tucson', state: 'AZ', services: ['GE', 'SENTRI'] },
+  { id: 8040, name: 'Albuquerque Enrollment Center', city: 'Albuquerque', state: 'NM', services: ['GE', 'SENTRI'] },
 ]
 
 export const SERVICE_TYPES = {
   GE: { label: 'Global Entry', abbr: 'GE', description: 'Expedited US customs for pre-approved travellers. Includes TSA PreCheck.' },
-  TSA: { label: 'TSA PreCheck', abbr: 'TSA', description: 'Faster airport security screening at 200+ airports.' },
   NEXUS: { label: 'NEXUS', abbr: 'NEXUS', description: 'Expedited travel between the US and Canada.' },
   SENTRI: { label: 'SENTRI', abbr: 'SENTRI', description: 'Expedited entry at US-Mexico land border crossings.' },
 } as const
 
 export type ServiceType = keyof typeof SERVICE_TYPES
 
-export function searchLocations(query: string): CBPLocation[] {
+export function searchLocations(query: string, serviceType?: ServiceType): CBPLocation[] {
+  let results = TOP_LOCATIONS
+  if (serviceType) {
+    results = results.filter((l) => l.services.includes(serviceType))
+  }
   const q = query.toLowerCase().trim()
-  if (!q) return TOP_LOCATIONS
-  return TOP_LOCATIONS.filter(
+  if (!q) return results
+  return results.filter(
     (l) =>
       l.name.toLowerCase().includes(q) ||
       l.city.toLowerCase().includes(q) ||

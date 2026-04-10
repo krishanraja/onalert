@@ -21,22 +21,6 @@ const PROGRAMS = {
     ],
     expect: 'A CBP officer will review your application, ask about your travel history, verify your identity, and collect biometrics. Most interviews are straightforward and take under 10 minutes.',
   },
-  TSA: {
-    name: 'TSA PreCheck',
-    documents: [
-      'Valid passport OR government-issued photo ID',
-      'Confirmation of your enrollment appointment',
-      'Proof of citizenship (passport, birth certificate, or naturalization certificate)',
-    ],
-    tips: [
-      'Arrive 10 minutes early',
-      'You will be fingerprinted',
-      'The process takes about 10 minutes',
-      'You\'ll receive your Known Traveler Number (KTN) within 3-5 days',
-      'Add your KTN to your airline profiles for expedited screening',
-    ],
-    expect: 'An agent will verify your identity, collect your fingerprints, and confirm your information. There is no formal interview -- it\'s a quick identity verification process.',
-  },
   NEXUS: {
     name: 'NEXUS',
     documents: [

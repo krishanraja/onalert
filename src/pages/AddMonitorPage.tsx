@@ -202,7 +202,7 @@ export function AddMonitorPage() {
   const [upgradeLoading, setUpgradeLoading] = useState(false)
   const [upgradeError, setUpgradeError] = useState('')
 
-  const filteredLocations = searchLocations(locationSearch)
+  const filteredLocations = searchLocations(locationSearch, serviceType || undefined)
   const currentPlanKey = (isExpress ? 'express' : isFamily ? 'multi' : isPaid ? 'pro' : 'free') as keyof typeof PLANS
   const checkInterval = PLANS[currentPlanKey].checkInterval
   const maxLocations = PLANS[currentPlanKey].maxLocations

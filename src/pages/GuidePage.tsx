@@ -9,7 +9,7 @@ export function GuidePage() {
     <div className="min-h-dvh bg-background">
       <Helmet>
         <title>How to Get a Global Entry Appointment Faster | OnAlert</title>
-        <meta name="description" content="4 proven strategies to get Global Entry, TSA PreCheck, NEXUS & SENTRI appointments faster. Learn how automated monitoring catches cancellation slots in minutes." />
+        <meta name="description" content="4 proven strategies to get Global Entry, NEXUS & SENTRI appointments faster. Learn how automated monitoring catches cancellation slots in minutes." />
         <link rel="canonical" href="https://onalert.app/guide" />
       </Helmet>
       <header className="sticky top-0 z-10 bg-background-elevated border-b border-border px-4 py-3">
@@ -27,7 +27,7 @@ export function GuidePage() {
             How to Get a Global Entry Appointment Faster: The Complete Guide
           </h2>
           <p className="text-sm text-foreground-secondary leading-relaxed">
-            If you've been conditionally approved for Global Entry, TSA PreCheck, NEXUS, or SENTRI, you already know the
+            If you've been conditionally approved for Global Entry, NEXUS, or SENTRI, you already know the
             frustration: the nearest appointment might be 3-12 months away. This guide covers every strategy to get your
             enrollment interview sooner.
           </p>

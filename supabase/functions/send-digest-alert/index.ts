@@ -17,7 +17,6 @@ interface DigestSlot {
 
 function generateDigestEmailHTML(slots: DigestSlot[], serviceType: string): string {
   const serviceEmoji = serviceType === 'GE' ? '✈️' :
-                       serviceType === 'TSA' ? '🛂' :
                        serviceType === 'NEXUS' ? '🇨🇦' : '🇲🇽'
 
   const slotRows = slots.map((slot) => {

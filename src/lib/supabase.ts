@@ -41,7 +41,7 @@ export type Monitor = {
   type: 'appointment'
   config: {
     location_ids: number[]
-    service_type: 'GE' | 'TSA' | 'NEXUS' | 'SENTRI'
+    service_type: 'GE' | 'NEXUS' | 'SENTRI' | 'TSA'
     last_known_slots?: Record<string, string[]>
     deadline_date?: string
   }
