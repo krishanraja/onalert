@@ -38,13 +38,31 @@ const PLANS = {
   },
 }
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+// Restrict CORS to known origins only. Wildcard '*' on a credentialed
+// authenticated endpoint lets any site script-call this function with the
+// user's session token via XHR/fetch.
+const ALLOWED_ORIGINS = new Set<string>([
+  'https://onalert.app',
+  'http://localhost:5173',
+])
+
+function corsOrigin(req: Request): string {
+  const o = req.headers.get('origin') || ''
+  return ALLOWED_ORIGINS.has(o) ? o : 'https://onalert.app'
+}
+
+function buildCors(req: Request): Record<string, string> {
+  return {
+    'Access-Control-Allow-Origin': corsOrigin(req),
+    'Vary': 'Origin',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  }
 }
 
 Deno.serve(async (req) => {
+  const corsHeaders = buildCors(req)
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -145,7 +163,7 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Checkout error:', error)
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: (error as Error).message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })

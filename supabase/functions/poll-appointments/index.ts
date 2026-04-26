@@ -1,12 +1,21 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { buildBookUrl } from '../_shared/buildBookUrl.ts'
+import { requireCronSecret } from '../_shared/cron-auth.ts'
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 )
 
+const INTERNAL_SECRET = Deno.env.get('INTERNAL_FUNCTION_SECRET') || ''
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+
 const CBP_BASE = 'https://ttp.cbp.dhs.gov/schedulerapi'
+
+// Polite User-Agent so CBP can identify our traffic. Some upstreams block
+// requests with no UA or generic library UAs.
+const CBP_USER_AGENT = 'OnAlert/1.0 (https://onalert.app; alerts@onalert.app)'
 
 // --- Structured Logging ---
 const runId = crypto.randomUUID()
@@ -36,6 +45,7 @@ interface FetchResult {
   latencyMs: number
   error: string | null
   valid: boolean
+  rateLimited: boolean
 }
 
 interface Monitor {
@@ -47,6 +57,12 @@ interface Monitor {
     last_known_slots?: Record<string, string[]>
     deadline_date?: string
   }
+}
+
+interface LocationHistory {
+  daysSinceLastAlert: number | null
+  alertsLast30Days: number
+  avgFillMinutes: number | null
 }
 
 // Location name mapping — IDs verified against live CBP schedulerapi
@@ -120,18 +136,39 @@ async function fetchLocation(locationId: number): Promise<FetchResult> {
   try {
     const res = await fetch(
       `${CBP_BASE}/slots?orderBy=soonest&limit=5&locationId=${locationId}&serviceId=TP`,
-      { signal: controller.signal }
+      {
+        signal: controller.signal,
+        headers: {
+          'User-Agent': CBP_USER_AGENT,
+          'Accept': 'application/json',
+        },
+      }
     )
     const latencyMs = Date.now() - start
 
+    // Detect rate limiting / overload — surface to caller so it can skip
+    // the location for this run rather than proceeding with empty data.
+    if (res.status === 429 || res.status === 503) {
+      log('warn', 'cbp.rate_limited', { location_id: locationId, http_status: res.status })
+      return {
+        locationId,
+        slots: [],
+        httpStatus: res.status,
+        latencyMs,
+        error: `Rate limited (${res.status})`,
+        valid: false,
+        rateLimited: true,
+      }
+    }
+
     if (!res.ok) {
-      return { locationId, slots: [], httpStatus: res.status, latencyMs, error: `HTTP ${res.status}`, valid: false }
+      return { locationId, slots: [], httpStatus: res.status, latencyMs, error: `HTTP ${res.status}`, valid: false, rateLimited: false }
     }
 
     const data = await res.json()
     if (!Array.isArray(data)) {
       log('warn', 'cbp.validation_warning', { location_id: locationId, reason: 'response_not_array' })
-      return { locationId, slots: [], httpStatus: res.status, latencyMs, error: 'Response not an array', valid: false }
+      return { locationId, slots: [], httpStatus: res.status, latencyMs, error: 'Response not an array', valid: false, rateLimited: false }
     }
 
     const allValid = data.every((s: unknown) => validateSlot(s, locationId))
@@ -139,21 +176,17 @@ async function fetchLocation(locationId: number): Promise<FetchResult> {
       log('warn', 'cbp.validation_warning', { location_id: locationId, reason: 'slot_schema_invalid' })
     }
 
-    return { locationId, slots: data as CBPSlot[], httpStatus: res.status, latencyMs, error: null, valid: allValid }
+    return { locationId, slots: data as CBPSlot[], httpStatus: res.status, latencyMs, error: null, valid: allValid, rateLimited: false }
   } catch (err) {
     const latencyMs = Date.now() - start
     const message = err instanceof Error ? err.message : 'Unknown error'
-    return { locationId, slots: [], httpStatus: null, latencyMs, error: message, valid: false }
+    return { locationId, slots: [], httpStatus: null, latencyMs, error: message, valid: false, rateLimited: false }
   } finally {
     clearTimeout(timeout)
   }
 }
 
-async function getLocationAlertHistory(locationId: number): Promise<{
-  daysSinceLastAlert: number | null
-  alertsLast30Days: number
-  avgFillMinutes: number | null
-}> {
+async function getLocationAlertHistory(locationId: number): Promise<LocationHistory> {
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
 
   const { data: recentAlerts } = await supabase
@@ -179,12 +212,12 @@ async function getLocationAlertHistory(locationId: number): Promise<{
   }
 }
 
-async function generateSmartNarrative(
+function formatNarrativeFromHistory(
+  history: LocationHistory,
   locationName: string,
   serviceType: string,
   slotTime: string,
-  locationId: number
-): Promise<string> {
+): string {
   const service = serviceType === 'GE' ? 'Global Entry' :
                   serviceType === 'NEXUS' ? 'NEXUS' : 'SENTRI'
 
@@ -203,35 +236,22 @@ async function generateSmartNarrative(
     timeZoneName: 'short',
   })
 
-  // Fetch historical context for smarter narrative
-  let history: { daysSinceLastAlert: number | null; alertsLast30Days: number; avgFillMinutes: number | null }
-  try {
-    history = await getLocationAlertHistory(locationId)
-  } catch {
-    history = { daysSinceLastAlert: null, alertsLast30Days: 0, avgFillMinutes: null }
-  }
-
   const parts: string[] = []
-
-  // Lead with the core info
   parts.push(`${service} appointment slot opened at ${locationName}.`)
   parts.push(`Available ${date} at ${time}.`)
 
-  // Add rarity context
   if (history.daysSinceLastAlert !== null && history.daysSinceLastAlert > 3) {
     parts.push(`This is the first opening here in ${history.daysSinceLastAlert} days - act fast.`)
   } else if (history.alertsLast30Days > 0 && history.alertsLast30Days <= 3) {
     parts.push(`Only ${history.alertsLast30Days} slot${history.alertsLast30Days === 1 ? ' has' : 's have'} opened here in the last 30 days.`)
   }
 
-  // Add fill time estimate
   if (history.avgFillMinutes) {
     parts.push(`Slots here typically fill within ${history.avgFillMinutes} minutes.`)
   } else {
     parts.push(`Popular slots usually fill within 5-15 minutes.`)
   }
 
-  // Add day-of-week insight
   const dayOfWeek = new Date(slotTime).toLocaleDateString('en-US', { weekday: 'long', timeZone: 'America/New_York' })
   const hour = new Date(slotTime).getHours()
   if (hour < 10) {
@@ -253,10 +273,43 @@ const CHECK_INTERVALS: Record<string, number> = {
 // Free monitoring window (in days)
 const FREE_WINDOW_DAYS = 7
 
+// Internal-secret invocation of send-alert / send-digest-alert via direct
+// fetch (supabase.functions.invoke can't reliably attach custom headers).
+async function invokeInternal(name: 'send-alert' | 'send-digest-alert' | 'send-push', body: unknown): Promise<void> {
+  const url = `${SUPABASE_URL}/functions/v1/${name}`
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      'x-internal-secret': INTERNAL_SECRET,
+    },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`${name} ${res.status}: ${text}`)
+  }
+}
+
+// Compute end-of-deadline-day in Eastern time. Note: this assumes EDT (UTC-4)
+// year-round. CBP scheduling is Eastern-coast-centric and most users live in
+// Eastern time, so a half-hour drift twice a year on the boundary day is
+// acceptable. TODO: replace with a proper TZ library (e.g. Temporal API)
+// when DST edge cases matter.
+function easternEndOfDay(deadlineDate: string): number {
+  return new Date(`${deadlineDate}T23:59:59-04:00`).getTime()
+}
+
 Deno.serve(async (req) => {
   if (req.method !== 'POST') {
     return new Response('Method not allowed', { status: 405 })
   }
+
+  // pg_cron sends x-cron-secret. Reject anything else (including a leaked
+  // service-role JWT alone — the JWT is no longer the trust boundary).
+  const denied = requireCronSecret(req)
+  if (denied) return denied
 
   const startTime = Date.now()
   let checked = 0
@@ -351,8 +404,28 @@ Deno.serve(async (req) => {
       unique_locations: locationIds.size,
     })
 
+    // --- N+1 fix: pre-load alert history ONCE per unique location, share
+    // it across all monitors that touch that location.
+    const historyMap = new Map<number, LocationHistory>()
+    {
+      const locArr = Array.from(locationIds)
+      const HIST_BATCH = 10
+      for (let i = 0; i < locArr.length; i += HIST_BATCH) {
+        const batch = locArr.slice(i, i + HIST_BATCH)
+        const results = await Promise.allSettled(
+          batch.map((locId) => getLocationAlertHistory(locId).then((h) => [locId, h] as const))
+        )
+        for (const r of results) {
+          if (r.status === 'fulfilled') {
+            historyMap.set(r.value[0], r.value[1])
+          }
+        }
+      }
+    }
+
     // Fetch slots for each unique location in parallel (batches of 5 to avoid rate limiting)
     const locationSlots = new Map<number, CBPSlot[]>()
+    const rateLimitedLocations = new Set<number>()
     const locationArray = Array.from(locationIds)
     const BATCH_SIZE = 5
 
@@ -365,7 +438,20 @@ Deno.serve(async (req) => {
       for (const result of results) {
         if (result.status === 'fulfilled') {
           const fr = result.value
-          locationSlots.set(fr.locationId, fr.slots)
+          if (fr.rateLimited) {
+            rateLimitedLocations.add(fr.locationId)
+          } else {
+            // De-dupe slot timestamps in case CBP returns duplicates
+            const seen = new Set<string>()
+            const deduped: CBPSlot[] = []
+            for (const s of fr.slots) {
+              if (!seen.has(s.startTimestamp)) {
+                seen.add(s.startTimestamp)
+                deduped.push(s)
+              }
+            }
+            locationSlots.set(fr.locationId, deduped)
+          }
           allFetchResults.push(fr)
           log('info', 'cbp.fetch', {
             location_id: fr.locationId,
@@ -374,6 +460,7 @@ Deno.serve(async (req) => {
             slots_count: fr.slots.length,
             valid: fr.valid,
             error: fr.error,
+            rate_limited: fr.rateLimited,
           })
         } else {
           log('error', 'cbp.fetch', { error: result.reason?.message || 'Promise rejected' })
@@ -395,18 +482,46 @@ Deno.serve(async (req) => {
         narrative: string
         delay_until: string | null
       }> = []
+      const goneSlots: Array<{ location_id: number; service_type: string; slot_timestamp: string }> = []
+      const monitorLocationsSeen = new Set<number>() // locations that returned data this run
 
       for (const locationId of monitor.config.location_ids) {
+        // If this location was rate-limited, skip processing — preserve last
+        // known slots, do not "diff" against an empty-because-failed result.
+        if (rateLimitedLocations.has(locationId)) {
+          newKnownSlots[locationId.toString()] = lastKnownSlots[locationId.toString()] || []
+          continue
+        }
+        // Also skip if the fetch flat-out failed (no result at all).
+        if (!locationSlots.has(locationId)) {
+          newKnownSlots[locationId.toString()] = lastKnownSlots[locationId.toString()] || []
+          continue
+        }
+        monitorLocationsSeen.add(locationId)
+
         const slots = locationSlots.get(locationId) || []
         const slotTimestamps = slots.map(s => s.startTimestamp).sort()
         const lastSlotTimestamps = lastKnownSlots[locationId.toString()] || []
+
+        // Find slots that disappeared (were in last_known, now gone)
+        const currentSet = new Set(slotTimestamps)
+        for (const prev of lastSlotTimestamps) {
+          if (!currentSet.has(prev)) {
+            goneSlots.push({
+              location_id: locationId,
+              service_type: monitor.config.service_type,
+              slot_timestamp: prev,
+            })
+          }
+        }
 
         // Find new slots (slots that weren't there before)
         let newSlots = slotTimestamps.filter(ts => !lastSlotTimestamps.includes(ts))
 
         // Apply deadline filter: skip slots past the user's deadline date
+        // (in Eastern time — see easternEndOfDay note about DST).
         if (monitor.config.deadline_date && newSlots.length > 0) {
-          const deadline = new Date(monitor.config.deadline_date + 'T23:59:59Z').getTime()
+          const deadline = easternEndOfDay(monitor.config.deadline_date)
           newSlots = newSlots.filter(ts => new Date(ts).getTime() <= deadline)
         }
 
@@ -419,13 +534,16 @@ Deno.serve(async (req) => {
             ? new Date(Date.now() + 15 * 60 * 1000).toISOString()
             : null
 
-          // Collect slot data for potential digest
+          // Pull the precomputed history (N+1 fix).
+          const history = historyMap.get(locationId)
+            || { daysSinceLastAlert: null, alertsLast30Days: 0, avgFillMinutes: null }
+
           for (const slotTimestamp of newSlots) {
-            const narrative = await generateSmartNarrative(
+            const narrative = formatNarrativeFromHistory(
+              history,
               locationName,
               monitor.config.service_type,
               slotTimestamp,
-              locationId
             )
 
             allNewSlotsForMonitor.push({
@@ -450,13 +568,32 @@ Deno.serve(async (req) => {
         plan: planMap.get(monitor.user_id) || 'free',
         locations_checked: monitor.config.location_ids.length,
         new_slots_found: allNewSlotsForMonitor.length,
+        gone_slots: goneSlots.length,
         alert_decision: allNewSlotsForMonitor.length === 0 ? 'none' :
           (allNewSlotsForMonitor.length > 1 && planMap.get(monitor.user_id) !== 'free') ? 'digest' : 'individual',
       })
 
+      // --- Mark gone slots in slot_history ---
+      // Set gone_at on rows where (location_id, service_type, slot_timestamp)
+      // matches a slot that was previously known but is no longer present.
+      for (const g of goneSlots) {
+        await supabase
+          .from('slot_history')
+          .update({ gone_at: new Date().toISOString() })
+          .eq('location_id', g.location_id)
+          .eq('service_type', g.service_type)
+          .eq('slot_timestamp', g.slot_timestamp)
+          .is('gone_at', null)
+          .then(() => {}, (err: Error) => log('warn', 'slot_history.gone_update_failed', { error: err.message }))
+      }
+
       // Process collected new slots: digest (2+) or individual alerts
       const userPlan = planMap.get(monitor.user_id) || 'free'
       const isPaidUser = userPlan !== 'free'
+
+      // Track whether the alert insert path succeeded — only update
+      // last_known_slots if we don't risk dropping unsent slots.
+      let alertWriteOk = true
 
       if (allNewSlotsForMonitor.length > 1 && isPaidUser) {
         // Digest alert: batch multiple slots into a single alert
@@ -480,6 +617,10 @@ Deno.serve(async (req) => {
           })),
         }
 
+        // Insert with explicit duplicate handling. The unique partial index
+        // idx_alerts_unique_slot (013) on (monitor_id, payload->>location_id,
+        // payload->>slot_timestamp) catches dup digest alerts for the same
+        // soonest slot. Postgres SQLSTATE 23505 = unique_violation.
         const { data: alertRecord, error: alertError } = await supabase
           .from('alerts')
           .insert({
@@ -492,25 +633,31 @@ Deno.serve(async (req) => {
           .select()
           .single()
 
-        if (!alertError && alertRecord) {
+        if (alertError) {
+          // 23505 = unique_violation = a parallel poll already inserted this
+          // alert. Treat as "handled" — don't re-send and don't roll back
+          // last_known_slots.
+          if ((alertError as { code?: string }).code === '23505') {
+            log('info', 'alert.duplicate_skipped', { monitor_id: monitor.id, type: 'digest' })
+          } else {
+            log('error', 'alert.create_failed', { monitor_id: monitor.id, error: alertError.message, type: 'digest' })
+            alertWriteOk = false
+          }
+        } else if (alertRecord) {
           log('info', 'alert.created', { alert_id: alertRecord.id, monitor_id: monitor.id, type: 'digest', delayed: false })
           newAlerts += sortedSlots.length
           try {
-            await supabase.functions.invoke('send-digest-alert', {
-              body: { record: alertRecord }
-            })
+            await invokeInternal('send-digest-alert', { record: alertRecord })
             alertsSent++
             log('info', 'alert.sent', { alert_id: alertRecord.id })
           } catch (sendErr) {
-            // Fall back to regular send-alert if digest function doesn't exist yet
+            // Fall back to regular send-alert if digest function fails
             try {
-              await supabase.functions.invoke('send-alert', {
-                body: { record: alertRecord }
-              })
+              await invokeInternal('send-alert', { record: alertRecord })
               alertsSent++
               log('info', 'alert.sent', { alert_id: alertRecord.id, fallback: true })
             } catch (fallbackErr) {
-              log('error', 'alert.send_failed', { alert_id: alertRecord.id, error: (fallbackErr as Error).message })
+              log('error', 'alert.send_failed', { alert_id: alertRecord.id, error: (fallbackErr as Error).message, original: (sendErr as Error).message })
             }
           }
         }
@@ -537,7 +684,12 @@ Deno.serve(async (req) => {
             .single()
 
           if (alertError) {
+            if ((alertError as { code?: string }).code === '23505') {
+              log('info', 'alert.duplicate_skipped', { monitor_id: monitor.id, type: 'individual', location_id: slot.location_id, slot_timestamp: slot.slot_timestamp })
+              continue
+            }
             log('error', 'alert.create_failed', { monitor_id: monitor.id, error: alertError.message })
+            alertWriteOk = false
             continue
           }
 
@@ -546,9 +698,7 @@ Deno.serve(async (req) => {
 
           if (!slot.delay_until) {
             try {
-              await supabase.functions.invoke('send-alert', {
-                body: { record: alertRecord }
-              })
+              await invokeInternal('send-alert', { record: alertRecord })
               alertsSent++
               log('info', 'alert.sent', { alert_id: alertRecord.id })
             } catch (sendErr) {
@@ -562,21 +712,28 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Update last_alert_at if any new slots were found
-      if (allNewSlotsForMonitor.length > 0) {
+      // Update last_alert_at if any new slots were found AND we successfully
+      // recorded them (avoids losing slots if alerts insert failed).
+      if (allNewSlotsForMonitor.length > 0 && alertWriteOk) {
         await supabase
           .from('monitors')
           .update({ last_alert_at: new Date().toISOString() })
           .eq('id', monitor.id)
       }
 
-      // Update monitor with new known slots and last_checked_at
+      // Update monitor with last_checked_at always; only persist
+      // last_known_slots if alerts were written cleanly. If the alert insert
+      // failed we want the next poll to retry, which means we must NOT
+      // forget about the new slots.
+      const updatePayload: Record<string, unknown> = {
+        last_checked_at: new Date().toISOString(),
+      }
+      if (alertWriteOk) {
+        updatePayload.config = { ...monitor.config, last_known_slots: newKnownSlots }
+      }
       await supabase
         .from('monitors')
-        .update({
-          config: { ...monitor.config, last_known_slots: newKnownSlots },
-          last_checked_at: new Date().toISOString()
-        })
+        .update(updatePayload)
         .eq('id', monitor.id)
     }
 
@@ -601,6 +758,9 @@ Deno.serve(async (req) => {
     if (allFetchResults.some(r => !r.valid && r.error === null)) {
       anomalyFlags.push('response_schema_invalid')
     }
+    if (rateLimitedLocations.size > 0) {
+      anomalyFlags.push('cbp_rate_limited')
+    }
 
     const durationMs = Date.now() - startTime
 
@@ -608,6 +768,7 @@ Deno.serve(async (req) => {
       duration_ms: durationMs,
       locations_fetched: allFetchResults.length,
       locations_failed: locationsFailed,
+      locations_rate_limited: rateLimitedLocations.size,
       total_slots: totalSlotsFound,
       new_slots: newSlotsDetected,
       alerts_created: newAlerts,

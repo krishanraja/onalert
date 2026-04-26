@@ -1,3 +1,14 @@
+-- IMPORTANT: This file contained a leaked service-role JWT in git history.
+-- The user MUST rotate the service-role key in Supabase dashboard before
+-- re-running this script. Replace <SERVICE_ROLE_KEY_PLACEHOLDER> with the
+-- new key only at the moment of execution; do NOT commit it back.
+--
+-- Additionally, the cron jobs below now call functions that authenticate via
+-- a shared `x-cron-secret` header (see supabase/functions/_shared/cron-auth.ts).
+-- After rotating the service role key, also set CRON_SECRET in both:
+--   1. Supabase function secrets (`supabase secrets set CRON_SECRET=...`)
+--   2. The pg_cron job headers below (replace <CRON_SECRET_PLACEHOLDER>)
+
 -- OnAlert CRON Jobs Setup
 -- Run this in Supabase Dashboard → SQL Editor
 
@@ -15,7 +26,8 @@ SELECT cron.schedule(
     url := 'https://zcreubinittdqyoxxwtp.supabase.co/functions/v1/poll-appointments',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
-      'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpjcmV1YmluaXR0ZHF5b3h4d3RwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTIyODc0NSwiZXhwIjoyMDkwODA0NzQ1fQ.JKaimLyMMYx9lckVqwEtnXDnnc3h7dEhThSoMbxugvE'
+      'Authorization', 'Bearer <SERVICE_ROLE_KEY_PLACEHOLDER>',
+      'x-cron-secret', '<CRON_SECRET_PLACEHOLDER>'
     ),
     body := '{}'::jsonb
   );
@@ -32,7 +44,8 @@ SELECT cron.schedule(
     url := 'https://zcreubinittdqyoxxwtp.supabase.co/functions/v1/process-delayed-alerts',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
-      'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpjcmV1YmluaXR0ZHF5b3h4d3RwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTIyODc0NSwiZXhwIjoyMDkwODA0NzQ1fQ.JKaimLyMMYx9lckVqwEtnXDnnc3h7dEhThSoMbxugvE'
+      'Authorization', 'Bearer <SERVICE_ROLE_KEY_PLACEHOLDER>',
+      'x-cron-secret', '<CRON_SECRET_PLACEHOLDER>'
     ),
     body := '{}'::jsonb
   );

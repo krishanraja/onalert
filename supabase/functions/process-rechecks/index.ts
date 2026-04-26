@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { buildBookUrl } from '../_shared/buildBookUrl.ts'
+import { requireCronSecret } from '../_shared/cron-auth.ts'
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -109,6 +110,9 @@ Deno.serve(async (req) => {
     return new Response('Method not allowed', { status: 405 })
   }
 
+  const denied = requireCronSecret(req)
+  if (denied) return denied
+
   let processed = 0
   let available = 0
 
@@ -188,7 +192,7 @@ Deno.serve(async (req) => {
     })
   } catch (error) {
     console.error('Process rechecks error:', error)
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: (error as Error).message }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     })

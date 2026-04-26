@@ -5,13 +5,29 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 )
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+// Restrict CORS to known origins (see create-checkout for rationale).
+const ALLOWED_ORIGINS = new Set<string>([
+  'https://onalert.app',
+  'http://localhost:5173',
+])
+
+function corsOrigin(req: Request): string {
+  const o = req.headers.get('origin') || ''
+  return ALLOWED_ORIGINS.has(o) ? o : 'https://onalert.app'
+}
+
+function buildCors(req: Request): Record<string, string> {
+  return {
+    'Access-Control-Allow-Origin': corsOrigin(req),
+    'Vary': 'Origin',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+  }
 }
 
 Deno.serve(async (req) => {
+  const corsHeaders = buildCors(req)
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -58,7 +74,7 @@ Deno.serve(async (req) => {
       })
     } catch (error) {
       console.error('Track booking click error:', error)
-      return new Response(JSON.stringify({ error: error.message }), {
+      return new Response(JSON.stringify({ error: (error as Error).message }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })

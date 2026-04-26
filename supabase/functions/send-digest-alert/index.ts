@@ -1,4 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { requireInternalSecret, escapeHtml } from '../_shared/cron-auth.ts'
+import { buildBookUrl } from '../_shared/buildBookUrl.ts'
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -11,13 +13,17 @@ interface DigestSlot {
   location_id: number
   location_name: string
   slot_timestamp: string
-  book_url: string
+  book_url?: string
   narrative?: string
 }
 
 function generateDigestEmailHTML(slots: DigestSlot[], serviceType: string): string {
+  // Whitelist emoji map — payload-derived value used as a key only.
   const serviceEmoji = serviceType === 'GE' ? '✈️' :
-                       serviceType === 'NEXUS' ? '🇨🇦' : '🇲🇽'
+                       serviceType === 'NEXUS' ? '🇨🇦' :
+                       serviceType === 'SENTRI' ? '🇲🇽' : '📅'
+
+  const safeServiceType = escapeHtml(serviceType)
 
   const slotRows = slots.map((slot) => {
     const date = new Date(slot.slot_timestamp).toLocaleDateString('en-US', {
@@ -29,16 +35,24 @@ function generateDigestEmailHTML(slots: DigestSlot[], serviceType: string): stri
       timeZone: 'America/New_York', timeZoneName: 'short',
     })
 
+    // Rebuild each slot's book URL server-side from the location ID. Don't
+    // trust slot.book_url from the alert payload.
+    const safeBookUrl = buildBookUrl(slot.location_id, serviceType)
+    const safeLocation = escapeHtml(slot.location_name)
+    const safeDate = escapeHtml(date)
+    const safeTime = escapeHtml(time)
+    const safeNarrative = slot.narrative ? escapeHtml(slot.narrative) : ''
+
     return `
       <tr>
         <td style="padding: 16px; border-bottom: 1px solid #2A2A2A;">
-          <div style="color: #888888; font-size: 13px; margin-bottom: 4px;">${slot.location_name}</div>
-          <div style="font-family: 'Fira Code', monospace; font-size: 18px; font-weight: bold; color: #9F0506;">${time}</div>
-          <div style="font-size: 14px; color: #F5F5F5;">${date}</div>
-          ${slot.narrative ? `<div style="font-size: 12px; color: #666; margin-top: 6px;">${slot.narrative}</div>` : ''}
+          <div style="color: #888888; font-size: 13px; margin-bottom: 4px;">${safeLocation}</div>
+          <div style="font-family: 'Fira Code', monospace; font-size: 18px; font-weight: bold; color: #9F0506;">${safeTime}</div>
+          <div style="font-size: 14px; color: #F5F5F5;">${safeDate}</div>
+          ${safeNarrative ? `<div style="font-size: 12px; color: #666; margin-top: 6px;">${safeNarrative}</div>` : ''}
         </td>
         <td style="padding: 16px; border-bottom: 1px solid #2A2A2A; text-align: right; vertical-align: middle; width: 80px; min-width: 80px;">
-          <a href="${slot.book_url}" style="background: #9F0506; color: white; text-decoration: none; padding: 12px 16px; border-radius: 6px; font-weight: 600; font-size: 13px; display: inline-block; white-space: nowrap; mso-padding-alt: 0; text-align: center;">Book&nbsp;→</a>
+          <a href="${safeBookUrl}" style="background: #9F0506; color: white; text-decoration: none; padding: 12px 16px; border-radius: 6px; font-weight: 600; font-size: 13px; display: inline-block; white-space: nowrap; mso-padding-alt: 0; text-align: center;">Book&nbsp;→</a>
         </td>
       </tr>
     `
@@ -83,7 +97,7 @@ function generateDigestEmailHTML(slots: DigestSlot[], serviceType: string): stri
         </div>
 
         <div class="footer">
-          <p>You're receiving this because you have an active monitor for ${serviceType} appointments.</p>
+          <p>You're receiving this because you have an active monitor for ${safeServiceType} appointments.</p>
           <p><a href="https://onalert.app/app/settings" style="color: #9F0506;">Manage notifications</a> |
              <a href="https://onalert.app" style="color: #9F0506;">OnAlert</a></p>
         </div>
@@ -97,6 +111,9 @@ Deno.serve(async (req) => {
   if (req.method !== 'POST') {
     return new Response('Method not allowed', { status: 405 })
   }
+
+  const denied = requireInternalSecret(req)
+  if (denied) return denied
 
   try {
     const { record } = await req.json()
@@ -175,7 +192,7 @@ Deno.serve(async (req) => {
     })
   } catch (error) {
     console.error('Send digest alert error:', error)
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: (error as Error).message }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     })

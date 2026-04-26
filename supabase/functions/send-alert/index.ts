@@ -1,4 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { requireInternalSecret, escapeHtml } from '../_shared/cron-auth.ts'
+import { buildBookUrl } from '../_shared/buildBookUrl.ts'
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -59,7 +61,7 @@ async function sendSMS(to: string, body: string) {
   return res.json()
 }
 
-function generateEmailHTML(payload: AlertPayload): string {
+function generateEmailHTML(payload: AlertPayload, safeBookUrl: string): string {
   const date = new Date(payload.slot_timestamp).toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'long',
@@ -75,8 +77,23 @@ function generateEmailHTML(payload: AlertPayload): string {
     timeZoneName: 'short',
   })
 
+  // Service emoji is internally-derived (whitelist via switch), no need to
+  // escape — but treat unknowns conservatively.
   const serviceEmoji = payload.service_type === 'GE' ? '✈️' :
-                       payload.service_type === 'NEXUS' ? '🇨🇦' : '🇲🇽'
+                       payload.service_type === 'NEXUS' ? '🇨🇦' :
+                       payload.service_type === 'SENTRI' ? '🇲🇽' : '📅'
+
+  // Every interpolated value below originates from `payload`, which comes
+  // from a CBP API response (untrusted) and from user-configured monitors.
+  // HTML-escape all of them. The `book_url` is rebuilt server-side from a
+  // whitelisted helper so we don't escape it (HTML-escaping a URL would
+  // break the &amp; encoding inside query strings — the helper already
+  // emits a safe URL).
+  const safeServiceType = escapeHtml(payload.service_type)
+  const safeLocationName = escapeHtml(payload.location_name)
+  const safeNarrative = payload.narrative ? escapeHtml(payload.narrative) : ''
+  const safeDate = escapeHtml(date)
+  const safeTime = escapeHtml(time)
 
   return `
     <!DOCTYPE html>
@@ -110,15 +127,15 @@ function generateEmailHTML(payload: AlertPayload): string {
 
         <div class="content">
           <div class="slot-info">
-            <div class="location">${payload.location_name}</div>
-            <div class="slot-date">${date}</div>
-            <div class="slot-time">${time}</div>
+            <div class="location">${safeLocationName}</div>
+            <div class="slot-date">${safeDate}</div>
+            <div class="slot-time">${safeTime}</div>
           </div>
 
-          ${payload.narrative ? `<div class="narrative">${payload.narrative}</div>` : ''}
+          ${safeNarrative ? `<div class="narrative">${safeNarrative}</div>` : ''}
 
           <div style="text-align: center;">
-            <a href="${payload.book_url}" class="cta">Book This Slot →</a>
+            <a href="${safeBookUrl}" class="cta">Book This Slot →</a>
           </div>
 
           <div style="margin-top: 24px; padding: 16px; background: #1A1A1A; border-radius: 8px; font-size: 13px; color: #888888;">
@@ -128,7 +145,7 @@ function generateEmailHTML(payload: AlertPayload): string {
         </div>
 
         <div class="footer">
-          <p>You're receiving this because you have an active monitor for ${payload.service_type} appointments.</p>
+          <p>You're receiving this because you have an active monitor for ${safeServiceType} appointments.</p>
           <p><a href="https://onalert.app/app/settings" style="color: #9F0506;">Manage notifications</a> |
              <a href="https://onalert.app" style="color: #9F0506;">OnAlert</a></p>
         </div>
@@ -142,6 +159,9 @@ Deno.serve(async (req) => {
   if (req.method !== 'POST') {
     return new Response('Method not allowed', { status: 405 })
   }
+
+  const denied = requireInternalSecret(req)
+  if (denied) return denied
 
   try {
     const { record } = await req.json()
@@ -173,9 +193,14 @@ Deno.serve(async (req) => {
       }), { headers: { 'Content-Type': 'application/json' } })
     }
 
+    // Rebuild book_url from a whitelisted helper. Never trust payload.book_url
+    // — it could be tampered with via the alerts INSERT path or via a
+    // compromised CBP response field if upstream code ever copied raw data.
+    const safeBookUrl = buildBookUrl(payload.location_id, payload.service_type)
+
     const channels: string[] = []
     const subject = `🚨 ${payload.service_type} slot available - ${payload.location_name}`
-    const html = generateEmailHTML(payload)
+    const html = generateEmailHTML(payload, safeBookUrl)
 
     await sendEmail(profile.email, subject, html)
     channels.push('email')
@@ -187,7 +212,9 @@ Deno.serve(async (req) => {
       (profile.plan === 'pro' || profile.plan === 'multi' || profile.plan === 'family' || profile.plan === 'express')
     ) {
       try {
-        const smsBody = `OnAlert: ${payload.service_type} slot at ${payload.location_name}. Book now: ${payload.book_url}`
+        // SMS body is plain text — no HTML escaping needed, but still avoid
+        // letting payload control message structure beyond the substituted values.
+        const smsBody = `OnAlert: ${payload.service_type} slot at ${payload.location_name}. Book now: ${safeBookUrl}`
         await sendSMS(profile.phone_number, smsBody)
         channels.push('sms')
       } catch (smsErr) {
@@ -214,7 +241,7 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Send alert error:', error)
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: (error as Error).message }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     })
