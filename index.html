@@ -9,22 +9,22 @@
   <meta name="apple-mobile-web-app-title" content="OnAlert" />
 
   <!-- SEO -->
-  <title>OnAlert  - Government Appointment Monitor</title>
+  <title>OnAlert - Government Appointment Monitor</title>
   <meta name="description" content="Real-time alerts when Global Entry, NEXUS, or SENTRI (all include TSA PreCheck) appointment slots open. Stop checking. Start knowing." />
   <meta name="robots" content="index, follow" />
-  <!-- canonical is set dynamically per-page via react-helmet or removed to let Google infer from URL -->
+  <!-- canonical is set dynamically per-page via react-helmet -->
 
   <!-- OG -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://onalert.app" />
-  <meta property="og:title" content="OnAlert  - Government Appointment Monitor" />
+  <meta property="og:title" content="OnAlert - Government Appointment Monitor" />
   <meta property="og:description" content="Real-time alerts when Global Entry, NEXUS, or SENTRI (all include TSA PreCheck) appointment slots open." />
   <meta property="og:image" content="https://onalert.app/brand/og-image.png" />
   <meta property="og:site_name" content="OnAlert" />
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="OnAlert  - Government Appointment Monitor" />
+  <meta name="twitter:title" content="OnAlert - Government Appointment Monitor" />
   <meta name="twitter:description" content="Real-time alerts when Global Entry, NEXUS, or SENTRI (all include TSA PreCheck) appointment slots open." />
   <meta name="twitter:image" content="https://onalert.app/brand/og-image.png" />
 
@@ -47,10 +47,21 @@
       },
       {
         "@type": "Offer",
-        "name": "Premium",
-        "price": "19",
-        "priceCurrency": "USD",
-        "billingPeriod": "P1M"
+        "name": "Pro",
+        "price": "39",
+        "priceCurrency": "USD"
+      },
+      {
+        "@type": "Offer",
+        "name": "Multi",
+        "price": "59",
+        "priceCurrency": "USD"
+      },
+      {
+        "@type": "Offer",
+        "name": "Express",
+        "price": "79",
+        "priceCurrency": "USD"
       }
     ]
   }
@@ -72,8 +83,15 @@
   <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" /></noscript>
 
-  <!-- Humblytics Analytics -->
-  <script async src="https://app.humblytics.com/hmbl.min.js?id=7d78ca7"></script>
+  <!-- Humblytics Analytics (production only) -->
+  <script>
+    if (location.hostname === 'onalert.app') {
+      var s = document.createElement('script');
+      s.async = true;
+      s.src = 'https://app.humblytics.com/hmbl.min.js?id=7d78ca7';
+      document.head.appendChild(s);
+    }
+  </script>
 </head>
 <body>
   <div id="root"></div>
