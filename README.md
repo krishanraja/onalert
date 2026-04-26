@@ -4,7 +4,7 @@
 
 **[onalert.app](https://onalert.app)** -- Stop checking. Start knowing.
 
-OnAlert monitors CBP Trusted Traveler Program schedulers (Global Entry, TSA PreCheck, NEXUS, SENTRI) and alerts you within minutes when appointment slots open from cancellations. Set up a monitor once, and OnAlert watches 24/7 so you don't have to.
+OnAlert monitors CBP Trusted Traveler Program schedulers (Global Entry, NEXUS, SENTRI -- all include TSA PreCheck) and alerts you within minutes when appointment slots open from cancellations. Set up a monitor once, and OnAlert watches 24/7 so you don't have to.
 
 ## The Problem
 
@@ -12,7 +12,7 @@ Millions of conditionally approved travelers wait 3-12 months for enrollment int
 
 ## How It Works
 
-1. **Create a monitor** -- choose your program (GE, TSA, NEXUS, SENTRI) and enrollment centers
+1. **Create a monitor** -- choose your program (GE, NEXUS, SENTRI) and enrollment centers
 2. **We poll the CBP API** -- every 5 min (paid) or 60 min (free), 24/7
 3. **Get alerted instantly** -- branded email notification with slot details and direct booking link
 4. **Book before it fills** -- slots typically fill in 5-15 minutes, so speed matters
@@ -67,25 +67,34 @@ See [docs/REPLICATION_GUIDE.md](docs/REPLICATION_GUIDE.md) for full setup instru
 
 ```
 src/
-  pages/          # 11 page components (Landing, Auth, Dashboard, Alerts, etc.)
-  components/     # UI components (layout, monitors, alerts, ui/)
-  hooks/          # useProfile, useMonitors, useAlerts
-  lib/            # supabase, stripe, plans, cbpApi, locations, time, utils
+  pages/          # 17 page components (Landing, Auth, Dashboard, Alerts, AddMonitor,
+                  #  Settings, Locations*, WaitTimes, Guide, Privacy, Terms,
+                  #  Organization, InterviewPrep, AdminAudit, NotFound, AlertDetail)
+  components/     # UI components (layout, dashboard, monitors, alerts, settings, ui/)
+  hooks/          # useProfile, useMonitors, useAlerts, useInsights, useAuditData,
+                  #  useKeyboardShortcuts, useLocationIntelligence, useToast
+  contexts/       # AlertsProvider (single realtime channel for the alerts feed)
+  lib/            # supabase, stripe, plans, cbpApi, locations, time, utils, programs,
+                  #  tracking, geolocation, haptics, pushNotifications, analytics, recommendations
   App.tsx         # Router with public and protected routes
   main.tsx        # Entry point + ErrorBoundary
   index.css       # Design system (CSS custom properties)
 
 supabase/
-  functions/      # 8 edge functions (Deno)
-    poll-appointments/   # CRON: poll CBP API for new slots
-    send-alert/          # Deliver individual email notifications via Resend
-    send-digest-alert/   # Deliver digest emails for multiple slots
-    create-checkout/     # Create Stripe checkout session
-    customer-portal/     # Stripe billing portal redirect
-    stripe-webhook/      # Handle one-time payment completion
+  functions/      # 12 edge functions (Deno)
+    poll-appointments/      # CRON: poll CBP API for new slots (cron-secret guarded)
+    send-alert/             # Internal: deliver email via Resend (internal-secret guarded)
+    send-digest-alert/      # Internal: deliver digest email (internal-secret guarded)
+    send-push/              # Internal: deliver web-push notification (internal-secret guarded)
+    create-checkout/        # Auth: create Stripe checkout session
+    customer-portal/        # Auth: Stripe billing portal redirect
+    stripe-webhook/         # Stripe-only: signature + idempotency verified
     process-delayed-alerts/ # CRON: send delayed alerts for free users
-    process-rechecks/    # Process slot recheck requests
-  migrations/     # Database schema + RLS policies
+    process-rechecks/       # CRON: process slot recheck requests
+    predict-slots/          # CRON: compute slot-availability predictions
+    public-wait-times/      # PUBLIC GET: aggregate wait-time stats
+    track-booking-click/    # Mixed: track outbound clicks to CBP scheduler
+  migrations/     # Database schema + RLS policies (012+ are security-hardening)
 
 docs/             # Comprehensive project documentation (18 documents)
 ```
@@ -102,10 +111,10 @@ npm run preview  # Preview production build
 ## Features
 
 - **Multi-method auth**: Google OAuth, email/password, and magic link
-- **4 programs**: Global Entry, TSA PreCheck, NEXUS, SENTRI
+- **3 programs**: Global Entry, NEXUS, SENTRI (each includes TSA PreCheck)
 - **50+ locations**: Searchable enrollment centers across the US
 - **Real-time alerts**: Email notifications + in-app realtime feed
-- **Freemium model**: Free (1 monitor, 60min) / Pro ($39, 5min) / Multi ($59, 5 monitors) -- all one-time
+- **Freemium model**: Free (1 monitor, 60min) / Pro ($39, 5min) / Multi ($59, 5 monitors, 5min) / Express ($79, 1 monitor, 1min) -- all one-time
 - **Stripe billing**: One-time payments via Checkout, webhook-driven plan sync
 - **PWA**: Installable on mobile, offline-capable
 - **Dark terminal UI**: Bloomberg-inspired design with crimson accents

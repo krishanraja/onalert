@@ -30,7 +30,7 @@ export function LocationPage() {
       <Helmet>
         <title>{`${location.name} - Global Entry, NEXUS & SENTRI Appointments | OnAlert`}</title>
         <meta name="description" content={`Monitor appointment slots at ${location.name} in ${location.city}, ${location.state}. Get instant alerts when Global Entry, NEXUS or SENTRI cancellations open.`} />
-        <link rel="canonical" href={`https://onalert.app/locations/${location.id}`} />
+        <link rel="canonical" href={`${(import.meta.env.VITE_APP_URL as string | undefined) || 'https://onalert.app'}/locations/${location.id}`} />
       </Helmet>
       <header className="bg-background-elevated border-b border-border px-4 py-3">
         <div className="max-w-2xl mx-auto flex items-center gap-3">
@@ -65,19 +65,19 @@ export function LocationPage() {
               <div className="bg-surface border border-border rounded-xl p-3 text-center">
                 <TrendingUp className="w-4 h-4 text-primary mx-auto mb-1" />
                 <div className="text-lg font-semibold text-foreground">{locStat.cancellationsPerWeek}</div>
-                <div className="text-[10px] text-foreground-muted">cancellations/week</div>
+                <div className="text-2xs text-foreground-muted">cancellations/week</div>
               </div>
               <div className="bg-surface border border-border rounded-xl p-3 text-center">
                 <Clock className="w-4 h-4 text-warning mx-auto mb-1" />
                 <div className="text-lg font-semibold text-foreground">
                   {locStat.avgFillMinutes ? `${locStat.avgFillMinutes}m` : '--'}
                 </div>
-                <div className="text-[10px] text-foreground-muted">avg fill time</div>
+                <div className="text-2xs text-foreground-muted">avg fill time</div>
               </div>
               <div className="bg-surface border border-border rounded-xl p-3 text-center">
                 <MapPin className="w-4 h-4 text-success mx-auto mb-1" />
                 <div className="text-lg font-semibold text-foreground">{locStat.peakDays[0]?.day || '--'}</div>
-                <div className="text-[10px] text-foreground-muted">peak day</div>
+                <div className="text-2xs text-foreground-muted">peak day</div>
               </div>
             </div>
           </section>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase, type Alert } from '@/lib/supabase'
+import type { RealtimeChannel } from '@supabase/supabase-js'
 import { haptic } from '@/lib/haptics'
 import { minutesSince } from '@/lib/time'
 
@@ -13,12 +14,16 @@ export function useAlerts(limit = 50) {
     let mounted = true
     let retryTimeout: ReturnType<typeof setTimeout> | null = null
     let retryCount = 0
+    let currentChannel: RealtimeChannel | null = null
+    let currentUserId: string | null = null
 
     async function load() {
       if (!supabase) { setLoading(false); return }
 
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { setLoading(false); return }
+
+      currentUserId = user.id
 
       const { data } = await supabase
         .from('alerts')
@@ -34,47 +39,70 @@ export function useAlerts(limit = 50) {
       }
     }
 
-    load()
+    function subscribe() {
+      if (!supabase || !currentUserId || !mounted) return
 
-    if (!supabase) return
+      const channel = supabase
+        .channel(`alerts:${currentUserId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'alerts',
+            filter: `user_id=eq.${currentUserId}`,
+          },
+          (payload) => {
+            const newAlert = payload.new as Alert
+            setAlerts((prev) => [newAlert, ...prev])
+            setUnreadCount((c) => c + 1)
 
-    const channel = supabase
-      .channel('alerts')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'alerts' }, (payload) => {
-        const newAlert = payload.new as Alert
-        setAlerts((prev) => [newAlert, ...prev])
-        setUnreadCount((c) => c + 1)
+            // Smart haptic based on urgency
+            const age = minutesSince(newAlert.created_at)
+            if (age <= 2) {
+              haptic('urgentAlert')
+            } else {
+              haptic('alertArrival')
+            }
 
-        // Smart haptic based on urgency
-        const age = minutesSince(newAlert.created_at)
-        if (age <= 2) {
-          haptic('urgentAlert')
-        } else {
-          haptic('alertArrival')
-        }
+            setConnected(true)
+            retryCount = 0
+          }
+        )
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            setConnected(true)
+            retryCount = 0
+          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            setConnected(false)
+            // Exponential backoff reconnection — tear down stale channel and rebuild
+            const delay = Math.min(1000 * Math.pow(2, retryCount), 30000)
+            retryCount++
+            retryTimeout = setTimeout(() => {
+              if (!mounted) return
+              if (currentChannel && supabase) {
+                supabase.removeChannel(currentChannel)
+                currentChannel = null
+              }
+              // Refresh data and re-subscribe
+              load().then(() => {
+                if (mounted) subscribe()
+              })
+            }, delay)
+          }
+        })
 
-        setConnected(true)
-        retryCount = 0
-      })
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          setConnected(true)
-          retryCount = 0
-        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          setConnected(false)
-          // Exponential backoff reconnection
-          const delay = Math.min(1000 * Math.pow(2, retryCount), 30000)
-          retryCount++
-          retryTimeout = setTimeout(() => {
-            if (mounted) load()
-          }, delay)
-        }
-      })
+      currentChannel = channel
+    }
+
+    load().then(() => {
+      if (mounted) subscribe()
+    })
 
     return () => {
       mounted = false
       if (retryTimeout) clearTimeout(retryTimeout)
-      supabase!.removeChannel(channel)
+      if (currentChannel && supabase) supabase.removeChannel(currentChannel)
     }
   }, [limit])
 

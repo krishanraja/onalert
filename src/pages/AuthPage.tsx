@@ -1,10 +1,22 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { ArrowLeft, Mail, Eye, EyeOff } from 'lucide-react'
 import { trackEvent, AnalyticsEvents } from '@/lib/analytics'
+import { showToast } from '@/hooks/useToast'
 
 type AuthMode = 'sign_in' | 'sign_up' | 'magic_link'
+
+type LocationState = { from?: { pathname?: string } } | null
+
+function getRedirectTarget(state: LocationState): string {
+  const candidate = state?.from?.pathname
+  // Only honor app-internal paths so we never redirect to /auth or external.
+  if (candidate && candidate.startsWith('/') && !candidate.startsWith('/auth')) {
+    return candidate
+  }
+  return '/app'
+}
 
 export function AuthPage() {
   const [email, setEmail] = useState('')
@@ -13,9 +25,12 @@ export function AuthPage() {
   const [mode, setMode] = useState<AuthMode>('sign_in')
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
+  const [resetSent, setResetSent] = useState(false)
   const [error, setError] = useState('')
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const location = useLocation()
+  const redirectTo = getRedirectTarget(location.state as LocationState)
 
   useEffect(() => {
     if (!supabase) return
@@ -26,7 +41,7 @@ export function AuthPage() {
 
     // Check if already authenticated
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate('/app')
+      if (data.session) navigate(redirectTo, { replace: true })
     })
 
     // Handle auth state changes (magic link, OAuth redirect, etc.)
@@ -35,12 +50,12 @@ export function AuthPage() {
         trackEvent(AnalyticsEvents.SIGNIN_COMPLETED, {
           provider: session.user?.app_metadata?.provider || 'email',
         })
-        navigate('/app')
+        navigate(redirectTo, { replace: true })
       }
     })
 
     return () => subscription.unsubscribe()
-  }, [navigate])
+  }, [navigate, redirectTo, searchParams])
 
   const handleGoogleSignIn = async () => {
     setLoading(true)
@@ -52,7 +67,7 @@ export function AuthPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/app`,
+          redirectTo: `${window.location.origin}${redirectTo}`,
         },
       })
 
@@ -78,7 +93,7 @@ export function AuthPage() {
           email: email.trim(),
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/app`,
+            emailRedirectTo: `${window.location.origin}${redirectTo}`,
           },
         })
         if (error) throw error
@@ -112,7 +127,7 @@ export function AuthPage() {
       const { error } = await supabase.auth.signInWithOtp({
         email: email.trim(),
         options: {
-          emailRedirectTo: `${window.location.origin}/app`,
+          emailRedirectTo: `${window.location.origin}${redirectTo}`,
         },
       })
 
@@ -120,6 +135,34 @@ export function AuthPage() {
       setSent(true)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      setError('Enter your email above first, then tap "Forgot password?"')
+      return
+    }
+    if (!supabase) {
+      setError('Service unavailable. Please try again later.')
+      return
+    }
+
+    const appUrl =
+      (import.meta.env.VITE_APP_URL as string | undefined) || window.location.origin
+    setLoading(true)
+    setError('')
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${appUrl}/auth/reset`,
+      })
+      if (error) throw error
+      setResetSent(true)
+      showToast('Password reset link sent. Check your email.', 'success')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Couldn't send reset email")
     } finally {
       setLoading(false)
     }
@@ -138,12 +181,12 @@ export function AuthPage() {
             <p className="text-sm text-foreground-secondary mb-4">
               We sent a {mode === 'sign_up' ? 'confirmation' : 'sign-in'} link to <strong>{email}</strong>
             </p>
-            <p className="text-xs text-foreground-muted">
+            <p className="text-2xs text-foreground-muted">
               Didn't receive it? Check your spam folder or try again.
             </p>
             <button
               onClick={() => { setSent(false); setError('') }}
-              className="text-xs text-primary hover:underline mt-3 min-h-[44px] px-3 py-2"
+              className="text-2xs text-primary hover:underline mt-3 min-h-[44px] px-3 py-2"
             >
               Try different email
             </button>
@@ -205,7 +248,7 @@ export function AuthPage() {
           {/* Divider */}
           <div className="flex items-center gap-3 mb-4">
             <div className="flex-1 h-px bg-border" />
-            <span className="text-xs text-foreground-muted">or</span>
+            <span className="text-2xs text-foreground-muted">or</span>
             <div className="flex-1 h-px bg-border" />
           </div>
 
@@ -251,10 +294,20 @@ export function AuthPage() {
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
+                {mode === 'sign_in' && (
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
+                    disabled={loading || resetSent}
+                    className="text-2xs text-foreground-muted hover:text-primary mt-2 transition-colors disabled:opacity-50"
+                  >
+                    {resetSent ? 'Reset link sent — check your email' : 'Forgot password?'}
+                  </button>
+                )}
               </div>
 
               {error && (
-                <p className="text-sm text-destructive">{error}</p>
+                <p className="text-sm text-destructive" role="alert" aria-live="assertive">{error}</p>
               )}
 
               <button
@@ -286,7 +339,7 @@ export function AuthPage() {
               </div>
 
               {error && (
-                <p className="text-sm text-destructive">{error}</p>
+                <p className="text-sm text-destructive" role="alert" aria-live="assertive">{error}</p>
               )}
 
               <button
@@ -304,7 +357,7 @@ export function AuthPage() {
             {mode !== 'magic_link' && (
               <button
                 onClick={() => { setMode('magic_link'); setError(''); setPassword('') }}
-                className="text-xs text-foreground-muted hover:text-foreground-secondary transition-colors block mx-auto min-h-[44px] px-3 py-2"
+                className="text-2xs text-foreground-muted hover:text-foreground-secondary transition-colors block mx-auto min-h-[44px] px-3 py-2"
               >
                 Sign in with magic link instead
               </button>
@@ -312,12 +365,12 @@ export function AuthPage() {
             {mode === 'magic_link' && (
               <button
                 onClick={() => { setMode('sign_in'); setError('') }}
-                className="text-xs text-foreground-muted hover:text-foreground-secondary transition-colors block mx-auto min-h-[44px] px-3 py-2"
+                className="text-2xs text-foreground-muted hover:text-foreground-secondary transition-colors block mx-auto min-h-[44px] px-3 py-2"
               >
                 Sign in with password instead
               </button>
             )}
-            <p className="text-xs text-foreground-muted py-2">
+            <p className="text-2xs text-foreground-muted py-2">
               {mode === 'sign_up' ? (
                 <>Already have an account?{' '}
                   <button onClick={() => { setMode('sign_in'); setError('') }} className="text-primary hover:underline min-h-[44px] py-2 px-1">

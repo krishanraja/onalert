@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { requireCronSecret } from '../_shared/cron-auth.ts'
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -11,6 +12,9 @@ Deno.serve(async (req) => {
   if (req.method !== 'POST') {
     return new Response('Method not allowed', { status: 405 })
   }
+
+  const denied = requireCronSecret(req)
+  if (denied) return denied
 
   try {
     // Get slot history from last 90 days
@@ -83,23 +87,37 @@ Deno.serve(async (req) => {
       predictions.push(...preds.filter(p => p.probability > 0.3))
     }
 
-    // Upsert predictions
+    // Insert-then-prune: write the new predictions first, then delete the
+    // older ones. This avoids a window where the table has no data (which
+    // would happen with delete-then-insert if the insert failed).
+    // Supabase JS doesn't expose Postgres transactions, so we accept that
+    // a transient overlap is possible — readers will simply see both old and
+    // new rows briefly. The downstream consumers (UI) can dedupe by taking
+    // the newest calculated_at per (location_id, service_type, predicted_day).
     if (predictions.length > 0) {
-      // Clear old predictions
-      await supabase.from('slot_predictions').delete().lt(
-        'calculated_at',
-        new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-      )
+      const runStartedAt = new Date().toISOString()
 
-      // Insert new
-      await supabase.from('slot_predictions').insert(
-        predictions.map(p => ({
-          location_id: p.location_id,
-          service_type: p.service_type,
-          predicted_day: p.predicted_day,
-          probability: p.probability,
-        }))
-      )
+      const { error: insertErr } = await supabase
+        .from('slot_predictions')
+        .insert(
+          predictions.map(p => ({
+            location_id: p.location_id,
+            service_type: p.service_type,
+            predicted_day: p.predicted_day,
+            probability: p.probability,
+          }))
+        )
+
+      if (insertErr) {
+        // Don't prune anything if insert failed — keep the stale data.
+        throw insertErr
+      }
+
+      // Now safe to drop predictions older than the run we just superseded.
+      await supabase
+        .from('slot_predictions')
+        .delete()
+        .lt('calculated_at', runStartedAt)
     }
 
     return new Response(JSON.stringify({ predictions: predictions.length }), {
@@ -107,7 +125,7 @@ Deno.serve(async (req) => {
     })
   } catch (error) {
     console.error('Prediction error:', error)
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: (error as Error).message }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     })

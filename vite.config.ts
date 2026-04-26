@@ -8,6 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
+      injectRegister: "auto",
       includeAssets: ["brand/favicon-32.png", "brand/favicon-16.png", "brand/apple-touch-icon.png", "brand/icon-192.png", "brand/icon-512.png"],
       manifest: {
         name: "OnAlert",
@@ -17,7 +18,7 @@ export default defineConfig({
         background_color: "#0A0A0A",
         display: "standalone",
         orientation: "portrait",
-        start_url: "/app",
+        start_url: "/",
         icons: [
           {
             src: "/brand/icon-192.png",

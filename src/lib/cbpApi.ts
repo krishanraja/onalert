@@ -1,4 +1,6 @@
-const CBP_BASE = 'https://ttp.cbp.dhs.gov/schedulerapi'
+// CBP scheduler URL helpers (browser-side).
+// NOTE: Direct CBP API calls (slots, locations) are not viable from the browser
+// due to CORS restrictions. All polling happens server-side in supabase functions.
 
 export type CBPSlot = {
   locationId: number
@@ -7,28 +9,6 @@ export type CBPSlot = {
   active: boolean
   duration: number
   remoteInd: boolean
-}
-
-export async function getAvailableLocations() {
-  const res = await fetch(
-    `${CBP_BASE}/locations/?operationName=GE&lang=en&reasonCode=AP&serviceName=Global%20Entry`,
-    { cache: 'no-store' }
-  )
-  if (!res.ok) throw new Error(`CBP API error: ${res.status}`)
-  return res.json()
-}
-
-export async function getSlotsForLocation(
-  locationId: number,
-  serviceId = 'TP'
-): Promise<CBPSlot[]> {
-  const res = await fetch(
-    `${CBP_BASE}/slots?orderBy=soonest&limit=5&locationId=${locationId}&serviceId=${serviceId}`,
-    { cache: 'no-store' }
-  )
-  if (!res.ok) return []
-  const data = await res.json()
-  return Array.isArray(data) ? data : []
 }
 
 export function formatSlotTime(timestamp: string): string {
@@ -58,8 +38,14 @@ const SERVICE_DISPLAY_NAMES: Record<string, string> = {
   SENTRI: 'SENTRI',
 }
 
-export function buildBookUrl(_locationId?: number, serviceType?: string): string {
+export function buildBookUrl(locationId?: number, serviceType?: string): string {
   const serviceName = serviceType && SERVICE_DISPLAY_NAMES[serviceType]
   if (!serviceName) return CBP_BOOK_URL
-  return `https://ttp.cbp.dhs.gov/schedulerui/schedule-interview/location?service=${encodeURIComponent(serviceName)}&type=new`
+  const base = `https://ttp.cbp.dhs.gov/schedulerui/schedule-interview/location?service=${encodeURIComponent(serviceName)}&type=new`
+  // TODO: validate that &location=${id} matches CBP scheduler URL spec — best-effort
+  // pre-selection so the user lands on the right enrollment center when possible.
+  if (typeof locationId === 'number') {
+    return `${base}&location=${encodeURIComponent(String(locationId))}`
+  }
+  return base
 }

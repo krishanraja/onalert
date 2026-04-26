@@ -13,38 +13,54 @@ site_url = "http://localhost:3000"
 additional_redirect_urls = ["https://localhost:3000"]
 jwt_expiry = 3600
 
+# Auth via x-cron-secret (see _shared/cron-auth.ts). Called by pg_cron only.
 [functions.poll-appointments]
 verify_jwt = false
 
+# Auth via x-internal-secret (see _shared/cron-auth.ts). Called by other
+# functions only — never directly from a browser.
 [functions.send-alert]
 verify_jwt = false
 
+# Auth via x-internal-secret (see _shared/cron-auth.ts). Called by
+# poll-appointments only.
 [functions.send-digest-alert]
 verify_jwt = false
 
+# User-facing: requires a valid Supabase JWT.
 [functions.create-checkout]
 verify_jwt = true
 
+# User-facing: requires a valid Supabase JWT.
 [functions.customer-portal]
 verify_jwt = true
 
+# Public webhook: signature verification done in-handler via Stripe SDK.
 [functions.stripe-webhook]
 verify_jwt = false
 
+# Auth via x-cron-secret (see _shared/cron-auth.ts). Called by pg_cron only.
 [functions.process-delayed-alerts]
 verify_jwt = false
 
+# Auth via x-cron-secret (see _shared/cron-auth.ts). Called by pg_cron only.
 [functions.process-rechecks]
 verify_jwt = false
 
+# Auth via x-cron-secret (see _shared/cron-auth.ts). Called by pg_cron only.
 [functions.predict-slots]
 verify_jwt = false
 
+# Public read endpoint: served via service role; cached by client (max-age=300).
 [functions.public-wait-times]
 verify_jwt = false
 
+# Auth via x-internal-secret (see _shared/cron-auth.ts). Called by
+# poll-appointments / send-alert paths only.
 [functions.send-push]
 verify_jwt = false
 
+# Public click tracker: handler validates the user JWT in-body for POST.
+# (GET path returns aggregate counter only.)
 [functions.track-booking-click]
 verify_jwt = false

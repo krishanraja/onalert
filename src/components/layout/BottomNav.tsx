@@ -41,7 +41,7 @@ export function BottomNav({ unreadCount = 0 }: Props) {
               <motion.div animate={isActive ? { scale: [1, 1.15, 1] } : {}} transition={{ duration: 0.2 }}>
                 <Home size={22} />
               </motion.div>
-              <span className="text-[10px] font-medium">Home</span>
+              <span className="text-2xs font-medium">Home</span>
             </>
           )}
         </NavLink>
@@ -71,13 +71,13 @@ export function BottomNav({ unreadCount = 0 }: Props) {
                   <motion.span
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className="absolute -top-1 -right-1 bg-primary text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center leading-none"
+                    className="absolute -top-1 -right-1 bg-primary text-white text-2xs font-bold rounded-full w-4 h-4 flex items-center justify-center leading-none"
                   >
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </motion.span>
                 )}
               </motion.div>
-              <span className="text-[10px] font-medium">Alerts</span>
+              <span className="text-2xs font-medium">Alerts</span>
             </>
           )}
         </NavLink>
@@ -119,7 +119,7 @@ export function BottomNav({ unreadCount = 0 }: Props) {
               <motion.div animate={isActive ? { scale: [1, 1.15, 1] } : {}} transition={{ duration: 0.2 }}>
                 <Settings size={22} />
               </motion.div>
-              <span className="text-[10px] font-medium">Settings</span>
+              <span className="text-2xs font-medium">Settings</span>
             </>
           )}
         </NavLink>

@@ -51,7 +51,7 @@ export function AlertFilterBar({
               key={key}
               onClick={() => toggleService(key)}
               className={cn(
-                'text-[10px] font-mono font-medium px-2 py-1 rounded transition-colors',
+                'text-2xs font-mono font-medium px-2 py-1 rounded transition-colors',
                 active
                   ? 'bg-primary/15 text-primary'
                   : 'bg-surface-muted text-foreground-muted hover:text-foreground-secondary'
@@ -74,7 +74,7 @@ export function AlertFilterBar({
         <button
           onClick={() => onStarredFilterChange(!starredFilter)}
           className={cn(
-            'text-[10px] font-mono font-medium px-2 py-1 rounded transition-colors flex items-center gap-1',
+            'text-2xs font-mono font-medium px-2 py-1 rounded transition-colors flex items-center gap-1',
             starredFilter
               ? 'bg-warning/15 text-warning'
               : 'bg-surface-muted text-foreground-muted hover:text-foreground-secondary'
@@ -96,7 +96,7 @@ export function AlertFilterBar({
           <button
             onClick={() => onLocationFilterChange(null)}
             className={cn(
-              'text-[10px] font-mono font-medium px-2 py-1 rounded transition-colors whitespace-nowrap shrink-0',
+              'text-2xs font-mono font-medium px-2 py-1 rounded transition-colors whitespace-nowrap shrink-0',
               locationFilter === null
                 ? 'bg-primary/15 text-primary'
                 : 'bg-surface-muted text-foreground-muted hover:text-foreground-secondary'
@@ -109,7 +109,7 @@ export function AlertFilterBar({
               key={loc}
               onClick={() => onLocationFilterChange(locationFilter === loc ? null : loc)}
               className={cn(
-                'text-[10px] font-mono font-medium px-2 py-1 rounded transition-colors whitespace-nowrap shrink-0',
+                'text-2xs font-mono font-medium px-2 py-1 rounded transition-colors whitespace-nowrap shrink-0',
                 locationFilter === loc
                   ? 'bg-primary/15 text-primary'
                   : 'bg-surface-muted text-foreground-muted hover:text-foreground-secondary'

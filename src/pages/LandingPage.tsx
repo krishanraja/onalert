@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { ShieldCheck, Users } from 'lucide-react'
 import { getBookingCount } from '@/lib/tracking'
 import { supabase } from '@/lib/supabase'
+
+const APP_URL =
+  (import.meta.env.VITE_APP_URL as string | undefined) || 'https://onalert.app'
 
 interface SuccessStory {
   story: string
@@ -43,7 +46,7 @@ export function LandingPage() {
       <Helmet>
         <title>OnAlert - Global Entry, NEXUS & SENTRI Appointment Alerts</title>
         <meta name="description" content="Get instant alerts when Global Entry, NEXUS & SENTRI (all include TSA PreCheck) appointment slots open from cancellations. Scans every 5 minutes. Book in days, not months." />
-        <link rel="canonical" href="https://onalert.app/" />
+        <link rel="canonical" href={`${APP_URL}/`} />
       </Helmet>
       {/* Ambient crimson glow */}
       <div
@@ -66,7 +69,9 @@ export function LandingPage() {
         <img
           src="/brand/logo-wordmark-dark.png"
           alt="OnAlert"
-          className="h-[141px] md:h-[317px] mx-auto mb-3"
+          width={1024}
+          height={317}
+          className="h-[141px] md:h-[317px] w-auto mx-auto mb-3"
         />
         <p className="text-lg md:text-xl font-medium tracking-tight text-foreground text-center max-w-md mx-auto mb-2">
           Never miss a Trusted Traveler appointment
@@ -84,12 +89,12 @@ export function LandingPage() {
 
         {/* Trust signals */}
         <div className="flex items-center justify-center gap-4 mt-3">
-          <span className="flex items-center gap-1 text-[10px] text-foreground-muted">
+          <span className="flex items-center gap-1 text-2xs text-foreground-muted">
             <ShieldCheck className="w-3 h-3 text-success" />
             30-day money-back guarantee
           </span>
           {bookingCount > 0 && (
-            <span className="flex items-center gap-1 text-[10px] text-foreground-muted">
+            <span className="flex items-center gap-1 text-2xs text-foreground-muted">
               <Users className="w-3 h-3 text-primary" />
               {bookingCount.toLocaleString()} appointments booked
             </span>
@@ -98,7 +103,7 @@ export function LandingPage() {
 
         {/* Government agency logos */}
         <div className="mt-6 mb-2 flex flex-col items-center">
-          <p className="text-[10px] md:text-xs text-foreground-muted mb-3 tracking-wide uppercase">Monitoring appointments from</p>
+          <p className="text-2xs md:text-xs text-foreground-muted mb-3 tracking-wide uppercase">Monitoring appointments from</p>
           <div className="flex items-center justify-center gap-6">
             {[
               {
@@ -119,7 +124,7 @@ export function LandingPage() {
                   className="h-11 md:h-14 w-auto object-contain rounded-full"
                   loading="lazy"
                 />
-                <span className="text-[9px] md:text-[10px] text-foreground-muted text-center">{agency.full}</span>
+                <span className="text-2xs md:text-2xs text-foreground-muted text-center">{agency.full}</span>
               </div>
             ))}
           </div>
@@ -152,11 +157,11 @@ export function LandingPage() {
       {stories.length > 0 && (
         <section className="relative z-10 px-4 pb-3">
           <div className="max-w-sm mx-auto">
-            <p className="text-[10px] text-foreground-muted text-center mb-2 uppercase tracking-wide">What users say</p>
+            <p className="text-2xs text-foreground-muted text-center mb-2 uppercase tracking-wide">What users say</p>
             <div className="bg-surface/50 border border-border rounded-lg px-3 py-2">
               <p className="text-xs text-foreground-secondary italic">"{stories[0].story}"</p>
               {stories[0].wait_days && (
-                <p className="text-[10px] text-foreground-muted mt-1">
+                <p className="text-2xs text-foreground-muted mt-1">
                   Waited {stories[0].wait_days} days{stories[0].location_name ? ` at ${stories[0].location_name}` : ''}
                 </p>
               )}
@@ -167,12 +172,12 @@ export function LandingPage() {
 
       {/* Minimal footer */}
       <footer className="relative z-10 py-3 px-4 text-center">
-        <p className="text-[11px] text-foreground-muted flex items-center justify-center gap-1 flex-wrap">
-          <span>© 2026 OnAlert</span>
+        <p className="text-xs text-foreground-muted flex items-center justify-center gap-1 flex-wrap">
+          <span>© {new Date().getFullYear()} OnAlert</span>
           <span>·</span>
-          <a href="/privacy" className="py-2 px-1 hover:text-foreground transition-colors" aria-label="Privacy policy">Privacy</a>
+          <Link to="/privacy" className="py-2 px-1 hover:text-foreground transition-colors" aria-label="Privacy policy">Privacy</Link>
           <span>·</span>
-          <a href="/terms" className="py-2 px-1 hover:text-foreground transition-colors" aria-label="Terms of service">Terms</a>
+          <Link to="/terms" className="py-2 px-1 hover:text-foreground transition-colors" aria-label="Terms of service">Terms</Link>
           <span>·</span>
           <a href="mailto:support@onalert.app" className="py-2 px-1 hover:text-foreground transition-colors" aria-label="Contact support">Support</a>
         </p>

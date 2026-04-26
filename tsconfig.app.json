@@ -14,13 +14,16 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
-    /* Linting */
+    /* Type-safety: ratcheting up. strict:true is the goal; keeping
+       noImplicitAny off and noUnused* off until the codebase passes. */
     "strict": false,
     "strictNullChecks": true,
+    "alwaysStrict": true,
+    "noImplicitThis": true,
+    "noImplicitAny": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "noImplicitAny": false,
-    "noFallthroughCasesInSwitch": false,
+    "noFallthroughCasesInSwitch": true,
 
     "baseUrl": ".",
     "paths": {

@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { requireInternalSecret } from '../_shared/cron-auth.ts'
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -7,7 +8,9 @@ const supabase = createClient(
 
 const VAPID_PUBLIC_KEY = Deno.env.get('VAPID_PUBLIC_KEY') || ''
 const VAPID_PRIVATE_KEY = Deno.env.get('VAPID_PRIVATE_KEY') || ''
-const VAPID_SUBJECT = 'mailto:support@onalert.app'
+// TODO: Wire VAPID_SUBJECT into a proper web-push library (currently using
+// raw POST without VAPID JWT signing, which most push services will reject).
+const _VAPID_SUBJECT = 'mailto:support@onalert.app'
 
 async function sendWebPush(subscription: { endpoint: string; p256dh: string; auth: string }, payload: string) {
   // Web Push using the standard protocol
@@ -34,6 +37,9 @@ Deno.serve(async (req) => {
   if (req.method !== 'POST') {
     return new Response('Method not allowed', { status: 405 })
   }
+
+  const denied = requireInternalSecret(req)
+  if (denied) return denied
 
   try {
     const { user_id, title, body, url } = await req.json()
@@ -73,7 +79,7 @@ Deno.serve(async (req) => {
     })
   } catch (error) {
     console.error('Push notification error:', error)
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: (error as Error).message }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     })

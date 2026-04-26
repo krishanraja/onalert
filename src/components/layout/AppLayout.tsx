@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase'
 import { BottomNav } from './BottomNav'
 import { Sidebar } from './Sidebar'
 import { Toaster } from '@/components/ui/Toaster'
-import { useAlerts } from '@/hooks/useAlerts'
+import { AlertsProvider, useAlertsContext } from '@/contexts/AlertsProvider'
 import { useKeyboardShortcuts, SHORTCUTS } from '@/hooks/useKeyboardShortcuts'
 
 const TAB_INDEX: Record<string, number> = {
@@ -33,9 +33,8 @@ function getDirection(from: string, to: string): 'left' | 'right' | 'up' | 'fade
   return toIdx > fromIdx ? 'left' : 'right'
 }
 
-export function AppLayout() {
-  const [authed, setAuthed] = useState<boolean | null>(null)
-  const { unreadCount } = useAlerts()
+function AuthenticatedShell() {
+  const { unreadCount } = useAlertsContext()
   const { showHelp, setShowHelp } = useKeyboardShortcuts()
   const location = useLocation()
   const [direction, setDirection] = useState<'left' | 'right' | 'up' | 'fade'>('fade')
@@ -45,27 +44,6 @@ export function AppLayout() {
     setDirection(getDirection(prevPath.current, location.pathname))
     prevPath.current = location.pathname
   }, [location.pathname])
-
-  useEffect(() => {
-    if (!supabase) {
-      const t = setTimeout(() => setAuthed(false), 0)
-      return () => clearTimeout(t)
-    }
-
-    supabase.auth.getSession().then(({ data }) => {
-      setAuthed(!!data.session)
-    })
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      setAuthed(!!session)
-    })
-    return () => subscription.unsubscribe()
-  }, [])
-
-  if (authed === null) {
-    return <LoadingSpinner />
-  }
-
-  if (!authed) return <Navigate to="/auth" replace />
 
   return (
     <div className="h-[100dvh] bg-background flex overflow-hidden">
@@ -77,9 +55,7 @@ export function AppLayout() {
         className="flex-1 flex flex-col h-full overflow-hidden"
         style={{ paddingTop: 'var(--safe-area-top)' }}
       >
-        <main
-          className="flex-1 overflow-y-auto"
-        >
+        <main className="flex-1 overflow-y-auto">
           <AnimatePresence mode="wait" initial={false}>
             <PageTransition key={location.pathname} direction={direction}>
               <Outlet />
@@ -132,5 +108,40 @@ export function AppLayout() {
         </div>
       )}
     </div>
+  )
+}
+
+export function AppLayout() {
+  const [authed, setAuthed] = useState<boolean | null>(null)
+  const location = useLocation()
+
+  useEffect(() => {
+    if (!supabase) {
+      const t = setTimeout(() => setAuthed(false), 0)
+      return () => clearTimeout(t)
+    }
+
+    supabase.auth.getSession().then(({ data }) => {
+      setAuthed(!!data.session)
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setAuthed(!!session)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
+  if (authed === null) {
+    return <LoadingSpinner />
+  }
+
+  if (!authed) {
+    // Preserve where the user was trying to go so AuthPage can return them.
+    return <Navigate to="/auth" replace state={{ from: location }} />
+  }
+
+  return (
+    <AlertsProvider>
+      <AuthenticatedShell />
+    </AlertsProvider>
   )
 }

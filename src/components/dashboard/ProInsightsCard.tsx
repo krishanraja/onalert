@@ -38,7 +38,7 @@ export function ProInsightsCard({ proInsights }: Props) {
           <TrendingUp size={14} className="text-primary" />
           <h3 className="text-xs font-semibold text-foreground uppercase tracking-wide">Pro Insights</h3>
         </div>
-        <span className="text-[10px] font-mono text-foreground-muted">Last 30 days</span>
+        <span className="text-2xs font-mono text-foreground-muted">Last 30 days</span>
       </div>
 
       <div className="divide-y divide-border">
@@ -46,15 +46,15 @@ export function ProInsightsCard({ proInsights }: Props) {
         <div className="px-4 py-3 grid grid-cols-3 gap-3">
           <div className="text-center">
             <p className="text-lg font-bold font-mono text-foreground">{totalAlertsLast30}</p>
-            <p className="text-[10px] text-foreground-muted">Total alerts</p>
+            <p className="text-2xs text-foreground-muted">Total alerts</p>
           </div>
           <div className="text-center">
             <p className="text-lg font-bold font-mono text-foreground">{peakDayOfWeek?.slice(0, 3) || '—'}</p>
-            <p className="text-[10px] text-foreground-muted">Peak day</p>
+            <p className="text-2xs text-foreground-muted">Peak day</p>
           </div>
           <div className="text-center">
             <p className="text-lg font-bold font-mono text-foreground">{peakTimeRange || '—'}</p>
-            <p className="text-[10px] text-foreground-muted">Peak time</p>
+            <p className="text-2xs text-foreground-muted">Peak time</p>
           </div>
         </div>
 
@@ -63,7 +63,7 @@ export function ProInsightsCard({ proInsights }: Props) {
           <div className="px-4 py-3 space-y-2.5">
             <div className="flex items-center gap-1.5 mb-1">
               <MapPin size={11} className="text-foreground-muted" />
-              <span className="text-[10px] font-semibold text-foreground-muted uppercase tracking-wide">
+              <span className="text-2xs font-semibold text-foreground-muted uppercase tracking-wide">
                 Location frequency
               </span>
             </div>

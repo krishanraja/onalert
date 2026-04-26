@@ -78,7 +78,7 @@ export function AlertCard({ alert, isSelected, isHistory, onToggleStar }: Props)
           <div className="flex-1 min-w-0">
             {/* Row 1: Service badge + location + time ago */}
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-[10px] font-mono font-medium bg-primary/10 text-primary px-2 py-0.5 rounded shrink-0">
+              <span className="text-2xs font-mono font-medium bg-primary/10 text-primary px-2 py-0.5 rounded shrink-0">
                 {service.abbr}
               </span>
               <span className="text-xs text-foreground-muted truncate flex items-center gap-1">
@@ -87,7 +87,7 @@ export function AlertCard({ alert, isSelected, isHistory, onToggleStar }: Props)
               </span>
               <div className="shrink-0 flex items-center gap-1 text-foreground-muted ml-auto">
                 <Clock size={10} />
-                <span className="text-[10px] font-mono">{formatDistanceToNow(alert.created_at)}</span>
+                <span className="text-2xs font-mono">{formatDistanceToNow(alert.created_at)}</span>
               </div>
             </div>
 
@@ -101,13 +101,13 @@ export function AlertCard({ alert, isSelected, isHistory, onToggleStar }: Props)
               </p>
               <div className="flex items-center gap-2 shrink-0 ml-2">
                 {isLikelyGone && !isHistory && (
-                  <span className="text-[9px] font-mono text-warning flex items-center gap-0.5">
+                  <span className="text-2xs font-mono text-warning flex items-center gap-0.5">
                     <AlertTriangle size={9} />
                     Likely gone
                   </span>
                 )}
                 {extraCount > 0 && (
-                  <span className="text-[10px] font-mono text-foreground-muted flex items-center gap-1">
+                  <span className="text-2xs font-mono text-foreground-muted flex items-center gap-1">
                     <Layers size={10} />
                     +{extraCount} more
                   </span>

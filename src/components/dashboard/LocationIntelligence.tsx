@@ -50,19 +50,19 @@ export function LocationIntelligence({ locationIds }: Props) {
             <div className="grid grid-cols-3 gap-2 text-center">
               <div className="bg-background rounded-lg p-2">
                 <div className="text-sm font-semibold text-foreground">{loc.cancellationsPerWeek}</div>
-                <div className="text-[10px] text-foreground-muted">slots/week</div>
+                <div className="text-2xs text-foreground-muted">slots/week</div>
               </div>
               <div className="bg-background rounded-lg p-2">
                 <div className="text-sm font-semibold text-foreground">
                   {loc.avgFillMinutes ? `${loc.avgFillMinutes}m` : '--'}
                 </div>
-                <div className="text-[10px] text-foreground-muted">avg fill</div>
+                <div className="text-2xs text-foreground-muted">avg fill</div>
               </div>
               <div className="bg-background rounded-lg p-2">
                 <div className="text-sm font-semibold text-foreground">
                   {loc.peakDays[0]?.day || '--'}
                 </div>
-                <div className="text-[10px] text-foreground-muted">peak day</div>
+                <div className="text-2xs text-foreground-muted">peak day</div>
               </div>
             </div>
 
@@ -86,7 +86,7 @@ export function LocationIntelligence({ locationIds }: Props) {
                             : 'hsl(0 0% 15%)',
                         }}
                       />
-                      <span className="text-[8px] text-foreground-muted">{day}</span>
+                      <span className="text-2xs text-foreground-muted">{day}</span>
                     </div>
                   )
                 })}

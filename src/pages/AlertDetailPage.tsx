@@ -3,12 +3,12 @@ import { useEffect, useState } from 'react'
 import { ArrowLeft, ExternalLink, MapPin, Calendar, Clock, RefreshCw, Lock, Layers, ChevronDown } from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { supabase, type Alert } from '@/lib/supabase'
-import { useAlerts } from '@/hooks/useAlerts'
+import { useAlertsContext } from '@/contexts/AlertsProvider'
 import { useProfile } from '@/hooks/useProfile'
 import { SERVICE_TYPES, type ServiceType } from '@/lib/locations'
 import { PROGRAMS } from '@/lib/programs'
 import { formatSlotDate, formatSlotTime, minutesSince } from '@/lib/time'
-import { CBP_BOOK_URL, buildBookUrl } from '@/lib/cbpApi'
+import { buildBookUrl } from '@/lib/cbpApi'
 import { haptic } from '@/lib/haptics'
 import { cn } from '@/lib/utils'
 import { showToast } from '@/hooks/useToast'
@@ -18,7 +18,7 @@ import { trackBookingClick } from '@/lib/tracking'
 export function AlertDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { markRead } = useAlerts()
+  const { markRead } = useAlertsContext()
   const { isPaid } = useProfile()
   const [alert, setAlert] = useState<Alert | null>(null)
   const [loading, setLoading] = useState(true)
@@ -188,7 +188,7 @@ export function AlertDetailPage() {
                     <button
                       onClick={() => {
                         trackBookingClick(alert.id, slot.location_id)
-                        window.open(slot.book_url || buildBookUrl(slot.location_id, alert.payload.service_type), '_blank')
+                        window.open(slot.book_url || buildBookUrl(slot.location_id, alert.payload.service_type), '_blank', 'noopener,noreferrer')
                       }}
                       className="bg-primary text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-1.5 shrink-0"
                     >
@@ -264,7 +264,7 @@ export function AlertDetailPage() {
             <button
               onClick={() => {
                 trackBookingClick(alert.id, alert.payload.location_id)
-                window.open(alert.payload.book_url || buildBookUrl(alert.payload.location_id, alert.payload.service_type), '_blank')
+                window.open(alert.payload.book_url || buildBookUrl(alert.payload.location_id, alert.payload.service_type), '_blank', 'noopener,noreferrer')
               }}
               aria-label="Book this appointment slot (opens in new tab)"
               className="w-full bg-primary text-white py-4 rounded-lg font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
@@ -291,11 +291,11 @@ export function AlertDetailPage() {
                   <div className="px-4 pb-4 space-y-2 border-t border-border pt-3">
                     {program.bookingSteps.map((step, i) => (
                       <div key={i} className="flex gap-2.5">
-                        <span className="text-[11px] font-bold text-foreground-muted bg-surface-muted w-5 h-5 rounded-full flex items-center justify-center shrink-0">{i + 1}</span>
+                        <span className="text-xs font-bold text-foreground-muted bg-surface-muted w-5 h-5 rounded-full flex items-center justify-center shrink-0">{i + 1}</span>
                         <p className="text-xs text-foreground-secondary leading-relaxed pt-0.5">{step}</p>
                       </div>
                     ))}
-                    <p className="text-[11px] text-foreground-muted mt-2 pt-2 border-t border-border/50">
+                    <p className="text-xs text-foreground-muted mt-2 pt-2 border-t border-border/50">
                       {program.prerequisite}
                     </p>
                   </div>

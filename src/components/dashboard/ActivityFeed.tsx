@@ -19,7 +19,7 @@ export function ActivityFeed({ alerts }: Props) {
         {alerts.length > 0 && (
           <button
             onClick={() => navigate('/app/alerts')}
-            className="text-[10px] text-primary hover:text-primary/80 transition-colors font-medium"
+            className="text-2xs text-primary hover:text-primary/80 transition-colors font-medium"
           >
             View all
           </button>
@@ -54,7 +54,7 @@ export function ActivityFeed({ alerts }: Props) {
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-[9px] font-mono font-medium bg-primary/10 text-primary px-1.5 py-0.5 rounded">
+                    <span className="text-2xs font-mono font-medium bg-primary/10 text-primary px-1.5 py-0.5 rounded">
                       {service.abbr}
                     </span>
                     <span className="text-xs text-foreground truncate flex items-center gap-1">
@@ -62,14 +62,14 @@ export function ActivityFeed({ alerts }: Props) {
                       {alert.payload.location_name}
                     </span>
                   </div>
-                  <p className="text-[11px] font-mono text-foreground-secondary mt-0.5">
+                  <p className="text-xs font-mono text-foreground-secondary mt-0.5">
                     {formatSlotTime(alert.payload.slot_timestamp)}
                   </p>
                 </div>
 
                 <div className="shrink-0 flex items-center gap-1 text-foreground-muted">
                   <Clock size={9} />
-                  <span className="text-[9px] font-mono">{formatDistanceToNow(alert.created_at)}</span>
+                  <span className="text-2xs font-mono">{formatDistanceToNow(alert.created_at)}</span>
                 </div>
               </button>
             )

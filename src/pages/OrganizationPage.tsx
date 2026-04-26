@@ -1,20 +1,21 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Users, Plus, Building2 } from 'lucide-react'
+import { useNavigate, Navigate } from 'react-router-dom'
+import { Users, Building2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useProfile } from '@/hooks/useProfile'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 export function OrganizationPage() {
   const navigate = useNavigate()
-  const { profile } = useProfile()
+  const { profile, loading: profileLoading } = useProfile()
   const [org, setOrg] = useState<{ id: string; name: string; seats: number } | null>(null)
   const [members, setMembers] = useState<{ id: string; user_id: string; joined_at: string }[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!supabase || !profile?.organization_id) {
-      setLoading(false)
-      return
+      const t = setTimeout(() => setLoading(false), 0)
+      return () => clearTimeout(t)
     }
 
     async function load() {
@@ -39,16 +40,20 @@ export function OrganizationPage() {
     load()
   }, [profile?.organization_id])
 
+  // Gate the page to users who actually belong to an organization. Profile
+  // still loading? Render nothing for a tick. No org? Bounce to /app.
+  if (profileLoading) return null
+  if (!profile?.organization_id) {
+    return <Navigate to="/app" replace />
+  }
+
   return (
     <div className="min-h-dvh bg-background pb-24">
-      <header className="sticky top-0 z-10 bg-background-elevated border-b border-border px-4 py-3">
-        <div className="flex items-center gap-3">
-          <button onClick={() => navigate('/app/settings')} className="p-1 text-foreground-muted hover:text-foreground">
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <h1 className="text-lg font-semibold text-foreground">Organization</h1>
-        </div>
-      </header>
+      <PageHeader
+        title="Organization"
+        onBack={() => navigate('/app/settings')}
+        maxWidthClassName=""
+      />
 
       <main className="px-4 py-5 max-w-2xl mx-auto space-y-6">
         {loading ? (
@@ -83,12 +88,7 @@ export function OrganizationPage() {
                   </div>
                 ))}
               </div>
-              {members.length < org.seats && (
-                <button className="mt-3 flex items-center gap-1.5 text-xs text-primary font-medium">
-                  <Plus className="w-3.5 h-3.5" />
-                  Invite member
-                </button>
-              )}
+              {/* TODO: invite flow — endpoint and email template not built yet */}
             </section>
           </>
         ) : (

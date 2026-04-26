@@ -10,7 +10,7 @@ export function TermsPage() {
       <Helmet>
         <title>Terms of Service | OnAlert</title>
         <meta name="description" content="OnAlert terms of service. Review our policies on accounts, payments, refunds, and service usage for trusted traveler appointment monitoring." />
-        <link rel="canonical" href="https://onalert.app/terms" />
+        <link rel="canonical" href={`${(import.meta.env.VITE_APP_URL as string | undefined) || 'https://onalert.app'}/terms`} />
       </Helmet>
       <header className="border-b border-border bg-background-elevated safe-top">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-3">

@@ -10,7 +10,7 @@ export function PrivacyPage() {
       <Helmet>
         <title>Privacy Policy | OnAlert</title>
         <meta name="description" content="OnAlert privacy policy. Learn how we collect, use, and protect your data for our appointment monitoring service." />
-        <link rel="canonical" href="https://onalert.app/privacy" />
+        <link rel="canonical" href={`${(import.meta.env.VITE_APP_URL as string | undefined) || 'https://onalert.app'}/privacy`} />
       </Helmet>
       <header className="border-b border-border bg-background-elevated safe-top">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-3">

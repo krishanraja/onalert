@@ -31,11 +31,11 @@ export function MonitorCard({ monitor, onToggle, onDelete }: Props) {
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-mono font-medium bg-primary/10 text-primary px-2 py-0.5 rounded">
+            <span className="text-2xs font-mono font-medium bg-primary/10 text-primary px-2 py-0.5 rounded">
               {service.abbr}
             </span>
             <span className={cn(
-              'text-[10px] font-medium flex items-center gap-1',
+              'text-2xs font-medium flex items-center gap-1',
               monitor.active ? 'text-success' : 'text-foreground-muted'
             )}>
               {monitor.active ? (
@@ -108,14 +108,14 @@ export function MonitorCard({ monitor, onToggle, onDelete }: Props) {
                 }}
                 disabled={deleting}
                 aria-label="Confirm delete"
-                className="px-2 py-1 text-[10px] font-medium text-white bg-destructive rounded disabled:opacity-50"
+                className="px-2 py-1 text-2xs font-medium text-white bg-destructive rounded disabled:opacity-50"
               >
                 {deleting ? '...' : 'Delete'}
               </button>
               <button
                 onClick={() => setConfirmDelete(false)}
                 aria-label="Cancel delete"
-                className="px-2 py-1 text-[10px] font-medium text-foreground-muted bg-surface-muted rounded"
+                className="px-2 py-1 text-2xs font-medium text-foreground-muted bg-surface-muted rounded"
               >
                 Cancel
               </button>
@@ -146,14 +146,14 @@ export function MonitorCard({ monitor, onToggle, onDelete }: Props) {
       <div className="flex items-center gap-3 pt-2 border-t border-border">
         <div className="flex items-center gap-1.5 text-foreground-muted">
           <Clock size={11} />
-          <span className="text-[11px] font-mono">
+          <span className="text-xs font-mono">
             {monitor.last_checked_at
               ? `Checked ${formatDistanceToNow(monitor.last_checked_at)}`
               : 'Not yet checked'}
           </span>
         </div>
         {monitor.last_alert_at && (
-          <span className="text-[11px] text-primary font-mono ml-auto">
+          <span className="text-xs text-primary font-mono ml-auto">
             Last alert {formatDistanceToNow(monitor.last_alert_at)}
           </span>
         )}
