@@ -36,3 +36,9 @@ test-results/
 # Seed scripts
 seed-data.ts
 .vercel
+
+# Playwright MCP cache (transcripts/screenshots)
+.playwright-mcp/
+
+# pnpm — repo standardized on npm; pnpm lockfile must not be created
+pnpm-lock.yaml
