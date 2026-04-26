@@ -25,8 +25,29 @@ ALTER TABLE public.stripe_events ENABLE ROW LEVEL SECURITY;
 -- RLS, so the stripe-webhook function can insert/select normally.
 
 -- ============================================================
--- Alerts dedup index
+-- Alerts dedup: collapse historical duplicates, then add index
 -- ============================================================
+-- Production has accumulated duplicate alert rows from overlapping CRON
+-- runs (the bug this index now prevents). Before the unique index can be
+-- created we have to collapse those duplicates to one row per (monitor,
+-- location_id, slot_timestamp). We keep the OLDEST row of each group so
+-- the user keeps whichever alert they most likely already saw/acted on.
+WITH duplicate_alerts AS (
+  SELECT
+    id,
+    ROW_NUMBER() OVER (
+      PARTITION BY monitor_id,
+                   payload ->> 'location_id',
+                   payload ->> 'slot_timestamp'
+      ORDER BY created_at ASC, id ASC
+    ) AS rn
+  FROM public.alerts
+  WHERE (payload ->> 'slot_timestamp') IS NOT NULL
+)
+DELETE FROM public.alerts a
+USING duplicate_alerts d
+WHERE a.id = d.id AND d.rn > 1;
+
 -- Prevents two concurrent poll-appointments runs from inserting two alerts
 -- for the same (monitor, location, slot_timestamp) tuple.
 -- Partial WHERE clause skips rows that don't yet have a slot_timestamp
