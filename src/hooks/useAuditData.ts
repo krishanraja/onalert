@@ -74,6 +74,7 @@ export function useAuditData() {
     }
 
     // 2. CBP API degradation (last hour of location fetches)
+    // eslint-disable-next-line react-hooks/purity
     const oneHourAgo = Date.now() - 60 * 60 * 1000
     const recentFetches = locationFetches.filter(f => new Date(f.fetched_at).getTime() > oneHourAgo)
     if (recentFetches.length > 0) {
@@ -93,6 +94,7 @@ export function useAuditData() {
     }
 
     // 3. Alert delivery failures
+    // eslint-disable-next-line react-hooks/purity
     const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
     const stuckAlerts = recentAlerts.filter(a =>
       a.created_at < fiveMinAgo &&
@@ -112,6 +114,7 @@ export function useAuditData() {
     // 4. Last poll recency
     if (pollRuns.length > 0) {
       const lastPoll = pollRuns[0]
+      // eslint-disable-next-line react-hooks/purity
       const minsSince = (Date.now() - new Date(lastPoll.started_at).getTime()) / 60_000
       if (minsSince > 20) {
         checks.push({ name: 'Last Poll', status: 'critical', message: `Last poll was ${Math.round(minsSince)} minutes ago` })
@@ -143,6 +146,7 @@ export function useAuditData() {
 
   // --- Alert pipeline stats (last 24h) ---
   const alertPipelineStats = useMemo(() => {
+    // eslint-disable-next-line react-hooks/purity
     const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000
     const last24h = recentAlerts.filter(a => new Date(a.created_at).getTime() > twentyFourHoursAgo)
     const created = last24h.length

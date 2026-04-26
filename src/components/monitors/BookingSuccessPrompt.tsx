@@ -10,7 +10,8 @@ interface Props {
 
 export function BookingSuccessPrompt({ visible, onDismiss }: Props) {
   const [copied, setCopied] = useState(false)
-  const shareUrl = 'https://onalert.app'
+  const shareUrl =
+    (import.meta.env.VITE_APP_URL as string | undefined) || 'https://onalert.app'
 
   const handleCopy = async () => {
     try {

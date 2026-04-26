@@ -22,33 +22,17 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{
-          minHeight: '100vh',
-          backgroundColor: '#0A0A0A',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontFamily: 'Inter, sans-serif',
-        }}>
-          <div style={{ textAlign: 'center', maxWidth: 400, padding: 24 }}>
-            <h1 style={{ color: '#F5F5F5', fontSize: 24, marginBottom: 8 }}>
+        <div className="min-h-screen bg-background flex items-center justify-center font-sans">
+          <div className="text-center max-w-md px-6">
+            <h1 className="text-2xl font-semibold text-foreground mb-2">
               Something went wrong
             </h1>
-            <p style={{ color: '#888888', fontSize: 14, marginBottom: 24 }}>
+            <p className="text-sm text-foreground-muted mb-6">
               The application encountered an unexpected error.
             </p>
             <button
               onClick={() => window.location.reload()}
-              style={{
-                backgroundColor: '#9F0506',
-                color: '#F5F5F5',
-                border: 'none',
-                padding: '10px 24px',
-                borderRadius: 8,
-                cursor: 'pointer',
-                fontSize: 14,
-                fontWeight: 600,
-              }}
+              className="bg-primary text-white border-0 px-6 py-2.5 rounded-lg cursor-pointer text-sm font-semibold hover:bg-primary/90 transition-colors"
             >
               Reload
             </button>

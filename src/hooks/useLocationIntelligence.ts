@@ -15,8 +15,8 @@ export function useLocationIntelligence(locationIds: number[]) {
 
   useEffect(() => {
     if (!supabase || !locationIds.length) {
-      setLoading(false)
-      return
+      const t = setTimeout(() => setLoading(false), 0)
+      return () => clearTimeout(t)
     }
 
     async function load() {

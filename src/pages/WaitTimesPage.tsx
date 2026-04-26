@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import { ArrowLeft, Search, Clock, TrendingUp, Shield } from 'lucide-react'
+import { Search, Clock, TrendingUp, Shield } from 'lucide-react'
 import { TOP_LOCATIONS, searchLocations } from '@/lib/locations'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 interface WaitTimeData {
   location_id: number
@@ -43,16 +44,12 @@ export function WaitTimesPage() {
       <Helmet>
         <title>Global Entry, NEXUS & SENTRI Wait Times by Location | OnAlert</title>
         <meta name="description" content="Check real-time estimated wait times at CBP enrollment centers. See appointment availability based on actual cancellation patterns for Global Entry, NEXUS & SENTRI." />
-        <link rel="canonical" href="https://onalert.app/wait-times" />
+        <link rel="canonical" href={`${(import.meta.env.VITE_APP_URL as string | undefined) || 'https://onalert.app'}/wait-times`} />
       </Helmet>
-      <header className="sticky top-0 z-10 bg-background-elevated border-b border-border px-4 py-3">
-        <div className="max-w-3xl mx-auto flex items-center gap-3">
-          <button onClick={() => navigate('/')} className="p-1 text-foreground-muted hover:text-foreground">
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <h1 className="text-lg font-semibold text-foreground">Wait Time Checker</h1>
-        </div>
-      </header>
+      <PageHeader
+        title="Wait Time Checker"
+        onBack={() => navigate('/')}
+      />
 
       <main className="max-w-3xl mx-auto px-4 py-4 space-y-4">
         <p className="text-sm text-foreground-secondary">
@@ -99,14 +96,14 @@ export function WaitTimesPage() {
                             <TrendingUp className="w-3 h-3 text-success" />
                             {data.slots_per_week}/wk
                           </div>
-                          <div className="text-[10px] text-foreground-muted">cancellations</div>
+                          <div className="text-2xs text-foreground-muted">cancellations</div>
                         </div>
                         <div className="text-right">
                           <div className="text-xs font-medium text-foreground flex items-center gap-1">
                             <Clock className="w-3 h-3 text-warning" />
                             {effectiveWait}
                           </div>
-                          <div className="text-[10px] text-foreground-muted">via OnAlert</div>
+                          <div className="text-2xs text-foreground-muted">via OnAlert</div>
                         </div>
                       </>
                     ) : (

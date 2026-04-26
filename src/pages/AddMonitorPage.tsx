@@ -9,7 +9,6 @@ import { PROGRAMS } from '@/lib/programs'
 import { getRecommendations, getNearestLocations } from '@/lib/recommendations'
 import { getUserLocation, guessLocationFromTimezone } from '@/lib/geolocation'
 import { haptic } from '@/lib/haptics'
-import { showToast } from '@/hooks/useToast'
 import { cn } from '@/lib/utils'
 import { SuccessScreen } from '@/components/monitors/SuccessScreen'
 import { createCheckoutSession } from '@/lib/stripe'
@@ -26,7 +25,7 @@ function JourneyTimeline({ serviceType }: { serviceType: ServiceType }) {
         <div key={i} className="flex gap-3">
           <div className="flex flex-col items-center">
             <div className={cn(
-              'w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0',
+              'w-5 h-5 rounded-full flex items-center justify-center text-2xs font-bold shrink-0',
               step.isOnAlertStep
                 ? 'bg-primary text-white'
                 : 'bg-surface-muted text-foreground-muted border border-border'
@@ -40,9 +39,9 @@ function JourneyTimeline({ serviceType }: { serviceType: ServiceType }) {
           <div className="pb-2 -mt-0.5">
             <p className={cn('text-xs font-medium', step.isOnAlertStep ? 'text-primary' : 'text-foreground')}>
               {step.label}
-              {step.isOnAlertStep && <span className="ml-1.5 text-[9px] font-semibold bg-primary/10 text-primary px-1.5 py-0.5 rounded">OnAlert</span>}
+              {step.isOnAlertStep && <span className="ml-1.5 text-2xs font-semibold bg-primary/10 text-primary px-1.5 py-0.5 rounded">OnAlert</span>}
             </p>
-            <p className="text-[11px] text-foreground-muted leading-relaxed">{step.detail}</p>
+            <p className="text-xs text-foreground-muted leading-relaxed">{step.detail}</p>
           </div>
         </div>
       ))}
@@ -95,13 +94,13 @@ function ServiceTypeStep({ serviceType, onSelect }: { serviceType: ServiceType |
                 <div className="flex items-center gap-2 mb-1">
                   <h3 className="font-semibold text-foreground">{service.label}</h3>
                   {key === 'GE' && (
-                    <span className="text-[9px] font-medium bg-warning/10 text-warning px-1.5 py-0.5 rounded">Popular</span>
+                    <span className="text-2xs font-medium bg-warning/10 text-warning px-1.5 py-0.5 rounded">Popular</span>
                   )}
                 </div>
                 <p className="text-xs text-foreground-secondary leading-relaxed mb-2">
                   {service.description}
                 </p>
-                <div className="flex items-center gap-3 text-[11px] text-foreground-muted">
+                <div className="flex items-center gap-3 text-xs text-foreground-muted">
                   <span>{program.cost}</span>
                   <span className="w-px h-3 bg-border" />
                   <span>{program.validity}</span>
@@ -115,7 +114,7 @@ function ServiceTypeStep({ serviceType, onSelect }: { serviceType: ServiceType |
                   e.stopPropagation()
                   setExpandedJourney(isJourneyExpanded ? null : key as ServiceType)
                 }}
-                className="mt-1 ml-1 text-[11px] text-primary/70 hover:text-primary font-medium flex items-center gap-1 transition-colors"
+                className="mt-1 ml-1 text-xs text-primary/70 hover:text-primary font-medium flex items-center gap-1 transition-colors"
               >
                 How does {service.label} work?
                 <motion.span animate={{ rotate: isJourneyExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
@@ -152,7 +151,7 @@ function QuickStartJourney() {
     <div className="mt-2 mb-1">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="text-[11px] text-primary hover:text-primary/80 font-medium flex items-center gap-1 transition-colors"
+        className="text-xs text-primary hover:text-primary/80 font-medium flex items-center gap-1 transition-colors"
       >
         Not applied yet? Here's how Global Entry works
         <motion.span animate={{ rotate: expanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
@@ -186,7 +185,7 @@ const stepVariants = {
 
 export function AddMonitorPage() {
   const navigate = useNavigate()
-  const { profile, isPaid, isFamily, isExpress } = useProfile()
+  const { isPaid, isFamily, isExpress } = useProfile()
   const { monitors, createMonitor, cooldownExpiry, refreshCooldown } = useMonitors()
   const [step, setStep] = useState<0 | 1 | 2 | 3>(0)
   const [stepDirection, setStepDirection] = useState(1)
@@ -479,10 +478,15 @@ export function AddMonitorPage() {
             <motion.button
               whileTap={{ scale: 0.97 }}
               onClick={handleQuickSetup}
-              disabled={loading || !!hasCooldown}
+              disabled={loading || geoLoading || !!hasCooldown}
               className="w-full bg-primary text-white py-3.5 rounded-lg font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              {loading ? 'Activating...' : (
+              {loading ? 'Activating...' : geoLoading ? (
+                <>
+                  <Navigation size={16} className="animate-pulse" />
+                  Detecting your location...
+                </>
+              ) : (
                 <>
                   <Zap size={16} />
                   Activate in one tap
@@ -698,10 +702,10 @@ export function AddMonitorPage() {
                                 {location.city}, {location.state}
                               </span>
                               {isNearby && (
-                                <span className="text-[9px] font-medium bg-primary/10 text-primary px-1.5 py-0.5 rounded shrink-0">Nearby</span>
+                                <span className="text-2xs font-medium bg-primary/10 text-primary px-1.5 py-0.5 rounded shrink-0">Nearby</span>
                               )}
                               {isPopular && !isNearby && (
-                                <span className="text-[9px] font-medium bg-warning/10 text-warning px-1.5 py-0.5 rounded shrink-0">Popular</span>
+                                <span className="text-2xs font-medium bg-warning/10 text-warning px-1.5 py-0.5 rounded shrink-0">Popular</span>
                               )}
                             </div>
                             <p className="text-xs text-foreground-secondary truncate">
@@ -813,7 +817,7 @@ export function AddMonitorPage() {
 
         {error && (
           <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
-            <p className="text-sm text-destructive">{error}</p>
+            <p className="text-sm text-destructive" role="alert" aria-live="assertive">{error}</p>
           </div>
         )}
       </div>

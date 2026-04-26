@@ -26,30 +26,30 @@ export function QuickStats({ monitors, alerts }: Props) {
       <div className="bg-surface border border-border rounded-lg p-3">
         <div className="flex items-center gap-2 mb-1">
           <Activity size={12} className="text-success" />
-          <span className="text-[10px] font-medium text-foreground-muted uppercase tracking-wide">Active</span>
+          <span className="text-2xs font-medium text-foreground-muted uppercase tracking-wide">Active</span>
         </div>
         <p className="text-xl font-bold font-mono text-foreground">{activeMonitors}</p>
-        <p className="text-[10px] text-foreground-muted">{totalLocations} locations</p>
+        <p className="text-2xs text-foreground-muted">{totalLocations} locations</p>
       </div>
 
       <div className="bg-surface border border-border rounded-lg p-3">
         <div className="flex items-center gap-2 mb-1">
           <Bell size={12} className="text-primary" />
-          <span className="text-[10px] font-medium text-foreground-muted uppercase tracking-wide">Today</span>
+          <span className="text-2xs font-medium text-foreground-muted uppercase tracking-wide">Today</span>
         </div>
         <p className="text-xl font-bold font-mono text-foreground">{todayAlerts}</p>
-        <p className="text-[10px] text-foreground-muted">alert{todayAlerts !== 1 ? 's' : ''} fired</p>
+        <p className="text-2xs text-foreground-muted">alert{todayAlerts !== 1 ? 's' : ''} fired</p>
       </div>
 
       <div className="bg-surface border border-border rounded-lg p-3">
         <div className="flex items-center gap-2 mb-1">
           <Clock size={12} className="text-foreground-muted" />
-          <span className="text-[10px] font-medium text-foreground-muted uppercase tracking-wide">Last scan</span>
+          <span className="text-2xs font-medium text-foreground-muted uppercase tracking-wide">Last scan</span>
         </div>
         <p className="text-sm font-bold font-mono text-foreground">
           {lastChecked?.last_checked_at ? formatDistanceToNow(lastChecked.last_checked_at) : '-'}
         </p>
-        <p className="text-[10px] text-foreground-muted">ago</p>
+        <p className="text-2xs text-foreground-muted">ago</p>
       </div>
     </div>
   )

@@ -37,11 +37,11 @@ export function MonitorLiveCard({ monitor, liveAlerts }: Props) {
       {/* Monitor header */}
       <div className="px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-mono font-semibold bg-primary/15 text-primary px-2 py-0.5 rounded">
+          <span className="text-2xs font-mono font-semibold bg-primary/15 text-primary px-2 py-0.5 rounded">
             {service.abbr}
           </span>
           <span className={cn(
-            'text-[10px] font-medium flex items-center gap-1',
+            'text-2xs font-medium flex items-center gap-1',
             monitor.active ? 'text-success' : 'text-foreground-muted'
           )}>
             {monitor.active ? (
@@ -59,7 +59,7 @@ export function MonitorLiveCard({ monitor, liveAlerts }: Props) {
         </div>
         <div className="flex items-center gap-1 text-foreground-muted">
           <Clock size={10} />
-          <span className="text-[9px] font-mono">
+          <span className="text-2xs font-mono">
             {monitor.last_checked_at ? formatDistanceToNow(monitor.last_checked_at) : 'pending'}
           </span>
         </div>
@@ -67,7 +67,7 @@ export function MonitorLiveCard({ monitor, liveAlerts }: Props) {
 
       {/* Locations summary */}
       <div className="px-4 pb-2">
-        <div className="flex items-center gap-1 text-[11px] text-foreground-secondary">
+        <div className="flex items-center gap-1 text-xs text-foreground-secondary">
           <MapPin size={10} className="shrink-0 text-foreground-muted" />
           <span className="truncate">
             {locations.slice(0, 2).map((l) => `${l!.city}, ${l!.state}`).join(' · ')}
@@ -96,7 +96,7 @@ export function MonitorLiveCard({ monitor, liveAlerts }: Props) {
                   e.stopPropagation()
                   haptic('success')
                   trackBookingClick(alert.id, alert.payload.location_id)
-                  window.open(alert.payload.book_url || buildBookUrl(alert.payload.location_id, alert.payload.service_type), '_blank')
+                  window.open(alert.payload.book_url || buildBookUrl(alert.payload.location_id, alert.payload.service_type), '_blank', 'noopener,noreferrer')
                 }}
                 className="bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 shrink-0 hover:bg-primary/90 transition-colors"
               >
@@ -107,7 +107,7 @@ export function MonitorLiveCard({ monitor, liveAlerts }: Props) {
           ))}
           {sortedAlerts.length > 5 && (
             <div className="px-4 py-2 text-center">
-              <span className="text-[10px] font-mono text-foreground-muted">
+              <span className="text-2xs font-mono text-foreground-muted">
                 +{sortedAlerts.length - 5} more slots
               </span>
             </div>

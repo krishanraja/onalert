@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import { MapPin, Search, ArrowLeft } from 'lucide-react'
+import { MapPin, Search } from 'lucide-react'
 import { TOP_LOCATIONS, searchLocations } from '@/lib/locations'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 export function LocationsIndexPage() {
   const navigate = useNavigate()
@@ -15,16 +16,12 @@ export function LocationsIndexPage() {
       <Helmet>
         <title>CBP Enrollment Centers - Browse All Locations | OnAlert</title>
         <meta name="description" content="Browse CBP enrollment centers nationwide. Search Global Entry, NEXUS & SENTRI interview locations by name, city, or state." />
-        <link rel="canonical" href="https://onalert.app/locations" />
+        <link rel="canonical" href={`${(import.meta.env.VITE_APP_URL as string | undefined) || 'https://onalert.app'}/locations`} />
       </Helmet>
-      <header className="sticky top-0 z-10 bg-background-elevated border-b border-border px-4 py-3">
-        <div className="max-w-3xl mx-auto flex items-center gap-3">
-          <button onClick={() => navigate('/')} className="p-1 text-foreground-muted hover:text-foreground">
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <h1 className="text-lg font-semibold text-foreground">CBP Enrollment Centers</h1>
-        </div>
-      </header>
+      <PageHeader
+        title="CBP Enrollment Centers"
+        onBack={() => navigate('/')}
+      />
 
       <main className="max-w-3xl mx-auto px-4 py-4">
         <div className="relative mb-4">

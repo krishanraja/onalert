@@ -11,12 +11,15 @@ export function useMonitors() {
 
   useEffect(() => {
     let mounted = true
+    let userId: string | null = null
 
     async function load() {
       if (!supabase) { setLoading(false); return }
 
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { setLoading(false); return }
+
+      userId = user.id
 
       const { data } = await supabase
         .from('monitors')
@@ -30,18 +33,43 @@ export function useMonitors() {
       }
     }
 
-    load()
+    let channel: ReturnType<NonNullable<typeof supabase>['channel']> | null = null
 
-    if (!supabase) return
+    load().then(() => {
+      if (!supabase || !userId || !mounted) return
 
-    const channel = supabase
-      .channel('monitors')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'monitors' }, load)
-      .subscribe()
+      channel = supabase
+        .channel(`monitors:${userId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'monitors',
+            filter: `user_id=eq.${userId}`,
+          },
+          (payload) => {
+            // For UPDATE events scoped to this user, merge into local state
+            // instead of refetching the entire list.
+            if (
+              payload.eventType === 'UPDATE' &&
+              payload.new &&
+              (payload.new as Monitor).user_id === userId
+            ) {
+              const updated = payload.new as Monitor
+              setMonitors((prev) => prev.map((m) => (m.id === updated.id ? updated : m)))
+              return
+            }
+            // INSERT/DELETE: full refetch is simplest and correct.
+            load()
+          }
+        )
+        .subscribe()
+    })
 
     return () => {
       mounted = false
-      supabase!.removeChannel(channel)
+      if (channel && supabase) supabase.removeChannel(channel)
     }
   }, [])
 

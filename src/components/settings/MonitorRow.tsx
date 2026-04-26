@@ -29,7 +29,7 @@ export function MonitorRow({ monitor, onToggle, onDelete }: Props) {
       !monitor.active && 'opacity-50'
     )}>
       {/* Service badge */}
-      <span className="text-[10px] font-mono font-medium bg-primary/10 text-primary px-1.5 py-0.5 rounded shrink-0">
+      <span className="text-2xs font-mono font-medium bg-primary/10 text-primary px-1.5 py-0.5 rounded shrink-0">
         {service.abbr}
       </span>
 
@@ -54,7 +54,7 @@ export function MonitorRow({ monitor, onToggle, onDelete }: Props) {
             {firstLoc ? `${firstLoc.city}, ${firstLoc.state}` : 'Unknown'}
           </span>
           {locations.length > 1 && (
-            <span className="text-[10px] text-foreground-muted shrink-0">+{locations.length - 1}</span>
+            <span className="text-2xs text-foreground-muted shrink-0">+{locations.length - 1}</span>
           )}
         </div>
       </div>
@@ -95,13 +95,13 @@ export function MonitorRow({ monitor, onToggle, onDelete }: Props) {
                 }
               }}
               disabled={deleting}
-              className="px-1.5 py-0.5 text-[10px] font-medium text-white bg-destructive rounded disabled:opacity-50"
+              className="px-1.5 py-0.5 text-2xs font-medium text-white bg-destructive rounded disabled:opacity-50"
             >
               {deleting ? '...' : 'Delete'}
             </button>
             <button
               onClick={() => setConfirmDelete(false)}
-              className="px-1.5 py-0.5 text-[10px] font-medium text-foreground-muted bg-surface-muted rounded"
+              className="px-1.5 py-0.5 text-2xs font-medium text-foreground-muted bg-surface-muted rounded"
             >
               Cancel
             </button>

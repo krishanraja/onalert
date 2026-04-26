@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { LandingPage } from './pages/LandingPage'
 import { AuthPage } from './pages/AuthPage'
+import { ResetPasswordPage } from './pages/ResetPasswordPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { AlertsPage } from './pages/AlertsPage'
 import { AddMonitorPage } from './pages/AddMonitorPage'
@@ -24,6 +25,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/auth" element={<AuthPage />} />
+        <Route path="/auth/reset" element={<ResetPasswordPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/locations" element={<LocationsIndexPage />} />
@@ -39,6 +41,8 @@ function App() {
           <Route path="interview-prep" element={<InterviewPrepPage />} />
           <Route path="organization" element={<OrganizationPage />} />
           <Route path="admin/audit" element={<AdminAuditPage />} />
+          {/* 404 inside the app shell — keeps sidebar/bottom nav for signed-in users */}
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

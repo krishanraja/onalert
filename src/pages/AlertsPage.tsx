@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Bell, ArrowLeft, ExternalLink, MapPin, Calendar, Clock, CheckCircle, Layers, RefreshCw, Lock, FilterX } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { useAlerts } from '@/hooks/useAlerts'
+import { useAlertsContext } from '@/contexts/AlertsProvider'
 import { useProfile } from '@/hooks/useProfile'
 import { AlertCard } from '@/components/alerts/AlertCard'
 import { AlertFilterBar } from '@/components/alerts/AlertFilterBar'
@@ -10,7 +10,7 @@ import { AlertsListSkeleton } from '@/components/ui/Skeleton'
 import { type Alert } from '@/lib/supabase'
 import { SERVICE_TYPES } from '@/lib/locations'
 import { formatSlotDate, formatSlotTime, minutesSince } from '@/lib/time'
-import { CBP_BOOK_URL, buildBookUrl } from '@/lib/cbpApi'
+import { buildBookUrl } from '@/lib/cbpApi'
 import { trackBookingClick } from '@/lib/tracking'
 import { supabase } from '@/lib/supabase'
 import { showToast } from '@/hooks/useToast'
@@ -118,7 +118,7 @@ function AlertDetailInline({ alert, onClose, isPaid }: { alert: Alert; onClose: 
                     <button
                       onClick={() => {
                         trackBookingClick(alert.id, slot.location_id)
-                        window.open(slot.book_url || buildBookUrl(slot.location_id, alert.payload.service_type), '_blank')
+                        window.open(slot.book_url || buildBookUrl(slot.location_id, alert.payload.service_type), '_blank', 'noopener,noreferrer')
                       }}
                       className="bg-primary text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-1.5 shrink-0"
                     >
@@ -191,7 +191,7 @@ function AlertDetailInline({ alert, onClose, isPaid }: { alert: Alert; onClose: 
           <button
             onClick={() => {
               trackBookingClick(alert.id, alert.payload.location_id)
-              window.open(alert.payload.book_url || buildBookUrl(alert.payload.location_id, alert.payload.service_type), '_blank')
+              window.open(alert.payload.book_url || buildBookUrl(alert.payload.location_id, alert.payload.service_type), '_blank', 'noopener,noreferrer')
             }}
             aria-label="Book this appointment slot (opens in new tab)"
             className="w-full bg-primary text-white py-4 rounded-lg font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
@@ -226,7 +226,7 @@ function AlertDetailInline({ alert, onClose, isPaid }: { alert: Alert; onClose: 
 }
 
 export function AlertsPage() {
-  const { alerts, loading, markRead, toggleStar } = useAlerts()
+  const { alerts, loading, markRead, toggleStar } = useAlertsContext()
   const { isPaid } = useProfile()
   const [selectedAlertId, setSelectedAlertId] = useState<string | null>(null)
   const [tab, setTab] = useState<AlertTab>('live')

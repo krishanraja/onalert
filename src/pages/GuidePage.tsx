@@ -1,6 +1,10 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import { ArrowLeft, Clock, Zap, Shield, ExternalLink } from 'lucide-react'
+import { Clock, Zap, Shield, ExternalLink } from 'lucide-react'
+import { PageHeader } from '@/components/layout/PageHeader'
+
+const APP_URL =
+  (import.meta.env.VITE_APP_URL as string | undefined) || 'https://onalert.app'
 
 export function GuidePage() {
   const navigate = useNavigate()
@@ -10,16 +14,12 @@ export function GuidePage() {
       <Helmet>
         <title>How to Get a Global Entry Appointment Faster | OnAlert</title>
         <meta name="description" content="4 proven strategies to get Global Entry, NEXUS & SENTRI appointments faster. Learn how automated monitoring catches cancellation slots in minutes." />
-        <link rel="canonical" href="https://onalert.app/guide" />
+        <link rel="canonical" href={`${APP_URL}/guide`} />
       </Helmet>
-      <header className="sticky top-0 z-10 bg-background-elevated border-b border-border px-4 py-3">
-        <div className="max-w-3xl mx-auto flex items-center gap-3">
-          <button onClick={() => navigate('/')} className="p-1 text-foreground-muted hover:text-foreground">
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <h1 className="text-lg font-semibold text-foreground">Getting Your Appointment Faster</h1>
-        </div>
-      </header>
+      <PageHeader
+        title="Getting Your Appointment Faster"
+        onBack={() => navigate('/')}
+      />
 
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-8">
         <section>
@@ -121,8 +121,8 @@ export function GuidePage() {
       </main>
 
       <footer className="py-6 px-4 text-center border-t border-border">
-        <p className="text-[11px] text-foreground-muted">
-          © 2026 OnAlert · <a href="/privacy" className="hover:text-foreground">Privacy</a> · <a href="/terms" className="hover:text-foreground">Terms</a>
+        <p className="text-xs text-foreground-muted">
+          © {new Date().getFullYear()} OnAlert · <Link to="/privacy" className="hover:text-foreground">Privacy</Link> · <Link to="/terms" className="hover:text-foreground">Terms</Link>
         </p>
       </footer>
     </div>

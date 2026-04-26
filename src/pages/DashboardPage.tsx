@@ -4,7 +4,7 @@ import { Plus, Crown, Users, Zap, Bell, ArrowRight, Activity, Clock } from 'luci
 import { motion } from 'framer-motion'
 import { useProfile } from '@/hooks/useProfile'
 import { useMonitors } from '@/hooks/useMonitors'
-import { useAlerts } from '@/hooks/useAlerts'
+import { useAlertsContext } from '@/contexts/AlertsProvider'
 import { useInsights, useProInsights } from '@/hooks/useInsights'
 import { MonitorCard } from '@/components/monitors/MonitorCard'
 import { MonitorLiveCard } from '@/components/dashboard/MonitorLiveCard'
@@ -28,7 +28,7 @@ export function DashboardPage() {
   const navigate = useNavigate()
   const { profile, loading: profileLoading, isPaid, isFamily } = useProfile()
   const { monitors, loading: monitorsLoading, toggleMonitor, deleteMonitor } = useMonitors()
-  const { alerts, loading: alertsLoading, connected } = useAlerts()
+  const { alerts, connected } = useAlertsContext()
   const [hasRedirected, setHasRedirected] = useState(false)
 
   // Get all location IDs across monitors for insights
@@ -36,15 +36,30 @@ export function DashboardPage() {
   const { insights } = useInsights(allLocationIds)
   const { proInsights } = useProInsights(allLocationIds, isPaid)
 
-  // First-time user: redirect to add monitor
+  // First-time user: redirect to add monitor.
+  // Guard with localStorage so users who have hit /app/add at least once via
+  // this redirect are not bounced again — they may want to inspect the empty
+  // dashboard, read upgrade prompts, etc. 1s min display gives the page time
+  // to render before navigation.
   useEffect(() => {
-    if (!monitorsLoading && !profileLoading && monitors.length === 0 && profile && !hasRedirected) {
-      const timer = setTimeout(() => {
-        setHasRedirected(true)
-        navigate('/app/add', { replace: true })
-      }, 300)
-      return () => clearTimeout(timer)
+    if (monitorsLoading || profileLoading || hasRedirected) return
+    if (monitors.length !== 0 || !profile) return
+
+    const SKIP_KEY = 'onalert.dashboard.skip-empty-redirect'
+    if (typeof window !== 'undefined' && window.localStorage.getItem(SKIP_KEY) === 'true') {
+      return
     }
+
+    const timer = setTimeout(() => {
+      setHasRedirected(true)
+      try {
+        window.localStorage.setItem(SKIP_KEY, 'true')
+      } catch {
+        // localStorage may be unavailable (private mode, etc.)
+      }
+      navigate('/app/add', { replace: true })
+    }, 1000)
+    return () => clearTimeout(timer)
   }, [monitorsLoading, profileLoading, monitors.length, profile, hasRedirected, navigate])
 
   // Group live alerts by monitor_id
@@ -165,16 +180,16 @@ export function DashboardPage() {
                 <div className="flex items-center gap-1.5 bg-surface border border-border rounded-lg px-3 py-2">
                   <Activity size={12} className="text-success" />
                   <span className="text-xs font-mono text-foreground font-semibold">{activeMonitors}</span>
-                  <span className="text-[10px] text-foreground-muted">active</span>
+                  <span className="text-2xs text-foreground-muted">active</span>
                 </div>
                 <div className="flex items-center gap-1.5 bg-surface border border-border rounded-lg px-3 py-2">
                   <Bell size={12} className="text-primary" />
                   <span className="text-xs font-mono text-foreground font-semibold">{todayAlerts}</span>
-                  <span className="text-[10px] text-foreground-muted">today</span>
+                  <span className="text-2xs text-foreground-muted">today</span>
                 </div>
                 <div className="flex items-center gap-1.5 bg-surface border border-border rounded-lg px-3 py-2 ml-auto">
                   <Clock size={12} className="text-foreground-muted" />
-                  <span className="text-[10px] font-mono text-foreground-muted">
+                  <span className="text-2xs font-mono text-foreground-muted">
                     {lastChecked?.last_checked_at ? formatDistanceToNow(lastChecked.last_checked_at) : '-'}
                   </span>
                 </div>
@@ -273,14 +288,14 @@ export function DashboardPage() {
                   </div>
                   <div className="space-y-2 opacity-60">
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-mono bg-primary/10 text-primary px-2 py-0.5 rounded">GE</span>
+                      <span className="text-2xs font-mono bg-primary/10 text-primary px-2 py-0.5 rounded">GE</span>
                       <span className="text-xs text-success">&#9679; Active</span>
                     </div>
                     <p className="text-sm text-foreground">JFK International Airport, NY</p>
                     <p className="text-sm text-foreground">Newark Liberty Airport, NJ</p>
                     <div className="pt-2 border-t border-border flex items-center gap-2">
                       <Bell size={11} className="text-primary" />
-                      <span className="text-[11px] text-primary font-mono">Alert: Slot opened 2m ago</span>
+                      <span className="text-xs text-primary font-mono">Alert: Slot opened 2m ago</span>
                     </div>
                   </div>
                 </div>

@@ -4,9 +4,7 @@ import tailwindcssAnimate from "tailwindcss-animate";
 export default {
   darkMode: ["class"],
   content: [
-    "./pages/**/*.{ts,tsx}",
-    "./components/**/*.{ts,tsx}",
-    "./app/**/*.{ts,tsx}",
+    "./index.html",
     "./src/**/*.{ts,tsx}",
   ],
   theme: {
@@ -17,11 +15,23 @@ export default {
     },
     extend: {
       colors: {
-        background: "hsl(var(--background))",
+        background: {
+          DEFAULT: "hsl(var(--background))",
+          elevated: "hsl(var(--background-elevated))",
+        },
         "background-elevated": "hsl(var(--background-elevated))",
-        surface: "hsl(var(--surface))",
+        surface: {
+          DEFAULT: "hsl(var(--surface))",
+          muted: "hsl(var(--surface-muted))",
+          elevated: "hsl(var(--surface-elevated))",
+        },
         "surface-muted": "hsl(var(--surface-muted))",
-        foreground: "hsl(var(--foreground))",
+        "surface-elevated": "hsl(var(--surface-elevated))",
+        foreground: {
+          DEFAULT: "hsl(var(--foreground))",
+          secondary: "hsl(var(--foreground-secondary))",
+          muted: "hsl(var(--foreground-muted))",
+        },
         "foreground-secondary": "hsl(var(--foreground-secondary))",
         "foreground-muted": "hsl(var(--foreground-muted))",
         primary: {
@@ -79,6 +89,10 @@ export default {
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
         mono: ["Fira Code", "Fira Mono", "monospace"],
+      },
+      fontSize: {
+        // 10px floor — we don't go below this for accessibility.
+        '2xs': ['0.625rem', { lineHeight: '0.875rem' }],
       },
       keyframes: {
         "fade-in": {

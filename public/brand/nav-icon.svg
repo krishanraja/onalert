@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
-  <!-- Three crescent arcs in coral pink, like broadcast/signal waves -->
-  <path d="M48 35 C58 45, 58 55, 48 65" stroke="#E8877C" stroke-width="8" stroke-linecap="round" fill="none"/>
-  <path d="M64 27 C78 40, 78 60, 64 73" stroke="#E8877C" stroke-width="8" stroke-linecap="round" fill="none"/>
-  <path d="M80 19 C98 36, 98 64, 80 81" stroke="#E8877C" stroke-width="8" stroke-linecap="round" fill="none"/>
-</svg>
