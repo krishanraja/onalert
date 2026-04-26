@@ -1,153 +1,156 @@
 # OnAlert
 
-**Real-time government appointment slot monitoring.**
+**Real-time CBP appointment alerts for the Trusted Traveler Programs.**
 
-**[onalert.app](https://onalert.app)** -- Stop checking. Start knowing.
+**[onalert.app](https://onalert.app)** — Stop checking. Start knowing.
 
-OnAlert monitors CBP Trusted Traveler Program schedulers (Global Entry, NEXUS, SENTRI -- all include TSA PreCheck) and alerts you within minutes when appointment slots open from cancellations. Set up a monitor once, and OnAlert watches 24/7 so you don't have to.
+OnAlert monitors the CBP scheduler for Global Entry, NEXUS, and SENTRI interview appointments (all three include TSA PreCheck) and notifies you within minutes when a slot opens from a cancellation. Set up a monitor once and OnAlert watches 24/7 so you never miss the 5–15 minute window before a slot fills.
 
-## The Problem
+---
 
-Millions of conditionally approved travelers wait 3-12 months for enrollment interviews at popular locations. The CBP scheduler has no notification system -- slots from cancellations appear and fill within 5-15 minutes. Manual checking is time-consuming and unreliable.
+## Why OnAlert exists
 
-## How It Works
+Millions of conditionally approved travelers wait 3–12 months for an enrollment interview at popular centers (JFK, LAX, SFO, ORD, EWR, DFW). The CBP scheduler offers no notification system. Cancellation slots open and refill within minutes. Manual refreshing is a losing strategy. OnAlert gives every applicant a fair shot at an early appointment with cloud-based 24/7 monitoring and instant multi-channel delivery.
 
-1. **Create a monitor** -- choose your program (GE, NEXUS, SENTRI) and enrollment centers
-2. **We poll the CBP API** -- every 5 min (paid) or 60 min (free), 24/7
-3. **Get alerted instantly** -- branded email notification with slot details and direct booking link
-4. **Book before it fills** -- slots typically fill in 5-15 minutes, so speed matters
+## How it works
 
-## Tech Stack
+1. **Pick a program and locations** in a 3-step wizard (Global Entry, NEXUS, or SENTRI; up to 45 enrollment centers)
+2. **OnAlert polls the CBP API** every 5 min (Pro/Multi), every 1 min (Express), or every 60 min (Free), 24/7
+3. **You get an alert in seconds** — branded HTML email, optional SMS, web push, and an in-app realtime feed
+4. **You book before it fills** with a one-tap deep link directly into the CBP scheduler at the right location and service
+
+## Pricing — all one-time, no subscriptions
+
+| Plan | Price | Monitors | Locations | Check interval | Channels | Notes |
+|------|-------|----------|-----------|----------------|----------|-------|
+| **Free** | $0 | 1 | 3 | 60 min | Email (15-min delay) | 7-day window |
+| **Pro** | **$39 once** | 1 | 10 | 5 min | Email + SMS | Instant alerts, digest, recheck, insights, never expires |
+| **Multi** | **$59 once** | 5 | Unlimited | 5 min | Email + SMS | All Pro + family/multi-applicant coverage, no cooldown |
+| **Express** | **$79 once** | 1 | Unlimited | **1 min** | Email + SMS | Highest priority pipeline, pre-verified slots — for trips <2 weeks |
+
+All paid tiers are one-time purchases. No subscriptions, no auto-renewal, no cancellation friction. You buy it until you book, then you're done.
+
+## Tech stack
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui |
-| Backend | Supabase (PostgreSQL, Auth, Edge Functions, Realtime) |
-| Payments | Stripe (one-time payments via Checkout) |
-| Email | Resend (transactional alerts) |
-| Hosting | Vercel (static SPA + global CDN) |
+| Frontend | React 18, TypeScript, Vite 5, Tailwind CSS, shadcn/ui, react-router-dom, react-helmet-async |
+| Backend | Supabase (Postgres + RLS, Auth, Edge Functions on Deno, Realtime, pg_cron) |
+| Payments | Stripe one-time Checkout, signed webhooks with idempotency table |
+| Email | Resend (transactional) |
+| SMS | Twilio (paid plans, optional) |
+| Web Push | Native Web Push API + VAPID (in progress) |
+| Hosting | Vercel (static SPA + global CDN, security headers, HSTS) |
 | PWA | Workbox service worker, installable on mobile |
 
-## Quick Start
+## Quick start
 
 ```bash
-# Clone
 git clone https://github.com/krishanraja/onalert.git
 cd onalert
-
-# Install
 npm install
-
-# Configure (copy and fill in your keys)
-cp .env.example .env.local
-
-# Run
-npm run dev
+cp .env.example .env.local   # fill in your keys
+npm run dev                   # http://localhost:5173
 ```
 
-Open [http://localhost:5173](http://localhost:5173).
-
-## Environment Variables
+Required env vars (frontend):
 
 ```bash
-# Required -- Supabase
 VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
-
-# Required -- Stripe
+VITE_SUPABASE_ANON_KEY=...
 VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
-
-# Optional -- App URL (for auth redirects)
 VITE_APP_URL=http://localhost:5173
 ```
 
-See [docs/REPLICATION_GUIDE.md](docs/REPLICATION_GUIDE.md) for full setup instructions including Supabase, Stripe, Google OAuth, and Resend configuration.
+See [docs/REPLICATION_GUIDE.md](docs/REPLICATION_GUIDE.md) for the full setup including Supabase, Stripe, Resend, Twilio, Google OAuth, edge function deployment, and pg_cron configuration.
 
-## Project Structure
+## Project structure
 
 ```
 src/
-  pages/          # 17 page components (Landing, Auth, Dashboard, Alerts, AddMonitor,
-                  #  Settings, Locations*, WaitTimes, Guide, Privacy, Terms,
-                  #  Organization, InterviewPrep, AdminAudit, NotFound, AlertDetail)
-  components/     # UI components (layout, dashboard, monitors, alerts, settings, ui/)
-  hooks/          # useProfile, useMonitors, useAlerts, useInsights, useAuditData,
-                  #  useKeyboardShortcuts, useLocationIntelligence, useToast
-  contexts/       # AlertsProvider (single realtime channel for the alerts feed)
-  lib/            # supabase, stripe, plans, cbpApi, locations, time, utils, programs,
-                  #  tracking, geolocation, haptics, pushNotifications, analytics, recommendations
-  App.tsx         # Router with public and protected routes
-  main.tsx        # Entry point + ErrorBoundary
-  index.css       # Design system (CSS custom properties)
+  pages/                # 18 routes (public + protected)
+  components/           # dashboard/, monitors/, alerts/, settings/, layout/, ui/
+  hooks/                # useProfile, useMonitors, useAlerts, useInsights,
+                        # useAuditData, useLocationIntelligence, useKeyboardShortcuts, useToast
+  contexts/             # AlertsProvider (single realtime channel)
+  lib/                  # supabase, stripe, plans, cbpApi, locations, programs,
+                        # time, utils, tracking, geolocation, haptics,
+                        # pushNotifications, analytics, recommendations
+  App.tsx               # Router (public + /app/* protected)
+  main.tsx              # Entry + ErrorBoundary
+  index.css             # Design tokens (HSL CSS variables)
 
 supabase/
-  functions/      # 12 edge functions (Deno)
-    poll-appointments/      # CRON: poll CBP API for new slots (cron-secret guarded)
-    send-alert/             # Internal: deliver email via Resend (internal-secret guarded)
-    send-digest-alert/      # Internal: deliver digest email (internal-secret guarded)
-    send-push/              # Internal: deliver web-push notification (internal-secret guarded)
-    create-checkout/        # Auth: create Stripe checkout session
-    customer-portal/        # Auth: Stripe billing portal redirect
-    stripe-webhook/         # Stripe-only: signature + idempotency verified
-    process-delayed-alerts/ # CRON: send delayed alerts for free users
-    process-rechecks/       # CRON: process slot recheck requests
-    predict-slots/          # CRON: compute slot-availability predictions
-    public-wait-times/      # PUBLIC GET: aggregate wait-time stats
-    track-booking-click/    # Mixed: track outbound clicks to CBP scheduler
-  migrations/     # Database schema + RLS policies (012+ are security-hardening)
+  functions/            # 12 edge functions, organized by auth tier
+    poll-appointments/      # CRON, x-cron-secret guarded
+    process-delayed-alerts/ # CRON, x-cron-secret guarded
+    process-rechecks/       # CRON, x-cron-secret guarded
+    predict-slots/          # CRON, x-cron-secret guarded
+    send-alert/             # Internal, x-internal-secret guarded
+    send-digest-alert/      # Internal, x-internal-secret guarded
+    send-push/              # Internal, x-internal-secret guarded
+    create-checkout/        # User JWT
+    customer-portal/        # User JWT
+    track-booking-click/    # User JWT
+    stripe-webhook/         # Stripe signature + idempotency table
+    public-wait-times/      # Public GET (5-min CORS cache)
+  migrations/           # 17 SQL migrations (012/013/014 = security hardening)
 
-docs/             # Comprehensive project documentation (18 documents)
+docs/                   # 19 markdown documents (business, product, technical, GTM)
 ```
 
 ## Scripts
 
 ```bash
-npm run dev      # Start dev server
-npm run build    # TypeScript check + production build
+npm run dev      # Vite dev server
+npm run build    # tsc -b + vite build (zero-tolerance type checking)
 npm run lint     # ESLint
-npm run preview  # Preview production build
+npm run preview  # Preview the production build
 ```
 
-## Features
+## Features at a glance
 
-- **Multi-method auth**: Google OAuth, email/password, and magic link
-- **3 programs**: Global Entry, NEXUS, SENTRI (each includes TSA PreCheck)
-- **50+ locations**: Searchable enrollment centers across the US
-- **Real-time alerts**: Email notifications + in-app realtime feed
-- **Freemium model**: Free (1 monitor, 60min) / Pro ($39, 5min) / Multi ($59, 5 monitors, 5min) / Express ($79, 1 monitor, 1min) -- all one-time
-- **Stripe billing**: One-time payments via Checkout, webhook-driven plan sync
-- **PWA**: Installable on mobile, offline-capable
-- **Dark terminal UI**: Bloomberg-inspired design with crimson accents
+- **3 programs**: Global Entry, NEXUS, SENTRI (each includes TSA PreCheck — there is no standalone TSA PreCheck monitor)
+- **45 enrollment centers** mapped by ID against the live CBP scheduler
+- **Multi-method auth**: Google OAuth, email + password, magic link
+- **Real-time alerts**: branded email + optional SMS + web push + in-app realtime feed with haptic feedback on mobile
+- **Smart alert pipeline**: digest emails for multi-slot bursts, slot pre-verification (recheck), 15-min batched delivery on free
+- **Predictive insights** (Pro+): per-location frequency, day-of-week patterns, average fill time, "best time to monitor"
+- **Public wait-times directory**: indexable SEO pages for every enrollment center, fed by aggregate slot data
+- **PWA**: installable on iOS/Android/desktop, dark Bloomberg-terminal aesthetic
+- **Production-grade security**: column-level RLS, signed CRON + internal-function secrets, Stripe idempotency, signed webhooks, HSTS + tight Vercel security headers
+- **Admin observability**: audit page with poll-run history, per-location fetch logs, anomaly flags, alert delivery stats
 
 ## Documentation
 
-Full documentation is in the [`docs/`](docs/) directory:
+Full documentation lives in [`docs/`](docs/).
 
-### Business & Strategy
-- **[Executive Summary](docs/EXECUTIVE_SUMMARY.md)** -- High-level overview for stakeholders
-- **[Purpose](docs/PURPOSE.md)** -- Why OnAlert exists
-- **[Value Proposition](docs/VALUE_PROP.md)** -- Market positioning and competitive advantage
-- **[Ideal Customer Profile](docs/ICP.md)** -- Target users and acquisition channels
-- **[Outcomes](docs/OUTCOMES.md)** -- Success metrics and KPIs
-- **[Strategy](docs/STRATEGY.md)** -- Competitive differentiation and growth roadmap
+### Sales & marketing (for AI sales/marketing agents)
+- **[Sales Playbook](docs/SALES_PLAYBOOK.md)** — Positioning, objection handling, persona scripts, channel-specific messaging
+- **[Value Proposition](docs/VALUE_PROP.md)** — One-liners, benefits-by-persona, anchor stats, competitive teardown
+- **[Ideal Customer Profile](docs/ICP.md)** — Personas, segments, intent signals, acquisition channels
+- **[Outcomes](docs/OUTCOMES.md)** — Customer outcomes, KPIs, revenue milestones, ROI math
+- **[Strategy](docs/STRATEGY.md)** — Five-layer competitive moat, growth loops, pricing innovation
+- **[Executive Summary](docs/EXECUTIVE_SUMMARY.md)** — One-page brief for stakeholders
 
-### Product & Design
-- **[Features](docs/FEATURES.md)** -- Complete feature inventory
-- **[Branding](docs/BRANDING.md)** -- Brand identity and assets
-- **[Design System](docs/DESIGN_SYSTEM.md)** -- Colors, typography, components
-- **[Visual Guidelines](docs/VISUAL_GUIDELINES.md)** -- Layout and responsive patterns
+### Product
+- **[Purpose](docs/PURPOSE.md)** — Why OnAlert exists, design philosophy
+- **[Features](docs/FEATURES.md)** — Full feature inventory + plan-by-plan matrix
+- **[Branding](docs/BRANDING.md)** — Identity, voice, logo usage, copy do/don't
+- **[Design System](docs/DESIGN_SYSTEM.md)** — Tokens, typography, components
+- **[Visual Guidelines](docs/VISUAL_GUIDELINES.md)** — Layout, responsive patterns, alert card anatomy
 
-### Technical
-- **[Architecture](docs/ARCHITECTURE.md)** -- System design and data flow
-- **[Deployment](docs/DEPLOYMENT.md)** -- Production deployment guide
-- **[Replication Guide](docs/REPLICATION_GUIDE.md)** -- Set up from scratch
-- **[Common Issues](docs/COMMON_ISSUES.md)** -- Troubleshooting
-- **[Decisions Log](docs/DECISIONS_LOG.md)** -- Technical decision rationale
-- **[LLM Training](docs/LLM_CRITICAL_THINKING_TRAINING.md)** -- AI assistant guidelines
+### Engineering
+- **[Architecture](docs/ARCHITECTURE.md)** — System diagram, data flow, schema, all 12 edge functions, all 17 migrations, security model
+- **[Deployment](docs/DEPLOYMENT.md)** — Vercel + Supabase + Stripe production deploy
+- **[Replication Guide](docs/REPLICATION_GUIDE.md)** — Set up from scratch
+- **[Common Issues](docs/COMMON_ISSUES.md)** — Troubleshooting
+- **[Decisions Log](docs/DECISIONS_LOG.md)** — Technical decisions with rationale
+- **[LLM Critical Thinking](docs/LLM_CRITICAL_THINKING_TRAINING.md)** — Guidelines for AI assistants editing this codebase
 
-### Project Management
-- **[History](docs/HISTORY.md)** -- Project timeline and changelog
-- **[Sprints](docs/SPRINTS.md)** -- Roadmap and backlog
+### Project management
+- **[History](docs/HISTORY.md)** — Timeline and changelog
+- **[Sprints](docs/SPRINTS.md)** — Roadmap, backlog, completed work
 
 See [docs/README.md](docs/README.md) for the full documentation index.
 

@@ -1,134 +1,146 @@
 # History
 
-## Project Timeline
+Project timeline and changelog. New entries are appended at the top.
 
-### v0.1.0 -- Initial Build (March 2026)
+## v0.5.0 — Audit & hardening sprint (April 2026)
 
-**Commit**: `5499ac1` -- feat: initial OnAlert build -- government appointment monitor
+**PR**: #49 `audit-fixes-2026-04` (5 commits)
 
-First working version of the platform:
-- React 18 + TypeScript + Vite frontend
-- Supabase backend with auth, database, edge functions
-- CBP API integration for appointment slot monitoring
-- Email notifications via Resend
-- Stripe payments (monthly + annual subscriptions)
-- PWA with Workbox service worker
-- Dark terminal-aesthetic design system (Bloomberg-inspired)
-- 7 pages: Landing, Auth, Dashboard, Alerts, Alert Detail, Add Monitor, Settings
-- 50 top CBP enrollment locations
-- Bottom navigation with unread alert badge
+A full-app audit surfaced ~50 issues across security, functional correctness, design, and drift. PR #49 shipped fixes in five focused commits.
 
-### v0.1.1 -- Cleanup (March 2026)
+### Backend security hardening
+- **Edge function auth tiering** rolled out across all 12 functions: `x-cron-secret` (cron tier), `x-internal-secret` (internal tier), user JWT (auth tier), Stripe signature (webhook tier). `CRON_SECRET` and `INTERNAL_FUNCTION_SECRET` are now required production env vars. (D016)
+- **Stripe webhook idempotency** via the new `stripe_events` table (migration `013`). Events are claimed before any side effect; rolled back on handler error so Stripe will retry safely. (D017)
+- **Stripe price-tampering defense** — webhook validates `amount_total` against expected plan price before applying.
+- **Column-level UPDATE grants** on `profiles` and `alerts` prevent self-elevation of `plan` or admin fields. CHECK constraint locks plan values to `free | pro | multi | express`. (D018, migration `012`)
+- **Unique partial index on alerts** prevents duplicate notifications for the same slot. Historical duplicates deduped before index creation. (D019, migration `013`, commit `e247717`)
+- **Missing RLS policies** added (migration `014`). Server-side monitor-cap trigger enforces per-plan limits regardless of client (migration `015`). Profile email auto-resync (migration `016`). Recheck-requests RLS fix (migration `017`).
+- **Vercel security headers** hardened: HSTS (`max-age=63072000`), X-Frame-Options=DENY, no-sniff, strict-origin referrer policy, restricted Permissions-Policy. `/app/*` routes set to `noindex, nofollow`.
 
-**Commit**: `7df28aa` -- chore: remove fractional-circle artifacts -- clean slate for OnAlert
+### Frontend cleanup
+- Design tokens cleaned up (border `#2A2A2A → #383838` for visibility ratio; muted text `#666 → #808080` for WCAG AA)
+- Magic-link deep-link auth regression fixed — auth callback now preserves the original destination
+- Web Push subscribe path stabilized (full VAPID JWT signing remains on roadmap)
+- Dead code and unused dependencies removed
 
-Removed artifacts from a previous project to establish a clean codebase.
+### Operational follow-ups (still open)
+- Rotate the leaked Supabase service-role JWT in the dashboard (already revoked at the auth layer; rotation makes the audit trail clean)
+- Reconcile migration history so `supabase db push` works again, or freeze on the Management API pattern
+- Wire VAPID JWT signing in `send-push`
+- Build the org invite endpoint backing `/app/organization`
 
-### v0.1.2 -- Component Cleanup (March 2026)
+### April 2026 incident
+Polling silently returned 401 for ~3 weeks (2026-04-04 through 2026-04-26 17:09 UTC). Root cause: a leaked service-role JWT in `setup-cron-jobs.sql` was auto-revoked by Supabase's leak scanning; `net._http_response` showed 401s the whole time but no one was watching the audit dashboard. **Lesson:** the audit dashboard is now a primary on-call signal.
 
-**Commit**: `dba072c` -- fix: remove unused shadcn/ui components with missing deps
+## v0.4.x — Settings, billing, and SEO polish (April 2026)
 
-Removed 23 unused UI component files that had missing dependencies. Reduced bundle size and eliminated build warnings.
+A series of focused PRs (#40–#48) shipped UX and operational improvements:
+- **Settings redesign** with no-scroll mobile layout and centered upgrade overlay (PRs #43, #44, #45)
+- **Per-page SEO meta tags** via `react-helmet-async` to fix Google Search Console indexing (D020, commit `10d876e`)
+- **Mobile billing button** visibility fix (commit `36cdd0e`)
+- **"Fastest alerts" badge** alignment fix (commit `a870d8c`)
+- **Stripe error visibility** — surface the actual Stripe error string instead of a generic message (commit `197e4a1`)
+- **Book link routing** — generate location- and service-specific deep-links into the CBP scheduler (PRs #47, #48; commit `4fe45c5`)
+- **Location ID remap** migration to fix incorrect IDs in existing monitors and alerts (commits `034ad21`, `cb550ae`, migration `011`)
+- **TSA logo removed** from landing page agency strip — TSA PreCheck is now correctly documented as bundled with GE/NEXUS/SENTRI rather than a standalone monitor (D014, commit `a3b6f6d`)
+- **Mobile no-scroll viewport** enforced on app pages (commit `01b43f0`)
+- **Auth header missing edge case** in checkout and portal functions (commit `141dfd5`)
 
-### v0.2.0 -- Reliability & Documentation (March 2026)
+## v0.4.0 — Observability, redesign & analytics (April 2026)
 
-**Commits**: `175fcbf` through `38f0d76`
+**Commits**: PRs #19 through #28.
 
-Major reliability and documentation overhaul:
+### Observability & audit
+- Admin audit page (`/app/admin/audit`) with poll-run history, per-location fetch logs, anomaly flags
+- Enhanced `scrape_logs` with detailed telemetry, run correlation IDs
+- New `location_fetch_logs` table for per-location polling details
 
-**Blank screen fix**:
-- Extracted `PLANS` into zero-dependency `src/lib/plans.ts`
-- Replaced fatal throw in `supabase.ts` with warning + null fallback
-- Added top-level `ErrorBoundary` component with inline styles
+### Redesigned core pages
+- Alerts page redesigned with unified card layout and filter bar (live/history)
+- Homepage redesign with updated pricing display
+- Replaced mobile Tinder-style swipe cards with a scrollable alert list
+- Settings page now shows all monitor slots inline
 
-**Data pipeline hardening**:
-- Added location name mapping to `poll-appointments` (was showing "Location 5140")
-- Parallel CBP API fetches in batches of 5 with 10-second timeouts
-- Direct invocation of `send-alert` from `poll-appointments` for immediate delivery
-- Consistent timezone handling (America/New_York)
+### Edge functions added (3 new)
+- `send-digest-alert` — bundled multi-slot email
+- `process-delayed-alerts` — 15-min delay pipeline for free users
+- `process-rechecks` — slot-verification recheck queue
 
-**Frontend robustness**:
-- Null supabase guards in all hooks and pages
-- Optimistic updates with rollback on error (useMonitors, useAlerts)
-- Error feedback in AddMonitorPage, SettingsPage, MonitorCard
-- Empty state for location search with no results
-- Accessibility improvements: ARIA labels on navigation, search input
+### Landing page improvements
+- Government agency logos (DHS, CBP)
+- Updated pricing display with one-time tiers
 
-**Build fixes**:
-- Added missing `warning` color to Tailwind config
-- Added `tsbuildinfo` and `test-results/` to `.gitignore`
-
-**Documentation**:
-- Created comprehensive `docs/` directory with 16 documents
-- Added `.env.example` file
-- Updated README with complete project information
-
-### v0.2.1 -- Text Cleanup (March 2026)
-
-**Commit**: `225e2fb` -- fix: replace all em dashes with regular hyphens across codebase
-
-Standardized all em dashes to regular hyphens for consistency across the codebase and documentation.
-
-### v0.3.0 -- Authentication & UX Overhaul (March 2026)
-
-**Commits**: `e7d4839` through `0921b87`
-
-Major authentication and user experience improvements:
-
-**Multi-method authentication**:
-- Added Google OAuth sign-in (one-tap via Supabase Auth)
-- Added email + password sign-up and sign-in (6+ character passwords)
-- Retained magic link as a third option
-- Auth page redesigned with mode switching (sign_in, sign_up, magic_link, google)
-
-**Mobile hero redesign**:
-- Hero logo displayed at 3x scale for brand impact
-- Icon-only mobile headers to maximize content space
-- Desktop navbar retains full wordmark
-
-**Favicon and PWA improvements**:
-- Added icon favicon for all browsers
-- Added icon to desktop navbar
-- Updated apple-touch-icon
-
-**UX audit fixes**:
-- Improved mobile layout and spacing
-- Enhanced visual hierarchy on landing page
-
-### v0.4.0 -- Observability, Redesign & Analytics (April 2026)
-
-**Commits**: Multiple PRs (#19-#28)
-
-Major operational and UX improvements:
-
-**Observability & audit**:
-- Added admin audit page with poll run history, per-location fetch logs, and health checks
-- Enhanced scrape_logs with detailed telemetry (anomaly flags, latency metrics, run correlation IDs)
-- Added location_fetch_logs table for per-location polling details
-
-**Redesigned core pages**:
-- Redesigned alerts page with unified card layout and filter bar (live/history tabs)
-- Redesigned homepage and pricing strategy
-- Replaced mobile Tinder-style swipe cards with scrollable alert list
-- Show all monitor slots inline on settings page
-
-**New edge functions** (3 added, total now 8):
-- `send-digest-alert` -- bundled multi-slot email notifications
-- `process-delayed-alerts` -- 15-minute delay pipeline for free users
-- `process-rechecks` -- slot verification re-check requests
-
-**Landing page improvements**:
-- Government agency logos (DHS, CBP, TSA) with proper rendering
-- Updated pricing display (Pro $39, Multi $59, one-time)
-
-**Infrastructure**:
-- Humblytics analytics integration with custom event tracking
+### Infrastructure
+- Humblytics analytics integration
 - Email sender domain fix (alerts@onalert.app)
 - Dedicated 404 page with navigation
-- UX touch target improvements for mobile accessibility (44px minimum)
-- Deprecated meta tag cleanup
+- 44px minimum touch target enforcement on mobile
 - Production readiness verification (UX test report)
 
-## Architecture Decisions
+## v0.3.0 — Authentication & UX overhaul (March 2026)
 
-See [DECISIONS_LOG.md](./DECISIONS_LOG.md) for detailed rationale behind key technical choices.
+### Multi-method authentication
+- Google OAuth sign-in
+- Email + password sign-up and sign-in
+- Magic link retained as a third option
+- Auth page redesigned with mode switching
+
+### Mobile hero redesign
+- Hero logo at 3× scale on mobile
+- Icon-only mobile headers
+- Desktop navbar retains full wordmark
+
+### Favicon and PWA
+- Icon favicon for all browsers
+- Icon in desktop navbar
+- Updated apple-touch-icon
+
+## v0.2.x — Reliability & documentation (March 2026)
+
+### Blank-screen fix
+- Extracted `PLANS` into zero-dependency `src/lib/plans.ts` (D010)
+- Replaced fatal throw in `supabase.ts` with warning + null fallback
+- Added top-level `ErrorBoundary`
+
+### Data pipeline hardening
+- Location name mapping in `poll-appointments`
+- Parallel CBP API fetches in batches of 5 with 10s timeouts
+- Direct invocation of `send-alert` from `poll-appointments` for lower latency
+- Consistent timezone handling (America/New_York)
+
+### Frontend robustness
+- Null Supabase guards in all hooks and pages
+- Optimistic updates with rollback (D009)
+- Error feedback in AddMonitorPage, SettingsPage, MonitorCard
+- Empty state for location search with no results
+- ARIA labels and accessibility passes
+
+### Build & docs
+- Missing `warning` color added to Tailwind config
+- `tsbuildinfo` and `test-results/` ignored
+- Initial `docs/` directory authored
+- `.env.example` added
+
+## v0.1.x — Initial build (March 2026)
+
+### v0.1.0
+- React 18 + TypeScript + Vite frontend
+- Supabase backend (auth, DB, edge functions)
+- CBP API integration
+- Email notifications via Resend
+- Stripe one-time Checkout
+- PWA with Workbox service worker
+- Dark Bloomberg-terminal design system
+- 7 core pages (Landing, Auth, Dashboard, Alerts, Alert Detail, Add Monitor, Settings)
+- 50 top CBP enrollment locations *(now refined to 45 verified IDs)*
+- Bottom navigation with unread alert badge
+
+### v0.1.1 — Cleanup
+Removed artifacts from a previous project to establish a clean codebase.
+
+### v0.1.2 — Component cleanup
+Removed 23 unused shadcn/ui component files with missing dependencies.
+
+## Architecture decisions
+
+See [DECISIONS_LOG.md](./DECISIONS_LOG.md) for detailed rationale behind every key technical decision (D001–D020).
