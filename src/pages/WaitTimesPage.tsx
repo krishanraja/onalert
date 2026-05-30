@@ -18,20 +18,22 @@ export function WaitTimesPage() {
   const [query, setQuery] = useState('')
   const [waitData, setWaitData] = useState<WaitTimeData[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
 
   useEffect(() => {
     async function load() {
       try {
         const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/public-wait-times`
         const res = await fetch(url)
-        if (res.ok) {
-          const data = await res.json()
-          setWaitData(data.locations || [])
-        }
+        if (!res.ok) throw new Error(`wait-times ${res.status}`)
+        const data = await res.json()
+        setWaitData(data.locations || [])
       } catch {
-        // API not available yet
+        // Surface a clear error instead of silently showing "No data yet" forever.
+        setLoadError(true)
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
     load()
   }, [])
@@ -70,6 +72,15 @@ export function WaitTimesPage() {
         {loading ? (
           <div className="text-center py-8">
             <div className="animate-pulse text-sm text-foreground-muted">Loading wait times...</div>
+          </div>
+        ) : loadError ? (
+          <div className="bg-warning/10 border border-warning/20 rounded-lg p-4 text-center space-y-2">
+            <p className="text-sm text-foreground" role="alert">
+              We couldn't load live wait-time data right now.
+            </p>
+            <p className="text-xs text-foreground-muted">
+              You can still browse every enrollment center and set up a monitor below.
+            </p>
           </div>
         ) : (
           <div className="space-y-2">
