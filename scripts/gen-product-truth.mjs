@@ -200,7 +200,38 @@ Generated ${generatedAt} (build ${gitSha}).
 `;
 writeOut('public/llms.txt', llms);
 
-console.log(`gen-product-truth: wrote _shared/pricing.ts, product-truth.json, llms.txt (build ${gitSha})`);
+// =========================================================
+// 4) public/sitemap.xml  (derived from TOP_LOCATIONS — single source)
+// =========================================================
+// The old sitemap was hand-maintained against stale location IDs (48 soft-404s, 43
+// missing pages). Generate it from src/lib/locations.ts so it always matches the
+// routes vite-react-ssg actually prerenders. Only public, indexable pages are listed
+// (no /auth, /app, /404). Deterministic (no lastmod) so rebuilds produce no diff.
+const SITE = ((base.product && base.product.url) || 'https://onalert.app').replace(/\/$/, '');
+const locationsTs = readFileSync(resolve(root, 'src/lib/locations.ts'), 'utf8');
+const locationIds = [...locationsTs.matchAll(/\{\s*id:\s*(\d+)/g)].map((m) => Number(m[1]));
+if (locationIds.length === 0) {
+  throw new Error('gen-product-truth: failed to parse any location IDs from src/lib/locations.ts');
+}
+const staticPages = [
+  { path: '/', changefreq: 'weekly', priority: '1.0' },
+  { path: '/wait-times', changefreq: 'daily', priority: '0.9' },
+  { path: '/locations', changefreq: 'weekly', priority: '0.9' },
+  { path: '/guide', changefreq: 'monthly', priority: '0.8' },
+  { path: '/privacy', changefreq: 'yearly', priority: '0.3' },
+  { path: '/terms', changefreq: 'yearly', priority: '0.3' },
+];
+const urlEntry = (path, changefreq, priority) =>
+  `  <url>\n    <loc>${SITE}${path}</loc>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>\n  </url>`;
+const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${staticPages.map((p) => urlEntry(p.path, p.changefreq, p.priority)).join('\n')}
+${locationIds.map((id) => urlEntry(`/locations/${id}`, 'weekly', '0.7')).join('\n')}
+</urlset>
+`;
+writeOut('public/sitemap.xml', sitemap);
+
+console.log(`gen-product-truth: wrote _shared/pricing.ts, product-truth.json, llms.txt, sitemap.xml (${locationIds.length} locations, build ${gitSha})`);
 
 function writeOut(rel, contents) {
   const abs = resolve(root, rel);

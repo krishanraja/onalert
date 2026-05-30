@@ -1,15 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Main pages -->
   <url>
     <loc>https://onalert.app/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>https://onalert.app/guide</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://onalert.app/wait-times</loc>
@@ -22,6 +16,11 @@
     <priority>0.9</priority>
   </url>
   <url>
+    <loc>https://onalert.app/guide</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://onalert.app/privacy</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
@@ -31,256 +30,229 @@
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
-
-  <!-- Location pages -->
   <url>
     <loc>https://onalert.app/locations/5140</loc>
-    <changefreq>daily</changefreq>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://onalert.app/locations/6480</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://onalert.app/locations/5444</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://onalert.app/locations/5180</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://onalert.app/locations/5446</loc>
-    <changefreq>daily</changefreq>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5447</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/5183</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5003</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/5181</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5006</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/5420</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5002</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/5441</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5007</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/5182</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5023</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/5300</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5021</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/6940</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5004</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/5360</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5030</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/7160</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5011</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/5142</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5009</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/5141</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5013</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/6840</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5008</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/7960</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5010</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/16547</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5012</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/5400</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5014</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/5445</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5015</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/5320</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5016</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/14321</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5017</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/7600</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5018</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/8020</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5019</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/5380</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5020</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/12781</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5022</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/16970</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5024</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/9200</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5025</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/9740</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5026</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/13621</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5027</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/10260</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5028</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/7820</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5029</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/7520</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5031</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/5005</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5032</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/5340</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5033</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/7540</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5034</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/7940</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5035</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/9180</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5036</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/12021</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5037</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/7680</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5038</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/7740</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5039</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/14981</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5040</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/9240</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://onalert.app/locations/5041</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://onalert.app/locations/5042</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://onalert.app/locations/5043</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://onalert.app/locations/5044</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://onalert.app/locations/5045</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://onalert.app/locations/5046</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://onalert.app/locations/5047</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://onalert.app/locations/5048</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://onalert.app/locations/5049</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://onalert.app/locations/8040</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
 </urlset>

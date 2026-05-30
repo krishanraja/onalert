@@ -8,11 +8,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="OnAlert" />
 
-  <!-- SEO -->
-  <title>OnAlert - Government Appointment Monitor</title>
-  <meta name="description" content="Real-time alerts when Global Entry, NEXUS, or SENTRI (all include TSA PreCheck) appointment slots open. Stop checking. Start knowing." />
-  <meta name="robots" content="index, follow" />
-  <!-- canonical is set dynamically per-page via react-helmet -->
+  <!-- SEO: per-page title, description, canonical and robots are injected at build
+       time by each route's Head component (vite-react-ssg). Keeping them out of this
+       template avoids duplicate tags in the prerendered HTML. OG/Twitter below are
+       sitewide defaults; pages may override them later (per-page @vercel/og). -->
 
   <!-- OG -->
   <meta property="og:type" content="website" />
@@ -28,44 +27,9 @@
   <meta name="twitter:description" content="Real-time alerts when Global Entry, NEXUS, or SENTRI (all include TSA PreCheck) appointment slots open." />
   <meta name="twitter:image" content="https://onalert.app/brand/og-image.png" />
 
-  <!-- Schema.org -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": "OnAlert",
-    "applicationCategory": "UtilitiesApplication",
-    "operatingSystem": "Web, iOS, Android",
-    "description": "Real-time monitoring service that alerts you when Global Entry, NEXUS, or SENTRI (all include TSA PreCheck) government appointment slots become available.",
-    "url": "https://onalert.app",
-    "offers": [
-      {
-        "@type": "Offer",
-        "name": "Free",
-        "price": "0",
-        "priceCurrency": "USD"
-      },
-      {
-        "@type": "Offer",
-        "name": "Pro",
-        "price": "39",
-        "priceCurrency": "USD"
-      },
-      {
-        "@type": "Offer",
-        "name": "Multi",
-        "price": "59",
-        "priceCurrency": "USD"
-      },
-      {
-        "@type": "Offer",
-        "name": "Express",
-        "price": "79",
-        "priceCurrency": "USD"
-      }
-    ]
-  }
-  </script>
+  <!-- Schema.org SoftwareApplication JSON-LD is injected on the homepage only, via
+       LandingPage's <Head> (moved out of this template so it no longer appears on
+       every prerendered page). -->
 
   <!-- Icons / Favicon (all browsers) -->
   <link rel="icon" href="/favicon.ico" sizes="any" />

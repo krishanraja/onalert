@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "vite",
     "predev": "node scripts/gen-product-truth.mjs",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite-react-ssg build",
     "prebuild": "node scripts/gen-product-truth.mjs",
     "lint": "eslint .",
     "preview": "vite preview",

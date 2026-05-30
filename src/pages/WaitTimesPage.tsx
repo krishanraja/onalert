@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Helmet } from 'react-helmet-async'
+import { Head } from 'vite-react-ssg'
 import { Search, Clock, TrendingUp, Shield } from 'lucide-react'
 import { TOP_LOCATIONS, searchLocations } from '@/lib/locations'
 import { PageHeader } from '@/components/layout/PageHeader'
@@ -41,11 +41,11 @@ export function WaitTimesPage() {
 
   return (
     <div className="min-h-dvh bg-background">
-      <Helmet>
+      <Head>
         <title>Global Entry, NEXUS & SENTRI Wait Times by Location | OnAlert</title>
         <meta name="description" content="Check real-time estimated wait times at CBP enrollment centers. See appointment availability based on actual cancellation patterns for Global Entry, NEXUS & SENTRI." />
         <link rel="canonical" href={`${(import.meta.env.VITE_APP_URL as string | undefined) || 'https://onalert.app'}/wait-times`} />
-      </Helmet>
+      </Head>
       <PageHeader
         title="Wait Time Checker"
         onBack={() => navigate('/')}

@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import { Helmet } from 'react-helmet-async'
+import { Head } from 'vite-react-ssg'
 import { MapPin, ArrowLeft, Clock, TrendingUp, Shield } from 'lucide-react'
 import { TOP_LOCATIONS, SERVICE_TYPES } from '@/lib/locations'
 import { useLocationIntelligence } from '@/hooks/useLocationIntelligence'
@@ -27,11 +27,11 @@ export function LocationPage() {
 
   return (
     <div className="min-h-dvh bg-background">
-      <Helmet>
+      <Head>
         <title>{`${location.name} - Global Entry, NEXUS & SENTRI Appointments | OnAlert`}</title>
         <meta name="description" content={`Monitor appointment slots at ${location.name} in ${location.city}, ${location.state}. Get instant alerts when Global Entry, NEXUS or SENTRI cancellations open.`} />
         <link rel="canonical" href={`${(import.meta.env.VITE_APP_URL as string | undefined) || 'https://onalert.app'}/locations/${location.id}`} />
-      </Helmet>
+      </Head>
       <header className="bg-background-elevated border-b border-border px-4 py-3">
         <div className="max-w-2xl mx-auto flex items-center gap-3">
           <button onClick={() => navigate('/locations')} className="p-1 text-foreground-muted hover:text-foreground">

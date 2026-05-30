@@ -1,5 +1,5 @@
 import { useNavigate, Link } from 'react-router-dom'
-import { Helmet } from 'react-helmet-async'
+import { Head } from 'vite-react-ssg'
 import { Clock, Zap, Shield, ExternalLink } from 'lucide-react'
 import { PageHeader } from '@/components/layout/PageHeader'
 
@@ -11,11 +11,11 @@ export function GuidePage() {
 
   return (
     <div className="min-h-dvh bg-background">
-      <Helmet>
+      <Head>
         <title>How to Get a Global Entry Appointment Faster | OnAlert</title>
         <meta name="description" content="4 proven strategies to get Global Entry, NEXUS & SENTRI appointments faster. Learn how automated monitoring catches cancellation slots in minutes." />
         <link rel="canonical" href={`${APP_URL}/guide`} />
-      </Helmet>
+      </Head>
       <PageHeader
         title="Getting Your Appointment Faster"
         onBack={() => navigate('/')}

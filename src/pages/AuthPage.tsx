@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom'
+import { Head } from 'vite-react-ssg'
 import { supabase } from '@/lib/supabase'
 import { ArrowLeft, Mail, Eye, EyeOff } from 'lucide-react'
 import { trackEvent, AnalyticsEvents } from '@/lib/analytics'
@@ -203,6 +204,11 @@ export function AuthPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <Head>
+        <title>Sign in to OnAlert</title>
+        <meta name="description" content="Sign in or create your OnAlert account to monitor Global Entry, NEXUS & SENTRI appointment slots in real time." />
+        <link rel="canonical" href={`${(import.meta.env.VITE_APP_URL as string | undefined) || 'https://onalert.app'}/auth`} />
+      </Head>
       {/* Header */}
       <header className="safe-top">
         <div className="px-4 py-4 flex items-center">

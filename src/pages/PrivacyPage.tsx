@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { Helmet } from 'react-helmet-async'
+import { Head } from 'vite-react-ssg'
 import { ArrowLeft } from 'lucide-react'
 
 export function PrivacyPage() {
@@ -7,11 +7,11 @@ export function PrivacyPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Helmet>
+      <Head>
         <title>Privacy Policy | OnAlert</title>
         <meta name="description" content="OnAlert privacy policy. Learn how we collect, use, and protect your data for our appointment monitoring service." />
         <link rel="canonical" href={`${(import.meta.env.VITE_APP_URL as string | undefined) || 'https://onalert.app'}/privacy`} />
-      </Helmet>
+      </Head>
       <header className="border-b border-border bg-background-elevated safe-top">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-3">
           <button

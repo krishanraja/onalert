@@ -1,4 +1,5 @@
 import { Outlet, Navigate, useLocation } from 'react-router-dom'
+import { Head } from 'vite-react-ssg'
 import { AnimatePresence } from 'framer-motion'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { PageTransition } from './PageTransition'
@@ -130,18 +131,25 @@ export function AppLayout() {
     return () => subscription.unsubscribe()
   }, [])
 
-  if (authed === null) {
-    return <LoadingSpinner />
-  }
-
-  if (!authed) {
-    // Preserve where the user was trying to go so AuthPage can return them.
-    return <Navigate to="/auth" replace state={{ from: location }} />
-  }
-
+  // The /app subtree is private — keep it out of the index and out of prerender SEO.
+  // This Head renders in every auth state, so the build-time loading shell (authed ===
+  // null) emits a correct <head> and the client's first render matches it (clean hydrate).
   return (
-    <AlertsProvider>
-      <AuthenticatedShell />
-    </AlertsProvider>
+    <>
+      <Head>
+        <title>OnAlert</title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Head>
+      {authed === null ? (
+        <LoadingSpinner />
+      ) : !authed ? (
+        // Preserve where the user was trying to go so AuthPage can return them.
+        <Navigate to="/auth" replace state={{ from: location }} />
+      ) : (
+        <AlertsProvider>
+          <AuthenticatedShell />
+        </AlertsProvider>
+      )}
+    </>
   )
 }
