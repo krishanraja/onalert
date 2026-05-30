@@ -11,6 +11,41 @@ const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!
 const TWILIO_ACCOUNT_SID = Deno.env.get('TWILIO_ACCOUNT_SID') || ''
 const TWILIO_AUTH_TOKEN = Deno.env.get('TWILIO_AUTH_TOKEN') || ''
 const TWILIO_FROM_NUMBER = Deno.env.get('TWILIO_FROM_NUMBER') || ''
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+const INTERNAL_SECRET = Deno.env.get('INTERNAL_FUNCTION_SECRET') || ''
+
+// Fire a web-push for this alert via the send-push function. Runs in parallel
+// with email (push is best-effort — never block or fail the alert on it).
+// Returns true only if at least one push was actually delivered.
+async function firePush(userId: string, payload: AlertPayload, safeBookUrl: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/send-push`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        'x-internal-secret': INTERNAL_SECRET,
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        title: `${payload.service_type} slot — ${payload.location_name}`,
+        body: payload.narrative || 'An appointment slot just opened. Tap to book.',
+        // Deep link straight to the CBP booking URL so the tap is one step to action.
+        url: safeBookUrl,
+      }),
+    })
+    if (!res.ok) {
+      console.error(`send-push ${res.status}: ${await res.text().catch(() => '')}`)
+      return false
+    }
+    const out = await res.json().catch(() => ({ sent: 0 }))
+    return (out?.sent ?? 0) > 0
+  } catch (err) {
+    console.error('firePush error:', (err as Error).message)
+    return false
+  }
+}
 
 interface AlertPayload {
   location_id: number
@@ -202,6 +237,9 @@ Deno.serve(async (req) => {
     const subject = `🚨 ${payload.service_type} slot available - ${payload.location_name}`
     const html = generateEmailHTML(payload, safeBookUrl)
 
+    // Email and web-push go out in parallel; push is best-effort (paid+free both
+    // get push if subscribed — it's free to deliver, unlike SMS).
+    const pushPromise = firePush(userId, payload, safeBookUrl)
     await sendEmail(profile.email, subject, html)
     channels.push('email')
 
@@ -221,6 +259,10 @@ Deno.serve(async (req) => {
         console.error('SMS send failed:', smsErr)
       }
     }
+
+    // Make sure the parallel push settled before we return (so a frozen edge
+    // instance can't drop it). Already swallows its own errors.
+    if (await pushPromise) channels.push('push')
 
     // 3. Mark alert as delivered with channel info
     await supabase
