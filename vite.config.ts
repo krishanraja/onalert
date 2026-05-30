@@ -31,6 +31,12 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      // injectManifest: ship our own SW (src/sw.ts) so Web Push `push` +
+      // `notificationclick` handlers exist. Workbox still precaches the build
+      // manifest inside that SW (see precacheAndRoute(self.__WB_MANIFEST)).
+      strategies: "injectManifest",
+      srcDir: "src",
+      filename: "sw.ts",
       registerType: "autoUpdate",
       injectRegister: "auto",
       includeAssets: ["brand/favicon-32.png", "brand/favicon-16.png", "brand/apple-touch-icon.png", "brand/icon-192.png", "brand/icon-512.png"],
