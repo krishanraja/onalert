@@ -1,0 +1,88 @@
+{
+  "$comment": "CANONICAL pricing source of truth for OnAlert. Edit here only. Consumed by src/lib/plans.ts (frontend display), and by scripts/gen-product-truth.mjs which generates supabase/functions/_shared/pricing.ts (checkout + webhook cents) and public/.well-known/product-truth.json (fleet). maxLocations null = unlimited. All plans are one-time payments (no subscription).",
+  "currency": "usd",
+  "billing": "one_time",
+  "legacyAliases": { "family": "multi" },
+  "plans": {
+    "free": {
+      "name": "Free",
+      "stripeName": null,
+      "stripeDescription": null,
+      "priceCents": 0,
+      "monitors": 1,
+      "maxLocations": 3,
+      "checkInterval": 60,
+      "cooldown": 0,
+      "channels": ["email"],
+      "features": [
+        "1 monitor, 3 locations",
+        "Checked every 60 minutes",
+        "Email alerts delayed 15 min",
+        "7-day monitoring window"
+      ]
+    },
+    "pro": {
+      "name": "Pro",
+      "stripeName": "OnAlert Pro",
+      "stripeDescription": "1 monitor, SMS alerts, 5-minute checks, up to 10 locations",
+      "priceCents": 3900,
+      "monitors": 1,
+      "maxLocations": 10,
+      "checkInterval": 5,
+      "cooldown": 24,
+      "channels": ["email", "sms"],
+      "features": [
+        "1 monitor, up to 10 locations",
+        "Checked every 5 minutes",
+        "Instant email + SMS alerts",
+        "Date deadline filter",
+        "Smart digest alerts",
+        "Advanced location insights",
+        "Slot re-check alerts",
+        "Monitors never expire",
+        "24h cooldown on monitor changes"
+      ]
+    },
+    "multi": {
+      "name": "Multi",
+      "stripeName": "OnAlert Multi",
+      "stripeDescription": "Up to 5 monitors, SMS alerts, 5-minute checks, unlimited locations",
+      "priceCents": 5900,
+      "monitors": 5,
+      "maxLocations": null,
+      "checkInterval": 5,
+      "cooldown": 0,
+      "channels": ["email", "sms"],
+      "features": [
+        "Up to 5 monitors, unlimited locations",
+        "Checked every 5 minutes",
+        "Instant email + SMS alerts",
+        "Date deadline filter",
+        "Smart digest alerts",
+        "Advanced location insights",
+        "Slot re-check alerts",
+        "Monitors never expire",
+        "No monitor change cooldown"
+      ]
+    },
+    "express": {
+      "name": "Express",
+      "stripeName": "OnAlert Express",
+      "stripeDescription": "1-minute checks, pre-verified slots, priority alerts, unlimited locations",
+      "priceCents": 7900,
+      "monitors": 1,
+      "maxLocations": null,
+      "checkInterval": 1,
+      "cooldown": 0,
+      "channels": ["email", "sms"],
+      "features": [
+        "1 monitor, unlimited locations",
+        "Checked every 1 minute",
+        "Priority instant alerts",
+        "Pre-verified slot confirmation",
+        "All Pro features included",
+        "Monitors never expire"
+      ]
+    }
+  }
+}

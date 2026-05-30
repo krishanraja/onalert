@@ -13,7 +13,7 @@ export default defineConfig({
       manifest: {
         name: "OnAlert",
         short_name: "OnAlert",
-        description: "Real-time government appointment monitoring",
+        description: "Stop checking. Start knowing. Real-time alerts the instant a Global Entry, NEXUS, or SENTRI interview slot opens, with a one-tap deep link into the CBP scheduler.",
         theme_color: "#0A0A0A",
         background_color: "#0A0A0A",
         display: "standalone",

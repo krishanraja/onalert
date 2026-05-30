@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import Stripe from 'https://esm.sh/stripe@14.1.0'
+import { PLAN_PRICES_CENTS, normalizePlan, isValidPaidPlan } from '../_shared/pricing.ts'
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -12,19 +13,11 @@ const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
 
 const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')!
 
-// Source of truth for plan prices (in cents). Mirrors create-checkout/index.ts
-// PLANS map. If they drift, refunds-via-mismatch will fire and you'll know.
-const PLAN_PRICES_CENTS: Record<string, number> = {
-  pro: 3900,
-  multi: 5900,
-  family: 5900,  // legacy alias for 'multi' — same price
-  express: 7900,
-}
-
-function normalizePlan(plan: string): 'pro' | 'multi' | 'express' {
-  if (plan === 'family') return 'multi'
-  return plan as 'pro' | 'multi' | 'express'
-}
+// PLAN_PRICES_CENTS (incl. the legacy 'family' alias), normalizePlan, and
+// isValidPaidPlan come from the single source of truth
+// (src/data/pricing.json -> generated _shared/pricing.ts). The cents here are the
+// exact values create-checkout charges, so the amount-mismatch guard below can never
+// reject a real purchase due to a one-sided price edit.
 
 Deno.serve(async (req) => {
   if (req.method !== 'POST') {
@@ -95,8 +88,8 @@ Deno.serve(async (req) => {
           break
         }
 
-        // Validate plan value (accept 'family' for backwards compatibility)
-        if (plan !== 'pro' && plan !== 'multi' && plan !== 'family' && plan !== 'express') {
+        // Validate plan value (isValidPaidPlan accepts the legacy 'family' alias too).
+        if (!isValidPaidPlan(plan)) {
           console.error('Invalid plan in metadata:', plan)
           return new Response(JSON.stringify({ error: 'invalid plan' }), {
             status: 400,

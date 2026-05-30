@@ -8,9 +8,12 @@
   },
   "scripts": {
     "dev": "vite",
+    "predev": "node scripts/gen-product-truth.mjs",
     "build": "tsc -b && vite build",
+    "prebuild": "node scripts/gen-product-truth.mjs",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "gen:truth": "node scripts/gen-product-truth.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.2",

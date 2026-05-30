@@ -1,78 +1,39 @@
-export const PLANS = {
-  free: {
-    name: 'Free',
-    price: 0,
-    interval: null,
-    monitors: 1,
-    maxLocations: 3,
-    checkInterval: 60,
-    cooldown: 0,
-    channels: ['email'],
-    features: [
-      '1 monitor, 3 locations',
-      'Checked every 60 minutes',
-      'Email alerts delayed 15 min',
-      '7-day monitoring window',
-    ],
-  },
-  pro: {
-    name: 'Pro',
-    price: 39,
-    interval: null,
-    monitors: 1,
-    maxLocations: 10,
-    checkInterval: 5,
-    cooldown: 24,
-    channels: ['email', 'sms'],
-    features: [
-      '1 monitor, up to 10 locations',
-      'Checked every 5 minutes',
-      'Instant email + SMS alerts',
-      'Date deadline filter',
-      'Smart digest alerts',
-      'Advanced location insights',
-      'Slot re-check alerts',
-      'Monitors never expire',
-      '24h cooldown on monitor changes',
-    ],
-  },
-  multi: {
-    name: 'Multi',
-    price: 59,
-    interval: null,
-    monitors: 5,
-    maxLocations: Infinity,
-    checkInterval: 5,
-    cooldown: 0,
-    channels: ['email', 'sms'],
-    features: [
-      'Up to 5 monitors, unlimited locations',
-      'Checked every 5 minutes',
-      'Instant email + SMS alerts',
-      'Date deadline filter',
-      'Smart digest alerts',
-      'Advanced location insights',
-      'Slot re-check alerts',
-      'Monitors never expire',
-      'No monitor change cooldown',
-    ],
-  },
-  express: {
-    name: 'Express',
-    price: 79,
-    interval: null,
-    monitors: 1,
-    maxLocations: Infinity,
-    checkInterval: 1,
-    cooldown: 0,
-    channels: ['email', 'sms'],
-    features: [
-      '1 monitor, unlimited locations',
-      'Checked every 1 minute',
-      'Priority instant alerts',
-      'Pre-verified slot confirmation',
-      'All Pro features included',
-      'Monitors never expire',
-    ],
-  },
+// Frontend plan catalog, DERIVED from the canonical single source: src/data/pricing.json.
+// Do not hardcode prices here. Edit src/data/pricing.json and run `npm run gen:truth`
+// (the same source also generates the checkout/webhook cents and the fleet product-truth.json).
+//
+// JSON cannot represent Infinity, so the canonical file stores maxLocations: null for
+// "unlimited"; we map null -> Infinity here to preserve the existing `maxLocations < Infinity`
+// comparisons used across the UI.
+import pricing from '@/data/pricing.json'
+
+export type PlanId = keyof typeof pricing.plans
+
+export interface Plan {
+  name: string
+  price: number
+  interval: null
+  monitors: number
+  maxLocations: number
+  checkInterval: number
+  cooldown: number
+  channels: string[]
+  features: string[]
 }
+
+export const PLANS = Object.fromEntries(
+  Object.entries(pricing.plans).map(([id, p]) => [
+    id,
+    {
+      name: p.name,
+      price: p.priceCents / 100,
+      interval: null,
+      monitors: p.monitors,
+      maxLocations: p.maxLocations === null ? Infinity : p.maxLocations,
+      checkInterval: p.checkInterval,
+      cooldown: p.cooldown,
+      channels: p.channels,
+      features: p.features,
+    } as Plan,
+  ])
+) as Record<PlanId, Plan>
