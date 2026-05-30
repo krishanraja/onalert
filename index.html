@@ -83,6 +83,46 @@
   <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" /></noscript>
 
+  <!-- First-touch attribution capture (runs before the bundle so it survives an
+       immediate bounce). Stores an anonymous_id + first-touch source snapshot in
+       localStorage + a first-party cookie, threaded later into signup + Stripe metadata. -->
+  <script>
+    (function () {
+      try {
+        var LS = window.localStorage;
+        var anon = LS.getItem('onalert_anon_id');
+        if (!anon) {
+          anon = (window.crypto && crypto.randomUUID)
+            ? crypto.randomUUID()
+            : 'a_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+          LS.setItem('onalert_anon_id', anon);
+        }
+        if (!LS.getItem('onalert_attribution')) {
+          var p = new URLSearchParams(location.search);
+          var pick = function (k) { return p.get(k) || null; };
+          var snap = {
+            anonymous_id: anon,
+            utm_source: pick('utm_source'),
+            utm_medium: pick('utm_medium'),
+            utm_campaign: pick('utm_campaign'),
+            utm_content: pick('utm_content'),
+            utm_term: pick('utm_term'),
+            gclid: pick('gclid'),
+            fbclid: pick('fbclid'),
+            ref: pick('ref'),
+            agent: pick('agent') || pick('utm_agent'),
+            campaign_id: pick('campaign_id'),
+            landing_path: (location.pathname + location.search).slice(0, 500),
+            referrer: document.referrer ? document.referrer.slice(0, 500) : null,
+            first_seen: new Date().toISOString()
+          };
+          LS.setItem('onalert_attribution', JSON.stringify(snap));
+          document.cookie = 'oa_anon=' + anon + ';path=/;max-age=31536000;SameSite=Lax';
+        }
+      } catch (e) { /* attribution must never break the page */ }
+    })();
+  </script>
+
   <!-- Humblytics Analytics (production only) -->
   <script>
     if (location.hostname === 'onalert.app') {

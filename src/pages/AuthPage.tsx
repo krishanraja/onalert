@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { ArrowLeft, Mail, Eye, EyeOff } from 'lucide-react'
 import { trackEvent, AnalyticsEvents } from '@/lib/analytics'
+import { getAttribution, emitLifecycle } from '@/lib/attribution'
 import { showToast } from '@/hooks/useToast'
 
 type AuthMode = 'sign_in' | 'sign_up' | 'magic_link'
@@ -94,10 +95,14 @@ export function AuthPage() {
           password,
           options: {
             emailRedirectTo: `${window.location.origin}${redirectTo}`,
+            // First-touch source travels with the account into raw_user_meta_data,
+            // so the signup is attributable to a campaign/channel/agent forever.
+            data: { attribution: getAttribution() },
           },
         })
         if (error) throw error
         trackEvent(AnalyticsEvents.SIGNUP_SUBMITTED, { method: 'email' })
+        emitLifecycle('signed_up', { email: email.trim() })
         setSent(true)
       } else {
         const { error } = await supabase.auth.signInWithPassword({

@@ -21,6 +21,25 @@ const stripe = new Stripe(STRIPE_SECRET_KEY, {
   apiVersion: '2023-10-16',
 })
 
+// Sanitize client-supplied attribution into Stripe-safe metadata: string values only,
+// keys <=40 chars, values <=500 chars, capped to a sane key count. Stripe rejects null
+// values and caps metadata at 50 keys, so we defend against a malformed/oversized body.
+function sanitizeAttribution(input: unknown): Record<string, string> {
+  const out: Record<string, string> = {}
+  if (!input || typeof input !== 'object') return out
+  let n = 0
+  for (const [k, v] of Object.entries(input as Record<string, unknown>)) {
+    if (n >= 40) break
+    if (v == null) continue
+    const key = String(k).slice(0, 40)
+    const val = String(v).slice(0, 500)
+    if (val.length === 0) continue
+    out[key] = val
+    n++
+  }
+  return out
+}
+
 // Plan prices, names, and descriptions come from the single source of truth
 // (src/data/pricing.json -> generated supabase/functions/_shared/pricing.ts), so
 // what we charge here can never drift from what stripe-webhook validates.
@@ -61,11 +80,13 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { plan } = await req.json()
+    const { plan, attribution } = await req.json()
 
     if (!plan || !(plan in STRIPE_PLANS)) {
       throw new Error('Invalid plan')
     }
+
+    const attrMeta = sanitizeAttribution(attribution)
 
     // Get user
     const authHeader = req.headers.get('Authorization')
@@ -98,7 +119,7 @@ Deno.serve(async (req) => {
       try {
         const customer = await stripe.customers.create({
           email: profile?.email || user.email!,
-          metadata: { supabase_user_id: user.id },
+          metadata: { supabase_user_id: user.id, ...attrMeta },
         })
         customerId = customer.id
       } catch (err) {
@@ -140,6 +161,7 @@ Deno.serve(async (req) => {
         metadata: {
           supabase_user_id: user.id,
           plan,
+          ...attrMeta,
         },
       })
     } catch (err) {

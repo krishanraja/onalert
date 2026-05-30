@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase, type Monitor } from '@/lib/supabase'
 import { trackEvent, AnalyticsEvents } from '@/lib/analytics'
+import { emitLifecycle } from '@/lib/attribution'
 
 const COOLDOWN_HOURS = 24
 
@@ -161,6 +162,15 @@ export function useMonitors() {
       service_type: config.service_type,
       location_count: config.location_ids?.length || 0,
     })
+
+    // Activation = the user's first live monitor. monitors holds the pre-insert list.
+    if (monitors.length === 0) {
+      emitLifecycle('activated', {
+        user_id: user.id,
+        email: user.email ?? null,
+        metadata: { service_type: config.service_type, location_count: config.location_ids?.length || 0 },
+      })
+    }
 
     return data
   }

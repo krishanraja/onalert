@@ -1,5 +1,6 @@
 import { loadStripe } from '@stripe/stripe-js/pure'
 import { supabase } from './supabase'
+import { toStripeMetadata } from './attribution'
 
 export { PLANS } from './plans'
 
@@ -20,7 +21,7 @@ export async function createCheckoutSession(
 ): Promise<string> {
   if (!supabase) throw new Error('Not connected. Please refresh and try again.')
   const { data, error } = await supabase.functions.invoke('create-checkout', {
-    body: { plan },
+    body: { plan, attribution: toStripeMetadata() },
   })
   if (error) {
     console.error('Checkout error:', error)

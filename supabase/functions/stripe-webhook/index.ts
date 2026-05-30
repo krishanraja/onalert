@@ -1,6 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import Stripe from 'https://esm.sh/stripe@14.1.0'
 import { PLAN_PRICES_CENTS, normalizePlan, isValidPaidPlan } from '../_shared/pricing.ts'
+import { forwardLifecycle } from '../_shared/lifecycle.ts'
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -129,6 +130,31 @@ Deno.serve(async (req) => {
         }
 
         console.log(`Upgraded user ${userId} to ${normalizedPlan} plan`)
+
+        // Emit the attributed purchase to the warehouse. Reads the source stamped onto
+        // session.metadata by create-checkout. No-ops if the warehouse is unconfigured.
+        const m = session.metadata ?? {}
+        await forwardLifecycle({
+          event: 'purchased',
+          user_id: userId,
+          anonymous_id: m.anonymous_id ?? null,
+          email: session.customer_details?.email ?? null,
+          utm_source: m.utm_source ?? null,
+          utm_medium: m.utm_medium ?? null,
+          utm_campaign: m.utm_campaign ?? null,
+          utm_content: m.utm_content ?? null,
+          utm_term: m.utm_term ?? null,
+          campaign_id: m.campaign_id ?? null,
+          agent: m.agent ?? null,
+          referrer: m.referrer ?? null,
+          landing_path: m.landing_path ?? null,
+          ref: m.ref ?? null,
+          stripe_customer_id: typeof session.customer === 'string' ? session.customer : null,
+          amount_cents: session.amount_total,
+          currency: session.currency,
+          dedupe_key: event.id,
+          metadata: { plan: normalizedPlan },
+        })
         break
       }
 
@@ -156,6 +182,13 @@ Deno.serve(async (req) => {
         }
 
         console.log(`Downgraded customer ${customerId} to free (event=${event.type})`)
+
+        await forwardLifecycle({
+          event: 'refunded',
+          stripe_customer_id: typeof customerId === 'string' ? customerId : null,
+          dedupe_key: event.id,
+          metadata: { reason: event.type },
+        })
         break
       }
 

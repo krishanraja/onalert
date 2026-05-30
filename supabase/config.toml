@@ -64,3 +64,9 @@ verify_jwt = false
 # (GET path returns aggregate counter only.)
 [functions.track-booking-click]
 verify_jwt = false
+
+# Public lifecycle front door: receives landed/signed_up/activated from the frontend
+# (fires pre-auth) and forwards to the OS attribution warehouse. The warehouse secret
+# lives only in this function's env, never in the client.
+[functions.track-lifecycle]
+verify_jwt = false
