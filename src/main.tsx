@@ -1,19 +1,25 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import { HelmetProvider } from 'react-helmet-async'
-import { ErrorBoundary } from './components/ErrorBoundary'
-import App from './App.tsx'
+import { ViteReactSSG } from 'vite-react-ssg'
+import { routes } from './App'
+import { emitLifecycle } from './lib/attribution'
 import './index.css'
 
-// vite-plugin-pwa: SW auto-registered via injectRegister in vite.config.ts.
-// No manual registration needed here — keep this comment for future devs.
+// vite-react-ssg owns the root: it server-renders each route to static HTML at build
+// time and hydrates on the client. It supplies StrictMode-free RouterProvider +
+// HelmetProvider internally, so this entry only exports `createRoot` and runs the
+// client-only boot side-effects inside the setup callback (guarded by isClient).
+//
+// vite-plugin-pwa registers the service worker via injectRegister:'auto' (see
+// vite.config.ts) — no manual registration needed here.
+export const createRoot = ViteReactSSG({ routes }, ({ isClient }) => {
+  if (!isClient) return
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <HelmetProvider>
-      <ErrorBoundary>
-        <App />
-      </ErrorBoundary>
-    </HelmetProvider>
-  </StrictMode>,
-)
+  // One 'landed' lifecycle event per tab session (dormant until VITE_ATTRIBUTION_ENABLED).
+  try {
+    if (!sessionStorage.getItem('onalert_landed')) {
+      sessionStorage.setItem('onalert_landed', '1')
+      emitLifecycle('landed')
+    }
+  } catch {
+    /* attribution must never break boot */
+  }
+})

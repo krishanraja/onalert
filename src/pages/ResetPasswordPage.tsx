@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Helmet } from 'react-helmet-async'
+import { Head } from 'vite-react-ssg'
 import { ArrowLeft, Eye, EyeOff, Lock } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { showToast } from '@/hooks/useToast'
@@ -61,10 +61,10 @@ export function ResetPasswordPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Helmet>
+      <Head>
         <title>Reset password | OnAlert</title>
         <meta name="robots" content="noindex" />
-      </Helmet>
+      </Head>
       <header className="safe-top">
         <div className="px-4 py-4 flex items-center">
           <button

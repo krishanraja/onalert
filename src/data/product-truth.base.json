@@ -1,0 +1,83 @@
+{
+  "$comment": "Curated, non-pricing product truth for OnAlert. Edit here only. scripts/gen-product-truth.mjs merges this with src/data/pricing.json + build metadata into public/.well-known/product-truth.json (the single source the Mindmaker fleet sells from) and public/llms.txt. Keep capabilityStatus honest: agents must never promise a 'partial' or 'roadmap' capability as live.",
+  "product": {
+    "name": "OnAlert",
+    "url": "https://onalert.app",
+    "stripeAccount": "mindmaker_llc",
+    "tagline": "Stop checking. Start knowing.",
+    "oneSentencePitch": "OnAlert watches the CBP Trusted Traveler scheduler 24/7 and alerts you within minutes when an interview slot opens, so months of refreshing become a booking in days.",
+    "category": "Real-time CBP Trusted Traveler (Global Entry, NEXUS, SENTRI) appointment alerts",
+    "programs": ["Global Entry", "NEXUS", "SENTRI"],
+    "programsNote": "All three include TSA PreCheck. There is no standalone TSA PreCheck monitor."
+  },
+  "icp": {
+    "definition": "A person who is (1) applied or intending to apply for a CBP Trusted Traveler Program, (2) conditionally approved, and (3) facing a weeks-to-months wait for the in-person interview at their preferred enrollment center. All three true means a high-intent buyer.",
+    "painfulProblem": "Conditionally-approved travelers face a 3 to 12 month interview wait. Cancellation slots open invisibly and refill in 5 to 15 minutes, and the CBP scheduler has no notification capability, so only whoever happens to be refreshing at that moment wins. Manual refreshing is a losing game by design.",
+    "magicMoment": "The instant a slot opens, a multi-channel alert (email, SMS, web push, in-app realtime) reaches you within seconds, with a one-tap deep link straight into the CBP scheduler at the right location."
+  },
+  "personas": [
+    { "key": "frequent_traveler", "label": "Frequent Traveler", "recommendedPlan": "pro", "intentSignals": ["single program", "one home airport", "renewing or first enrollment"] },
+    { "key": "family_coordinator", "label": "Family Coordinator", "recommendedPlan": "multi", "intentSignals": ["multiple people", "3+ locations", "coordinating several enrollments"] },
+    { "key": "urgent_traveler", "label": "Urgent Traveler", "recommendedPlan": "express", "intentSignals": ["trip within ~2 weeks", "hard deadline", "needs fastest possible slot"] },
+    { "key": "anxious_first_timer", "label": "Anxious First-Timer", "recommendedPlan": "free", "intentSignals": ["just exploring", "no deadline yet", "wants to understand the wait"] }
+  ],
+  "offerDecisionRules": [
+    { "if": "trip or deadline within 2 weeks", "recommend": "express" },
+    { "if": "3+ locations selected, or coordinating multiple people", "recommend": "multi" },
+    { "if": "single program, one airport, wants SMS + fast checks", "recommend": "pro" },
+    { "if": "no deadline, exploring", "recommend": "free" }
+  ],
+  "currentOffer": {
+    "active": false,
+    "note": "No promotional offer is currently live. Do not promise a money-back guarantee or referral discount until their status below is 'live'."
+  },
+  "capabilityStatus": {
+    "email_alerts": "live",
+    "sms_alerts": "live",
+    "in_app_realtime_alerts": "live",
+    "web_push": "partial",
+    "one_tap_cbp_deeplink": "degraded",
+    "predictive_slots": "inactive",
+    "slot_recheck": "inactive",
+    "express_auto_verify": "in_progress",
+    "org_team_invites": "stub",
+    "money_back_guarantee": "roadmap",
+    "referral_discount": "roadmap"
+  },
+  "capabilityStatusNote": "Reflects current shippable reality, not the marketing matrix. 'partial'/'degraded'/'inactive'/'in_progress'/'stub'/'roadmap' must not be sold as live. Updated as features ship during the 2026-05 rebuild.",
+  "anchorStats": {
+    "typicalWaitMonths": "3-12",
+    "slotBookableWindowMinutes": "5-15",
+    "expressSpeedVsFree": "60x",
+    "proMultiSpeedVsFree": "12x",
+    "enrollmentCenters": 45,
+    "programs": 3,
+    "alertLatencyTargetSeconds": 30,
+    "deliveryTargetPct": 99,
+    "tamConditionallyApproved": "4M+"
+  },
+  "northStarMetric": "Successful bookings attributed to OnAlert (a booking-CTA click within 15 minutes of an alert, where the slot then disappears from the CBP API).",
+  "brand": {
+    "personality": "Bloomberg-terminal calm: dark, precise, confident, helpful, urgent but never alarmist.",
+    "colors": { "background": "#0A0A0A", "accent": "#9F0506" },
+    "fonts": { "ui": "Inter", "data": "Fira Code" }
+  },
+  "voice": {
+    "rules": [
+      "Numbers, not adjectives.",
+      "Urgent but never alarmist.",
+      "Helpful, not pushy.",
+      "Crimson is reserved for things that matter; do not overuse urgency."
+    ],
+    "bannedWords": ["delve", "leverage", "seamlessly", "unlock", "elevate"],
+    "noEmDashes": true
+  },
+  "links": {
+    "site": "https://onalert.app",
+    "waitTimes": "https://onalert.app/wait-times",
+    "guide": "https://onalert.app/guide",
+    "locations": "https://onalert.app/locations",
+    "productTruth": "https://onalert.app/.well-known/product-truth.json",
+    "llms": "https://onalert.app/llms.txt"
+  }
+}

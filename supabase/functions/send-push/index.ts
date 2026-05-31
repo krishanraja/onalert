@@ -1,37 +1,18 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { requireInternalSecret } from '../_shared/cron-auth.ts'
+import { sendWebPush } from '../_shared/webpush.ts'
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 )
 
+// VAPID keypair from `npx web-push generate-vapid-keys` (set as edge secrets).
+// VAPID_PUBLIC_KEY must equal the applicationServerKey the client subscribes
+// with (VITE_VAPID_PUBLIC_KEY) — they are the same key, two surfaces.
 const VAPID_PUBLIC_KEY = Deno.env.get('VAPID_PUBLIC_KEY') || ''
 const VAPID_PRIVATE_KEY = Deno.env.get('VAPID_PRIVATE_KEY') || ''
-// TODO: Wire VAPID_SUBJECT into a proper web-push library (currently using
-// raw POST without VAPID JWT signing, which most push services will reject).
-const _VAPID_SUBJECT = 'mailto:support@onalert.app'
-
-async function sendWebPush(subscription: { endpoint: string; p256dh: string; auth: string }, payload: string) {
-  // Web Push using the standard protocol
-  // For production, use a proper web-push library
-  // This is a simplified implementation that sends via the push endpoint
-  const res = await fetch(subscription.endpoint, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'TTL': '86400',
-    },
-    body: payload,
-  })
-
-  if (!res.ok && res.status === 410) {
-    // Subscription expired, clean up
-    return { expired: true }
-  }
-
-  return { expired: false, status: res.status }
-}
+const VAPID_SUBJECT = Deno.env.get('VAPID_SUBJECT') || 'mailto:support@onalert.app'
 
 Deno.serve(async (req) => {
   if (req.method !== 'POST') {
@@ -62,19 +43,36 @@ Deno.serve(async (req) => {
       })
     }
 
-    const payload = JSON.stringify({ title, body, url })
-    let sent = 0
+    // The SW push handler reads {title, body, url}; default the deep link to /app.
+    const payload = { title: title || 'OnAlert', body, url: url || '/app' }
+    const vapid = { publicKey: VAPID_PUBLIC_KEY, privateKey: VAPID_PRIVATE_KEY, subject: VAPID_SUBJECT }
 
+    let sent = 0
+    let expired = 0
+    let failed = 0
+
+    // Each push is encrypted per-subscription (RFC 8291) and VAPID-signed per
+    // endpoint (RFC 8292). Failures are isolated so one dead endpoint can't
+    // block the rest.
     for (const sub of subscriptions) {
-      const result = await sendWebPush(sub, payload)
-      if (result.expired) {
-        await supabase.from('push_subscriptions').update({ is_active: false }).eq('id', sub.id)
-      } else {
-        sent++
+      try {
+        const result = await sendWebPush(sub, payload, vapid)
+        if (result.expired) {
+          expired++
+          await supabase.from('push_subscriptions').update({ is_active: false }).eq('id', sub.id)
+        } else if (result.status >= 200 && result.status < 300) {
+          sent++
+        } else {
+          failed++
+          console.error(`push ${sub.id}: HTTP ${result.status}`)
+        }
+      } catch (err) {
+        failed++
+        console.error(`push ${sub.id} error:`, (err as Error).message)
       }
     }
 
-    return new Response(JSON.stringify({ sent }), {
+    return new Response(JSON.stringify({ sent, expired, failed }), {
       headers: { 'Content-Type': 'application/json' },
     })
   } catch (error) {

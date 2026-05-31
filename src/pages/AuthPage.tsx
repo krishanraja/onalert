@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom'
+import { Head } from 'vite-react-ssg'
 import { supabase } from '@/lib/supabase'
 import { ArrowLeft, Mail, Eye, EyeOff } from 'lucide-react'
 import { trackEvent, AnalyticsEvents } from '@/lib/analytics'
+import { getAttribution, emitLifecycle } from '@/lib/attribution'
 import { showToast } from '@/hooks/useToast'
 
 type AuthMode = 'sign_in' | 'sign_up' | 'magic_link'
@@ -94,10 +96,14 @@ export function AuthPage() {
           password,
           options: {
             emailRedirectTo: `${window.location.origin}${redirectTo}`,
+            // First-touch source travels with the account into raw_user_meta_data,
+            // so the signup is attributable to a campaign/channel/agent forever.
+            data: { attribution: getAttribution() },
           },
         })
         if (error) throw error
         trackEvent(AnalyticsEvents.SIGNUP_SUBMITTED, { method: 'email' })
+        emitLifecycle('signed_up', { email: email.trim() })
         setSent(true)
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -198,6 +204,11 @@ export function AuthPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <Head>
+        <title>Sign in to OnAlert</title>
+        <meta name="description" content="Sign in or create your OnAlert account to monitor Global Entry, NEXUS & SENTRI appointment slots in real time." />
+        <link rel="canonical" href={`${(import.meta.env.VITE_APP_URL as string | undefined) || 'https://onalert.app'}/auth`} />
+      </Head>
       {/* Header */}
       <header className="safe-top">
         <div className="px-4 py-4 flex items-center">

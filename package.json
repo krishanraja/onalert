@@ -8,9 +8,12 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "predev": "node scripts/gen-product-truth.mjs",
+    "build": "tsc -b && vite-react-ssg build",
+    "prebuild": "node scripts/gen-product-truth.mjs",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "gen:truth": "node scripts/gen-product-truth.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.2",
@@ -33,7 +36,8 @@
     "react-helmet-async": "^2.0.5",
     "react-router-dom": "^6.27.0",
     "tailwind-merge": "^2.5.4",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "vite-react-ssg": "^0.9.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",

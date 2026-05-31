@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Helmet } from 'react-helmet-async'
+import { Head } from 'vite-react-ssg'
 import { MapPin, Search } from 'lucide-react'
 import { TOP_LOCATIONS, searchLocations } from '@/lib/locations'
 import { PageHeader } from '@/components/layout/PageHeader'
@@ -13,11 +13,11 @@ export function LocationsIndexPage() {
 
   return (
     <div className="min-h-dvh bg-background">
-      <Helmet>
+      <Head>
         <title>CBP Enrollment Centers - Browse All Locations | OnAlert</title>
         <meta name="description" content="Browse CBP enrollment centers nationwide. Search Global Entry, NEXUS & SENTRI interview locations by name, city, or state." />
         <link rel="canonical" href={`${(import.meta.env.VITE_APP_URL as string | undefined) || 'https://onalert.app'}/locations`} />
-      </Helmet>
+      </Head>
       <PageHeader
         title="CBP Enrollment Centers"
         onBack={() => navigate('/')}

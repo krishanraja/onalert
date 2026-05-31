@@ -1,0 +1,22 @@
+-- 018_fix_booking_clicks_cross_tenant_read.sql
+--
+-- Fixes a cross-tenant read leak on public.booking_clicks.
+--
+-- The policy "Service role can read all clicks" was created FOR SELECT
+-- USING (true) and granted to role {public}, NOT scoped to the service role.
+-- Because a permissive USING(true) policy widens access, any authenticated
+-- user could read every other user's booking activity (alert_id, user_id,
+-- location_id, still_available, timestamps).
+--
+-- The policy is also unnecessary: the service role bypasses RLS entirely, and
+-- the only server-side reader (the track-booking-click edge function, which
+-- backs both trackBookingClick and the public landing "N booked" counter via
+-- getBookingCount) uses the service-role key. Per-user reads remain available
+-- through the correctly-scoped "Users can read own clicks" (auth.uid() = user_id).
+--
+-- Verified safe 2026-05-30: getBookingCount() calls the track-booking-click
+-- edge function over GET (service role), so dropping this policy does not affect
+-- the public counter. Applied to prod (zcreubinittdqyoxxwtp) via the Supabase
+-- Management API; db push is unusable here due to the phantom-006 history.
+
+drop policy if exists "Service role can read all clicks" on public.booking_clicks;

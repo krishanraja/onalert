@@ -292,13 +292,32 @@ async function invokeInternal(name: 'send-alert' | 'send-digest-alert' | 'send-p
   }
 }
 
-// Compute end-of-deadline-day in Eastern time. Note: this assumes EDT (UTC-4)
-// year-round. CBP scheduling is Eastern-coast-centric and most users live in
-// Eastern time, so a half-hour drift twice a year on the boundary day is
-// acceptable. TODO: replace with a proper TZ library (e.g. Temporal API)
-// when DST edge cases matter.
+// The America/New_York UTC offset (in minutes, e.g. -240 for EDT, -300 for EST)
+// in effect at a given instant. Derived via Intl so DST transitions are exact —
+// no hardcoded offset, no external TZ library.
+function easternOffsetMinutes(at: Date): number {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    timeZoneName: 'shortOffset',
+  }).formatToParts(at)
+  const tz = parts.find((p) => p.type === 'timeZoneName')?.value ?? 'GMT-5'
+  const m = tz.match(/GMT([+-])(\d{1,2})(?::(\d{2}))?/)
+  if (!m) return -300 // EST fallback
+  const sign = m[1] === '-' ? -1 : 1
+  return sign * (parseInt(m[2], 10) * 60 + (m[3] ? parseInt(m[3], 10) : 0))
+}
+
+// Compute end-of-deadline-day (23:59:59) in Eastern time, DST-correct. We pick
+// the offset that applies on the deadline DAY itself (using local noon to avoid
+// the ambiguous midnight boundary), then build the precise UTC instant.
 function easternEndOfDay(deadlineDate: string): number {
-  return new Date(`${deadlineDate}T23:59:59-04:00`).getTime()
+  const noonGuess = new Date(`${deadlineDate}T12:00:00Z`)
+  const offMin = easternOffsetMinutes(noonGuess)
+  const sign = offMin <= 0 ? '-' : '+'
+  const abs = Math.abs(offMin)
+  const hh = String(Math.floor(abs / 60)).padStart(2, '0')
+  const mm = String(abs % 60).padStart(2, '0')
+  return new Date(`${deadlineDate}T23:59:59${sign}${hh}:${mm}`).getTime()
 }
 
 Deno.serve(async (req) => {
@@ -778,18 +797,25 @@ Deno.serve(async (req) => {
     })
 
     // --- Bulk insert location fetch logs ---
+    // Wrap the await rather than chaining .catch() on the PostgREST builder
+    // (it isn't a typed Promise); logging must never fail the poll run.
     if (allFetchResults.length > 0) {
-      await supabase.from('location_fetch_logs').insert(
-        allFetchResults.map(r => ({
-          run_id: runId,
-          location_id: r.locationId,
-          http_status: r.httpStatus,
-          latency_ms: r.latencyMs,
-          slots_returned: r.slots.length,
-          response_valid: r.valid,
-          error: r.error,
-        }))
-      ).catch((err: Error) => log('warn', 'location_fetch_logs.insert_failed', { error: err.message }))
+      try {
+        const { error: logErr } = await supabase.from('location_fetch_logs').insert(
+          allFetchResults.map(r => ({
+            run_id: runId,
+            location_id: r.locationId,
+            http_status: r.httpStatus,
+            latency_ms: r.latencyMs,
+            slots_returned: r.slots.length,
+            response_valid: r.valid,
+            error: r.error,
+          }))
+        )
+        if (logErr) log('warn', 'location_fetch_logs.insert_failed', { error: logErr.message })
+      } catch (err) {
+        log('warn', 'location_fetch_logs.insert_failed', { error: (err as Error).message })
+      }
     }
 
     // --- Log the enriched scrape run ---
@@ -831,22 +857,26 @@ Deno.serve(async (req) => {
   } catch (error) {
     log('error', 'poll.error', { error: (error as Error).message, stack: (error as Error).stack })
 
-    // Log the error with enriched data
-    await supabase.from('scrape_logs').insert({
-      run_id: runId,
-      location_id: null,
-      service_type: 'all',
-      started_at: new Date(startTime).toISOString(),
-      completed_at: new Date().toISOString(),
-      slots_found: 0,
-      new_alerts_fired: 0,
-      error: (error as Error).message,
-      duration_ms: Date.now() - startTime,
-      monitors_eligible: 0,
-      monitors_skipped: 0,
-      locations_fetched: allFetchResults.length,
-      locations_failed: allFetchResults.filter(r => r.error !== null).length,
-    }).catch(() => {}) // Don't fail if logging itself fails
+    // Log the error with enriched data. Wrap the await (the PostgREST builder
+    // isn't a typed Promise) and never let observability logging mask the
+    // original failure we're already handling.
+    try {
+      await supabase.from('scrape_logs').insert({
+        run_id: runId,
+        location_id: null,
+        service_type: 'all',
+        started_at: new Date(startTime).toISOString(),
+        completed_at: new Date().toISOString(),
+        slots_found: 0,
+        new_alerts_fired: 0,
+        error: (error as Error).message,
+        duration_ms: Date.now() - startTime,
+        monitors_eligible: 0,
+        monitors_skipped: 0,
+        locations_fetched: allFetchResults.length,
+        locations_failed: allFetchResults.filter(r => r.error !== null).length,
+      })
+    } catch { /* don't fail if logging itself fails */ }
 
     return new Response(JSON.stringify({ error: (error as Error).message, run_id: runId }), {
       status: 500,

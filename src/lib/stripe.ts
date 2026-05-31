@@ -1,5 +1,6 @@
 import { loadStripe } from '@stripe/stripe-js/pure'
 import { supabase } from './supabase'
+import { toStripeMetadata } from './attribution'
 
 export { PLANS } from './plans'
 
@@ -12,12 +13,15 @@ export function getStripe() {
   return stripePromise
 }
 
+// Only chargeable plans. 'family' is a legacy alias the webhook still accepts for
+// historical sessions, but create-checkout has no 'family' price and would reject it,
+// so it is intentionally NOT in this union.
 export async function createCheckoutSession(
-  plan: 'pro' | 'family' | 'multi' | 'express'
+  plan: 'pro' | 'multi' | 'express'
 ): Promise<string> {
   if (!supabase) throw new Error('Not connected. Please refresh and try again.')
   const { data, error } = await supabase.functions.invoke('create-checkout', {
-    body: { plan },
+    body: { plan, attribution: toStripeMetadata() },
   })
   if (error) {
     console.error('Checkout error:', error)

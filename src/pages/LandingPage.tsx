@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Helmet } from 'react-helmet-async'
+import { Head } from 'vite-react-ssg'
 import { ShieldCheck, Users } from 'lucide-react'
 import { getBookingCount } from '@/lib/tracking'
 import { supabase } from '@/lib/supabase'
@@ -43,11 +43,32 @@ export function LandingPage() {
 
   return (
     <div className="h-dvh overflow-hidden flex flex-col bg-background relative">
-      <Helmet>
+      <Head>
         <title>OnAlert - Global Entry, NEXUS & SENTRI Appointment Alerts</title>
         <meta name="description" content="Get instant alerts when Global Entry, NEXUS & SENTRI (all include TSA PreCheck) appointment slots open from cancellations. Scans every 5 minutes. Book in days, not months." />
         <link rel="canonical" href={`${APP_URL}/`} />
-      </Helmet>
+        {/* Homepage-scoped product schema (moved out of index.html so it no longer
+            appears on every prerendered page). Sitewide OG/Twitter defaults stay in
+            index.html; per-page social cards are a later @vercel/og enhancement. */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'SoftwareApplication',
+            name: 'OnAlert',
+            applicationCategory: 'UtilitiesApplication',
+            operatingSystem: 'Web, iOS, Android',
+            description:
+              'Real-time monitoring service that alerts you when Global Entry, NEXUS, or SENTRI (all include TSA PreCheck) government appointment slots become available.',
+            url: APP_URL,
+            offers: [
+              { '@type': 'Offer', name: 'Free', price: '0', priceCurrency: 'USD' },
+              { '@type': 'Offer', name: 'Pro', price: '39', priceCurrency: 'USD' },
+              { '@type': 'Offer', name: 'Multi', price: '59', priceCurrency: 'USD' },
+              { '@type': 'Offer', name: 'Express', price: '79', priceCurrency: 'USD' },
+            ],
+          })}
+        </script>
+      </Head>
       {/* Ambient crimson glow */}
       <div
         className="absolute inset-0 pointer-events-none"

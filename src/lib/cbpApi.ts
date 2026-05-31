@@ -32,20 +32,20 @@ export function minutesUntilExpiry(timestamp: string): number {
 
 export const CBP_BOOK_URL = 'https://ttp.cbp.dhs.gov/'
 
-const SERVICE_DISPLAY_NAMES: Record<string, string> = {
-  GE: 'Global Entry',
-  NEXUS: 'NEXUS',
-  SENTRI: 'SENTRI',
+// CBP schedulerui service codes (verified 2026): the UI expects the short code, not the
+// display name. up=Global Entry, nh=NEXUS, sh=SENTRI. Keep in sync with
+// supabase/functions/_shared/buildBookUrl.ts.
+const SERVICE_CODES: Record<string, string> = {
+  GE: 'up',
+  NEXUS: 'nh',
+  SENTRI: 'sh',
 }
 
-export function buildBookUrl(locationId?: number, serviceType?: string): string {
-  const serviceName = serviceType && SERVICE_DISPLAY_NAMES[serviceType]
-  if (!serviceName) return CBP_BOOK_URL
-  const base = `https://ttp.cbp.dhs.gov/schedulerui/schedule-interview/location?service=${encodeURIComponent(serviceName)}&type=new`
-  // TODO: validate that &location=${id} matches CBP scheduler URL spec — best-effort
-  // pre-selection so the user lands on the right enrollment center when possible.
-  if (typeof locationId === 'number') {
-    return `${base}&location=${encodeURIComponent(String(locationId))}`
-  }
-  return base
+// The public scheduler does not support pre-selecting a specific enrollment center or
+// slot via URL, so we land the user on the correct program's location list. locationId is
+// accepted for signature compatibility but intentionally unused.
+export function buildBookUrl(_locationId?: number, serviceType?: string): string {
+  const code = serviceType ? SERVICE_CODES[serviceType] : undefined
+  if (!code) return CBP_BOOK_URL
+  return `https://ttp.cbp.dhs.gov/schedulerui/schedule-interview/location?lang=en&vo=true&returnUrl=ttp-external&service=${code}`
 }

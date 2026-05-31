@@ -1,8 +1,11 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import { Helmet } from 'react-helmet-async'
+import { Head } from 'vite-react-ssg'
 import { MapPin, ArrowLeft, Clock, TrendingUp, Shield } from 'lucide-react'
 import { TOP_LOCATIONS, SERVICE_TYPES } from '@/lib/locations'
 import { useLocationIntelligence } from '@/hooks/useLocationIntelligence'
+
+const APP_URL =
+  (import.meta.env.VITE_APP_URL as string | undefined) || 'https://onalert.app'
 
 export function LocationPage() {
   const { locationId } = useParams()
@@ -27,11 +30,42 @@ export function LocationPage() {
 
   return (
     <div className="min-h-dvh bg-background">
-      <Helmet>
+      <Head>
         <title>{`${location.name} - Global Entry, NEXUS & SENTRI Appointments | OnAlert`}</title>
         <meta name="description" content={`Monitor appointment slots at ${location.name} in ${location.city}, ${location.state}. Get instant alerts when Global Entry, NEXUS or SENTRI cancellations open.`} />
-        <link rel="canonical" href={`${(import.meta.env.VITE_APP_URL as string | undefined) || 'https://onalert.app'}/locations/${location.id}`} />
-      </Helmet>
+        <link rel="canonical" href={`${APP_URL}/locations/${location.id}`} />
+        {/* Per-location structured data: the enrollment center as a GovernmentOffice
+            (helps "<city> global entry appointment" queries surface this page) plus a
+            breadcrumb trail. Baked into the prerendered HTML so crawlers read it directly. */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'GovernmentOffice',
+            name: `${location.name} - CBP Trusted Traveler Enrollment Center`,
+            description: `U.S. Customs and Border Protection enrollment center offering ${location.services
+              .map((st) => SERVICE_TYPES[st].label)
+              .join(', ')} interview appointments.`,
+            address: {
+              '@type': 'PostalAddress',
+              addressLocality: location.city,
+              addressRegion: location.state,
+              addressCountry: 'US',
+            },
+            url: `${APP_URL}/locations/${location.id}`,
+          })}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Home', item: `${APP_URL}/` },
+              { '@type': 'ListItem', position: 2, name: 'Enrollment Centers', item: `${APP_URL}/locations` },
+              { '@type': 'ListItem', position: 3, name: location.name, item: `${APP_URL}/locations/${location.id}` },
+            ],
+          })}
+        </script>
+      </Head>
       <header className="bg-background-elevated border-b border-border px-4 py-3">
         <div className="max-w-2xl mx-auto flex items-center gap-3">
           <button onClick={() => navigate('/locations')} className="p-1 text-foreground-muted hover:text-foreground">

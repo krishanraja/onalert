@@ -8,11 +8,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="OnAlert" />
 
-  <!-- SEO -->
-  <title>OnAlert - Government Appointment Monitor</title>
-  <meta name="description" content="Real-time alerts when Global Entry, NEXUS, or SENTRI (all include TSA PreCheck) appointment slots open. Stop checking. Start knowing." />
-  <meta name="robots" content="index, follow" />
-  <!-- canonical is set dynamically per-page via react-helmet -->
+  <!-- SEO: per-page title, description, canonical and robots are injected at build
+       time by each route's Head component (vite-react-ssg). Keeping them out of this
+       template avoids duplicate tags in the prerendered HTML. OG/Twitter below are
+       sitewide defaults; pages may override them later (per-page @vercel/og). -->
 
   <!-- OG -->
   <meta property="og:type" content="website" />
@@ -28,44 +27,9 @@
   <meta name="twitter:description" content="Real-time alerts when Global Entry, NEXUS, or SENTRI (all include TSA PreCheck) appointment slots open." />
   <meta name="twitter:image" content="https://onalert.app/brand/og-image.png" />
 
-  <!-- Schema.org -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": "OnAlert",
-    "applicationCategory": "UtilitiesApplication",
-    "operatingSystem": "Web, iOS, Android",
-    "description": "Real-time monitoring service that alerts you when Global Entry, NEXUS, or SENTRI (all include TSA PreCheck) government appointment slots become available.",
-    "url": "https://onalert.app",
-    "offers": [
-      {
-        "@type": "Offer",
-        "name": "Free",
-        "price": "0",
-        "priceCurrency": "USD"
-      },
-      {
-        "@type": "Offer",
-        "name": "Pro",
-        "price": "39",
-        "priceCurrency": "USD"
-      },
-      {
-        "@type": "Offer",
-        "name": "Multi",
-        "price": "59",
-        "priceCurrency": "USD"
-      },
-      {
-        "@type": "Offer",
-        "name": "Express",
-        "price": "79",
-        "priceCurrency": "USD"
-      }
-    ]
-  }
-  </script>
+  <!-- Schema.org SoftwareApplication JSON-LD is injected on the homepage only, via
+       LandingPage's <Head> (moved out of this template so it no longer appears on
+       every prerendered page). -->
 
   <!-- Icons / Favicon (all browsers) -->
   <link rel="icon" href="/favicon.ico" sizes="any" />
@@ -82,6 +46,46 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" /></noscript>
+
+  <!-- First-touch attribution capture (runs before the bundle so it survives an
+       immediate bounce). Stores an anonymous_id + first-touch source snapshot in
+       localStorage + a first-party cookie, threaded later into signup + Stripe metadata. -->
+  <script>
+    (function () {
+      try {
+        var LS = window.localStorage;
+        var anon = LS.getItem('onalert_anon_id');
+        if (!anon) {
+          anon = (window.crypto && crypto.randomUUID)
+            ? crypto.randomUUID()
+            : 'a_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+          LS.setItem('onalert_anon_id', anon);
+        }
+        if (!LS.getItem('onalert_attribution')) {
+          var p = new URLSearchParams(location.search);
+          var pick = function (k) { return p.get(k) || null; };
+          var snap = {
+            anonymous_id: anon,
+            utm_source: pick('utm_source'),
+            utm_medium: pick('utm_medium'),
+            utm_campaign: pick('utm_campaign'),
+            utm_content: pick('utm_content'),
+            utm_term: pick('utm_term'),
+            gclid: pick('gclid'),
+            fbclid: pick('fbclid'),
+            ref: pick('ref'),
+            agent: pick('agent') || pick('utm_agent'),
+            campaign_id: pick('campaign_id'),
+            landing_path: (location.pathname + location.search).slice(0, 500),
+            referrer: document.referrer ? document.referrer.slice(0, 500) : null,
+            first_seen: new Date().toISOString()
+          };
+          LS.setItem('onalert_attribution', JSON.stringify(snap));
+          document.cookie = 'oa_anon=' + anon + ';path=/;max-age=31536000;SameSite=Lax';
+        }
+      } catch (e) { /* attribution must never break the page */ }
+    })();
+  </script>
 
   <!-- Humblytics Analytics (production only) -->
   <script>

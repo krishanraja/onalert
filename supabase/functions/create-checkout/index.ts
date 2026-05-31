@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import Stripe from 'https://esm.sh/stripe@14.1.0'
+import { STRIPE_PLANS, type PaidPlan } from '../_shared/pricing.ts'
 
 const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY')
 const APP_URL = Deno.env.get('APP_URL')
@@ -20,23 +21,30 @@ const stripe = new Stripe(STRIPE_SECRET_KEY, {
   apiVersion: '2023-10-16',
 })
 
-const PLANS = {
-  pro: {
-    price: 3900, // $39.00 one-time
-    name: 'OnAlert Pro',
-    description: '1 monitor, SMS alerts, 5-minute checks, unlimited locations',
-  },
-  multi: {
-    price: 5900, // $59.00 one-time
-    name: 'OnAlert Multi',
-    description: 'Up to 5 monitors, SMS alerts, 5-minute checks, unlimited locations',
-  },
-  express: {
-    price: 7900, // $79.00 one-time
-    name: 'OnAlert Express',
-    description: '1-minute checks, pre-verified slots, priority alerts, unlimited locations',
-  },
+// Sanitize client-supplied attribution into Stripe-safe metadata: string values only,
+// keys <=40 chars, values <=500 chars, capped to a sane key count. Stripe rejects null
+// values and caps metadata at 50 keys, so we defend against a malformed/oversized body.
+function sanitizeAttribution(input: unknown): Record<string, string> {
+  const out: Record<string, string> = {}
+  if (!input || typeof input !== 'object') return out
+  let n = 0
+  for (const [k, v] of Object.entries(input as Record<string, unknown>)) {
+    if (n >= 40) break
+    if (v == null) continue
+    const key = String(k).slice(0, 40)
+    const val = String(v).slice(0, 500)
+    if (val.length === 0) continue
+    out[key] = val
+    n++
+  }
+  return out
 }
+
+// Plan prices, names, and descriptions come from the single source of truth
+// (src/data/pricing.json -> generated supabase/functions/_shared/pricing.ts), so
+// what we charge here can never drift from what stripe-webhook validates.
+// STRIPE_PLANS is keyed by paid plan only (pro|multi|express); the legacy 'family'
+// alias is intentionally not chargeable here.
 
 // Restrict CORS to known origins only. Wildcard '*' on a credentialed
 // authenticated endpoint lets any site script-call this function with the
@@ -72,11 +80,13 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { plan } = await req.json()
+    const { plan, attribution } = await req.json()
 
-    if (!plan || !PLANS[plan as keyof typeof PLANS]) {
+    if (!plan || !(plan in STRIPE_PLANS)) {
       throw new Error('Invalid plan')
     }
+
+    const attrMeta = sanitizeAttribution(attribution)
 
     // Get user
     const authHeader = req.headers.get('Authorization')
@@ -109,12 +119,13 @@ Deno.serve(async (req) => {
       try {
         const customer = await stripe.customers.create({
           email: profile?.email || user.email!,
-          metadata: { supabase_user_id: user.id },
+          metadata: { supabase_user_id: user.id, ...attrMeta },
         })
         customerId = customer.id
       } catch (err) {
-        console.error('stripe.customers.create failed:', err.type, err.message)
-        throw new Error(`Stripe customer creation failed: ${err.message}`)
+        const e = err as { type?: string; message?: string }
+        console.error('stripe.customers.create failed:', e.type, e.message)
+        throw new Error(`Stripe customer creation failed: ${e.message}`)
       }
 
       // Update profile
@@ -125,7 +136,7 @@ Deno.serve(async (req) => {
     }
 
     // Create one-time payment checkout session
-    const planConfig = PLANS[plan as keyof typeof PLANS]
+    const planConfig = STRIPE_PLANS[plan as PaidPlan]
     let session
     try {
       session = await stripe.checkout.sessions.create({
@@ -140,7 +151,7 @@ Deno.serve(async (req) => {
                 name: planConfig.name,
                 description: planConfig.description,
               },
-              unit_amount: planConfig.price,
+              unit_amount: planConfig.priceCents,
             },
             quantity: 1,
           },
@@ -150,11 +161,13 @@ Deno.serve(async (req) => {
         metadata: {
           supabase_user_id: user.id,
           plan,
+          ...attrMeta,
         },
       })
     } catch (err) {
-      console.error('stripe.checkout.sessions.create failed:', err.type, err.message)
-      throw new Error(`Stripe checkout session failed: ${err.message}`)
+      const e = err as { type?: string; message?: string }
+      console.error('stripe.checkout.sessions.create failed:', e.type, e.message)
+      throw new Error(`Stripe checkout session failed: ${e.message}`)
     }
 
     return new Response(JSON.stringify({ url: session.url }), {

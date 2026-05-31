@@ -16,6 +16,26 @@
 CREATE EXTENSION IF NOT EXISTS pg_cron;
 CREATE EXTENSION IF NOT EXISTS pg_net;
 
+-- Idempotent: drop existing jobs first so re-running this script (e.g. after a
+-- secret rotation) doesn't create duplicates. unschedule() errors if the job
+-- doesn't exist, so guard each with a DO block.
+DO $$
+BEGIN
+  PERFORM cron.unschedule('poll-appointments-every-1-min');
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
+DO $$
+BEGIN
+  PERFORM cron.unschedule('process-delayed-alerts-every-5-min');
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
+DO $$
+BEGIN
+  PERFORM cron.unschedule('process-rechecks-every-5-min');
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
+DO $$
+BEGIN
+  PERFORM cron.unschedule('predict-slots-daily');
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
+
 -- Schedule poll-appointments every 1 minute (Express tier needs 1-min checks)
 -- The function itself enforces per-plan intervals (free: 60min, pro/multi: 5min, express: 1min)
 SELECT cron.schedule(
@@ -42,6 +62,46 @@ SELECT cron.schedule(
   $$
   SELECT net.http_post(
     url := 'https://zcreubinittdqyoxxwtp.supabase.co/functions/v1/process-delayed-alerts',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'Authorization', 'Bearer <SERVICE_ROLE_KEY_PLACEHOLDER>',
+      'x-cron-secret', '<CRON_SECRET_PLACEHOLDER>'
+    ),
+    body := '{}'::jsonb
+  );
+  $$
+);
+
+-- Schedule process-rechecks every 5 minutes
+-- Re-polls locations a user explicitly asked to re-check (recheck_requests),
+-- decoupled from the main per-plan poll cadence. Was previously UNSCHEDULED in
+-- prod, so the recheck feature was dead — this wires it on.
+SELECT cron.schedule(
+  'process-rechecks-every-5-min',
+  '*/5 * * * *',
+  $$
+  SELECT net.http_post(
+    url := 'https://zcreubinittdqyoxxwtp.supabase.co/functions/v1/process-rechecks',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'Authorization', 'Bearer <SERVICE_ROLE_KEY_PLACEHOLDER>',
+      'x-cron-secret', '<CRON_SECRET_PLACEHOLDER>'
+    ),
+    body := '{}'::jsonb
+  );
+  $$
+);
+
+-- Schedule predict-slots once daily at 08:00 UTC
+-- Recomputes day-of-week slot-likelihood predictions from 90 days of
+-- slot_history. Heavy + only needs to run occasionally; was UNSCHEDULED in prod
+-- so slot_predictions never refreshed — this wires it on.
+SELECT cron.schedule(
+  'predict-slots-daily',
+  '0 8 * * *',
+  $$
+  SELECT net.http_post(
+    url := 'https://zcreubinittdqyoxxwtp.supabase.co/functions/v1/predict-slots',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
       'Authorization', 'Bearer <SERVICE_ROLE_KEY_PLACEHOLDER>',
