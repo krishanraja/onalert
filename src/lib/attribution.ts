@@ -130,12 +130,15 @@ export function emitLifecycle(
     }
     const body = JSON.stringify(payload)
     const endpoint = `${url}/functions/v1/track-lifecycle`
-    // Prefer sendBeacon so the event survives a navigation (e.g. landed -> click out).
-    if (navigator.sendBeacon) {
-      navigator.sendBeacon(endpoint, new Blob([body], { type: 'application/json' }))
-    } else {
-      void fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, keepalive: true })
-    }
+    // fetch + keepalive survives navigation like a beacon, but without sendBeacon's
+    // forced credentials-include mode, which fails the edge function's CORS preflight
+    // (no Access-Control-Allow-Credentials header) and silently drops every event.
+    void fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body,
+      keepalive: true,
+    }).catch(() => {})
   } catch {
     // attribution must never break the app
   }

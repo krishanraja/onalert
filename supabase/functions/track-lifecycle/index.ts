@@ -18,6 +18,9 @@ function buildCors(req: Request): Record<string, string> {
     'Vary': 'Origin',
     'Access-Control-Allow-Headers': 'content-type',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    // sendBeacon (and any credentialed fetch) sends credentials-mode "include";
+    // without this header the browser rejects the preflight and drops the event.
+    'Access-Control-Allow-Credentials': 'true',
   }
 }
 
