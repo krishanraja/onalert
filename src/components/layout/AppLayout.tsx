@@ -144,7 +144,10 @@ export function AppLayout() {
         <LoadingSpinner />
       ) : !authed ? (
         // Preserve where the user was trying to go so AuthPage can return them.
-        <Navigate to="/auth" replace state={{ from: location }} />
+        // Keep the URL hash too: Supabase delivers email-link failures (expired/used
+        // confirmation links) as #error=...&error_description=... on /app, and
+        // dropping it here left users on /auth with no explanation of what happened.
+        <Navigate to={{ pathname: '/auth', hash: location.hash }} replace state={{ from: location }} />
       ) : (
         <AlertsProvider>
           <AuthenticatedShell />

@@ -27,8 +27,10 @@ export function AuthPage() {
   const [mode, setMode] = useState<AuthMode>('sign_in')
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
+  const [sentKind, setSentKind] = useState<'confirmation' | 'sign-in'>('confirmation')
   const [resetSent, setResetSent] = useState(false)
   const [error, setError] = useState('')
+  const [needsConfirmation, setNeedsConfirmation] = useState(false)
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const location = useLocation()
@@ -40,6 +42,23 @@ export function AuthPage() {
     // Store referral code from URL for checkout flow
     const ref = searchParams.get('ref')
     if (ref) localStorage.setItem('onalert_referral', ref)
+
+    // Surface email-link failures. GoTrue redirects expired/used confirmation and
+    // recovery links back to the app as #error=...&error_description=...; AppLayout
+    // forwards that hash here. Without this the user landed on a bare sign-in form
+    // with no explanation of why their email link did nothing.
+    const hash = window.location.hash
+    if (hash.includes('error_code=') || hash.includes('error_description=')) {
+      const params = new URLSearchParams(hash.slice(1))
+      const code = params.get('error_code') || ''
+      const desc = params.get('error_description') || ''
+      setError(
+        code === 'otp_expired'
+          ? 'That email link has expired or was already used. Sign in below, or use "Resend confirmation email" / the magic link option to get a fresh one.'
+          : desc || 'Something went wrong with that email link. Try signing in below.'
+      )
+      window.history.replaceState(null, '', window.location.pathname + window.location.search)
+    }
 
     // Check if already authenticated
     supabase.auth.getSession().then(({ data }) => {
@@ -104,6 +123,7 @@ export function AuthPage() {
         if (error) throw error
         trackEvent(AnalyticsEvents.SIGNUP_SUBMITTED, { method: 'email' })
         emitLifecycle('signed_up', { email: email.trim() })
+        setSentKind('confirmation')
         setSent(true)
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -114,7 +134,36 @@ export function AuthPage() {
         // onAuthStateChange will handle navigation
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong')
+      const message = err instanceof Error ? err.message : 'Something went wrong'
+      // Correct password but unconfirmed email: a dead end unless we offer the
+      // resend, because confirmation links expire after an hour.
+      if (/email not confirmed/i.test(message)) {
+        setNeedsConfirmation(true)
+        setError("Your email address hasn't been confirmed yet. Check your inbox for the confirmation link, or resend it below.")
+      } else {
+        setError(message)
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleResendConfirmation = async () => {
+    if (!email.trim() || !supabase) return
+    setLoading(true)
+    setError('')
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email.trim(),
+        options: { emailRedirectTo: `${window.location.origin}${redirectTo}` },
+      })
+      if (error) throw error
+      setNeedsConfirmation(false)
+      setSentKind('confirmation')
+      setSent(true)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Couldn't resend the confirmation email")
     } finally {
       setLoading(false)
     }
@@ -138,6 +187,7 @@ export function AuthPage() {
       })
 
       if (error) throw error
+      setSentKind('sign-in')
       setSent(true)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
@@ -185,7 +235,7 @@ export function AuthPage() {
             </div>
             <h1 className="text-lg font-semibold text-foreground mb-2">Check your email</h1>
             <p className="text-sm text-foreground-secondary mb-4">
-              We sent a {mode === 'sign_up' ? 'confirmation' : 'sign-in'} link to <strong>{email}</strong>
+              We sent a {sentKind} link to <strong>{email}</strong>
             </p>
             <p className="text-2xs text-foreground-muted">
               Didn't receive it? Check your spam folder or try again.
@@ -321,6 +371,17 @@ export function AuthPage() {
                 <p className="text-sm text-destructive" role="alert" aria-live="assertive">{error}</p>
               )}
 
+              {needsConfirmation && (
+                <button
+                  type="button"
+                  onClick={handleResendConfirmation}
+                  disabled={loading}
+                  className="w-full border border-primary text-primary py-3 rounded-lg font-medium hover:bg-primary/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? 'Sending...' : 'Resend confirmation email'}
+                </button>
+              )}
+
               <button
                 type="submit"
                 disabled={loading}
@@ -367,7 +428,7 @@ export function AuthPage() {
           <div className="text-center mt-6 space-y-1">
             {mode !== 'magic_link' && (
               <button
-                onClick={() => { setMode('magic_link'); setError(''); setPassword('') }}
+                onClick={() => { setMode('magic_link'); setError(''); setNeedsConfirmation(false); setPassword('') }}
                 className="text-2xs text-foreground-muted hover:text-foreground-secondary transition-colors block mx-auto min-h-[44px] px-3 py-2"
               >
                 Sign in with magic link instead
@@ -375,7 +436,7 @@ export function AuthPage() {
             )}
             {mode === 'magic_link' && (
               <button
-                onClick={() => { setMode('sign_in'); setError('') }}
+                onClick={() => { setMode('sign_in'); setError(''); setNeedsConfirmation(false) }}
                 className="text-2xs text-foreground-muted hover:text-foreground-secondary transition-colors block mx-auto min-h-[44px] px-3 py-2"
               >
                 Sign in with password instead
@@ -384,13 +445,13 @@ export function AuthPage() {
             <p className="text-2xs text-foreground-muted py-2">
               {mode === 'sign_up' ? (
                 <>Already have an account?{' '}
-                  <button onClick={() => { setMode('sign_in'); setError('') }} className="text-primary hover:underline min-h-[44px] py-2 px-1">
+                  <button onClick={() => { setMode('sign_in'); setError(''); setNeedsConfirmation(false) }} className="text-primary hover:underline min-h-[44px] py-2 px-1">
                     Sign in
                   </button>
                 </>
               ) : (
                 <>Don't have an account?{' '}
-                  <button onClick={() => { setMode('sign_up'); setError('') }} className="text-primary hover:underline min-h-[44px] py-2 px-1">
+                  <button onClick={() => { setMode('sign_up'); setError(''); setNeedsConfirmation(false) }} className="text-primary hover:underline min-h-[44px] py-2 px-1">
                     Create one
                   </button>
                 </>
